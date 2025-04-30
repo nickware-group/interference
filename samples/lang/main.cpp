@@ -7,6 +7,7 @@
 // Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////
 
+#include <array>
 #include <chrono>
 #include <iomanip>
 #include <vector>

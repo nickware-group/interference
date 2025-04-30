@@ -5,6 +5,7 @@
 #ifndef INTERFERENCE_BMP_HPP
 #define INTERFERENCE_BMP_HPP
 
+#include <array>
 #include <cmath>
 #include <iostream>
 #include <vector>
