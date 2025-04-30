@@ -955,12 +955,13 @@ void indk::NeuralNet::setStructure(const std::string &Str) {
                     }
                 } else {
                     N -> doCreateNewReceptor(pos);
+                    auto r = N -> getReceptor(N->getReceptorsCount()-1);
+                    r -> doReset();
                     for (auto &jscope: jreceptor.value()["scopes"].items()) {
                         pos.clear();
                         for (auto &jposition: jscope.value().items()) {
                             pos.push_back(jposition.value().get<float>());
                         }
-                        auto r = N -> getReceptor(N->getReceptorsCount()-1);
                         r -> doCreateNewScope();
                         r -> setPos(new indk::Position(nsize, pos));
                     }
