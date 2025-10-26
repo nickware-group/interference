@@ -29,6 +29,13 @@ indk::Interlink::Interlink(int port, int timeout) {
     doInitInput(port, timeout);
 }
 
+void indk::Interlink::doRunArchitectServer(const std::string& path, int port) {
+    WebServer = new httplib::Server();
+    auto server = (httplib::Server*)WebServer;
+
+    server -> set_mount_point("/", path);
+}
+
 void indk::Interlink::doInitInput(int port, int _timeout) {
     Input = new httplib::Server();
     auto input = (httplib::Server*)Input;
