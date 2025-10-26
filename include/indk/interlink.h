@@ -21,6 +21,7 @@ namespace indk {
     class Interlink {
     private:
 //        void *LinkedObject;
+        void *WebServer;
         void *Input;
         void *Output;
         std::string Host;
@@ -36,6 +37,7 @@ namespace indk {
     public:
         Interlink();
         Interlink(int, int timeout);
+        void doRunArchitectServer(const std::string& path, int port);
         void doUpdateStructure(const std::string&);
         void doUpdateModelData(const std::string&);
         void doUpdateMetrics(const std::string&);
