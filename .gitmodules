@@ -1,0 +1,3 @@
+[submodule "deps/facefull-bridge"]
+	path = deps/facefull-bridge
+	url = https://github.com/nickware-group/facefull-bridge.git

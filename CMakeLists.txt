@@ -31,9 +31,11 @@ set(TARGET_SOURCE
         include/indk/types.h
 )
 
+add_subdirectory(deps/facefull-bridge)
 add_library(indk_objlib OBJECT ${TARGET_SOURCE})
 set_property(TARGET indk_objlib PROPERTY POSITION_INDEPENDENT_CODE ON)
-add_subdirectory(deps/facefull-bridge)
+
+add_dependencies(indk_objlib facefull-bridge_static)
 
 function(build_indk LIBTYPE)
     message("Building ${LIBTYPE} variant")
@@ -55,7 +57,8 @@ function(build_indk LIBTYPE)
     include_directories(deps/facefull-bridge/include)
 
     find_package(Threads REQUIRED)
-    target_link_libraries(${PROJECT_NAME}${LIBTYPE} Threads::Threads -latomic libfacefull-bridge_static.a)
+    target_link_libraries(${PROJECT_NAME}${LIBTYPE} Threads::Threads -latomic)
+    target_link_libraries(${PROJECT_NAME}${LIBTYPE} ${CMAKE_CURRENT_BINARY_DIR}/deps/facefull-bridge/libfacefull-bridge_static.a)
 
     if (WIN32)
         target_link_libraries(${PROJECT_NAME}${LIBTYPE} -lws2_32)
