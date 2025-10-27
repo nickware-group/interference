@@ -13,18 +13,19 @@ set(TARGET_SOURCE
         src/backends/opencl.cpp include/indk/backends/opencl.h src/interlink.cpp include/indk/interlink.h
         src/profiler.cpp include/indk/profiler.h)
 
-add_library(objlib OBJECT ${TARGET_SOURCE})
-set_property(TARGET objlib PROPERTY POSITION_INDEPENDENT_CODE ON)
+add_library(indk_objlib OBJECT ${TARGET_SOURCE})
+set_property(TARGET indk_objlib PROPERTY POSITION_INDEPENDENT_CODE ON)
+add_subdirectory(deps/facefull-bridge)
 
 function(build_indk LIBTYPE)
     message("Building ${LIBTYPE} variant")
 
     if(${LIBTYPE} STREQUAL shared)
         set(LIBTYPE "")
-        add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:objlib>)
+        add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:indk_objlib>)
     elseif(${LIBTYPE} STREQUAL static)
         set(LIBTYPE "_static")
-        add_library(${PROJECT_NAME}${LIBTYPE} STATIC $<TARGET_OBJECTS:objlib>)
+        add_library(${PROJECT_NAME}${LIBTYPE} STATIC $<TARGET_OBJECTS:indk_objlib>)
     endif()
 
     set_target_properties(${PROJECT_NAME}${LIBTYPE} PROPERTIES
@@ -33,9 +34,10 @@ function(build_indk LIBTYPE)
 
     include_directories(include/)
     include_directories(3rdparty/)
+    include_directories(deps/facefull-bridge/include)
 
     find_package(Threads REQUIRED)
-    target_link_libraries(${PROJECT_NAME}${LIBTYPE} Threads::Threads -latomic)
+    target_link_libraries(${PROJECT_NAME}${LIBTYPE} Threads::Threads -latomic libfacefull-bridge_static.a)
 
     if (WIN32)
         target_link_libraries(${PROJECT_NAME}${LIBTYPE} -lws2_32)

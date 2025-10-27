@@ -26,7 +26,8 @@ namespace indk {
         void *Output;
         std::string Host;
         std::string InputPort, OutputPort;
-        std::thread Thread;
+        std::thread DataThread;
+        std::thread WebThread;
         std::atomic<bool> Interlinked;
         std::string Structure;
 
@@ -37,7 +38,7 @@ namespace indk {
     public:
         Interlink();
         Interlink(int, int timeout);
-        void doRunArchitectServer(const std::string& path, int port);
+        void doRunArchitectWebServer(const std::string& path, int port);
         void doUpdateStructure(const std::string&);
         void doUpdateModelData(const std::string&);
         void doUpdateMetrics(const std::string&);
