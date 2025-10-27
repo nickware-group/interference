@@ -9,6 +9,7 @@
 
 #include <indk/interlink.h>
 #include <indk/system.h>
+#include <facefull/bridge/web.hpp>
 #include <json.hpp>
 #include <httplib.h>
 #include <unistd.h>
@@ -29,11 +30,12 @@ indk::Interlink::Interlink(int port, int timeout) {
     doInitInput(port, timeout);
 }
 
-void indk::Interlink::doRunArchitectServer(const std::string& path, int port) {
-    WebServer = new httplib::Server();
-    auto server = (httplib::Server*)WebServer;
+void indk::Interlink::doRunArchitectWebServer(const std::string& path, int port) {
+    WebThread = std::thread([this, port, path]() {
+        FacefullBridgeWeb bridge(path, port);
 
-    server -> set_mount_point("/", path);
+        bridge.doRunServer();
+    });
 }
 
 void indk::Interlink::doInitInput(int port, int _timeout) {
@@ -75,7 +77,7 @@ void indk::Interlink::doInitInput(int port, int _timeout) {
                 });
     });
 
-    Thread = std::thread([this, port, input]() {
+    DataThread = std::thread([this, port, input]() {
         input -> listen("0.0.0.0", port);
     });
 
@@ -143,7 +145,8 @@ bool indk::Interlink::isInterlinked() {
 }
 
 indk::Interlink::~Interlink() {
-    Thread.detach();
+    WebThread.detach();
+    DataThread.detach();
     delete (httplib::Server*)Input;
     delete (httplib::Client*)Output;
 }
