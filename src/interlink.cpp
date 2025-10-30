@@ -20,17 +20,9 @@ indk::Interlink::Interlink() {
     Input = nullptr;
     Output = nullptr;
     Interlinked.store(false);
-    doInitInput(4408, 5);
 }
 
-indk::Interlink::Interlink(int port, int timeout) {
-    Input = nullptr;
-    Output = nullptr;
-    Interlinked.store(false);
-    doInitInput(port, timeout);
-}
-
-void indk::Interlink::doRunArchitectWebServer(const std::string& path, int port) {
+void indk::Interlink::doInitWebServer(const std::string& path, int port) {
     WebThread = std::thread([this, port, path]() {
         FacefullBridgeWeb bridge(path, port);
 

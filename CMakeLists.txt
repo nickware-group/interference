@@ -31,6 +31,10 @@ set(TARGET_SOURCE
         include/indk/types.h
 )
 
+set(FFB_QT5WEBKIT_EXAMPLE_BUILD OFF)
+set(FFB_WXWIDGETS_EXAMPLE_BUILD OFF)
+set(FFB_WB_EXAMPLE_BUILD OFF)
+
 add_subdirectory(deps/facefull-bridge)
 add_library(indk_objlib OBJECT ${TARGET_SOURCE})
 set_property(TARGET indk_objlib PROPERTY POSITION_INDEPENDENT_CODE ON)
