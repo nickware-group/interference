@@ -31,14 +31,13 @@ namespace indk {
         std::atomic<bool> Interlinked;
         std::string Structure;
 
-        void doInitInput(int, int);
         void doInitOutput();
 
         void doSend(const std::string&, const std::string&);
     public:
         Interlink();
-        Interlink(int, int timeout);
-        void doRunArchitectWebServer(const std::string& path, int port);
+        void doInitWebServer(const std::string& path, int port);
+        void doInitInput(int port, int timeout);
         void doUpdateStructure(const std::string&);
         void doUpdateModelData(const std::string&);
         void doUpdateMetrics(const std::string&);

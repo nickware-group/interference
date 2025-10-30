@@ -20,7 +20,7 @@ indk::NeuralNet::NeuralNet() {
     t = 0;
     StateSyncEnabled = false;
     LastUsedComputeBackend = -1;
-    InterlinkService = nullptr;
+    InterlinkService = new indk::Interlink();
 
     if (indk::System::getVerbosityLevel() > 1)
         std::cout << "Using default compute backend." << std::endl;
@@ -32,7 +32,8 @@ indk::NeuralNet::NeuralNet(const std::string &path) {
     t = 0;
     StateSyncEnabled = false;
     LastUsedComputeBackend = -1;
-    InterlinkService = nullptr;
+    InterlinkService = new indk::Interlink();
+
     std::ifstream filestream(path);
     setStructure(filestream);
 
@@ -43,7 +44,7 @@ indk::NeuralNet::NeuralNet(const std::string &path) {
 }
 
 void indk::NeuralNet::doInterlinkInit(int port, int timeout) {
-    InterlinkService = new indk::Interlink(port, timeout);
+    InterlinkService -> doInitInput(port, timeout);
 
     indk::Profiler::doAttachCallback(this, indk::Profiler::EventFlags::EventTick, [this](indk::NeuralNet *nn) {
         auto neurons = getNeurons();
@@ -64,13 +65,17 @@ void indk::NeuralNet::doInterlinkInit(int port, int timeout) {
     }
 }
 
+void indk::NeuralNet::doInterlinkWebInit(const std::string& path, int port) {
+    InterlinkService -> doInitWebServer(path, port);
+}
+
 void indk::NeuralNet::doInterlinkSyncStructure() {
-    if (!InterlinkService || InterlinkService && !InterlinkService->isInterlinked()) return;
+    if (!InterlinkService->isInterlinked()) return;
     InterlinkService -> doUpdateStructure(getStructure());
 }
 
 void indk::NeuralNet::doInterlinkSyncData() {
-    if (!InterlinkService || InterlinkService && !InterlinkService->isInterlinked()) return;
+    if (!InterlinkService->isInterlinked()) return;
     json j, jm;
     uint64_t in = 0;
 
@@ -471,7 +476,7 @@ void indk::NeuralNet::doSignalTransferAsync(const std::vector<std::vector<float>
  * @return Output signals.
  */
 std::vector<indk::OutputValue> indk::NeuralNet::doLearn(const std::vector<std::vector<float>>& Xx, bool prepare, const std::vector<std::string>& inputs) {
-    if (InterlinkService && InterlinkService->isInterlinked()) {
+    if (InterlinkService->isInterlinked()) {
         InterlinkService -> doUpdateStructure(getStructure());
     }
     t = 0;
@@ -988,7 +993,7 @@ void indk::NeuralNet::setStructure(const std::string &Str) {
             }
         }
 
-        if (InterlinkService && InterlinkService->isInterlinked()) {
+        if (InterlinkService->isInterlinked()) {
             InterlinkService -> setStructure(Str);
         }
     } catch (std::exception &e) {

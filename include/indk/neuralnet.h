@@ -61,7 +61,8 @@ namespace indk {
     public:
         NeuralNet();
         explicit NeuralNet(const std::string &path);
-        void doInterlinkInit(int port, int timeout = 5);
+        void doInterlinkInit(int port = 4408, int timeout = 5);
+        void doInterlinkWebInit(const std::string& path, int port = 8044);
         void doInterlinkSyncStructure();
         void doInterlinkSyncData();
         std::vector<float> doComparePatterns(int CompareFlag = indk::PatternCompareFlags::CompareDefault,
