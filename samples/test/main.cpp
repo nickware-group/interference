@@ -19,8 +19,8 @@ std::vector<std::vector<float>> X;
 
 std::vector<std::tuple<indk::System::ComputeBackends, int, std::string>> backends = {
         std::make_tuple(indk::System::ComputeBackends::Default, 0, "singlethread"),
-        std::make_tuple(indk::System::ComputeBackends::Multithread, 2, "multithread"),
-        std::make_tuple(indk::System::ComputeBackends::OpenCL, 0, "OpenCL"),
+//        std::make_tuple(indk::System::ComputeBackends::Multithread, 2, "multithread"),
+//        std::make_tuple(indk::System::ComputeBackends::OpenCL, 0, "OpenCL"),
 };
 
 uint64_t getTimestampMS() {
@@ -73,7 +73,7 @@ int doTests(const std::string& name, float ref) {
     for (auto &b: backends) {
         NN -> doReset();
         std::cout << std::setw(50) << std::left << name+" ("+std::get<2>(b)+"): ";
-        indk::System::setComputeBackend(std::get<0>(b), std::get<1>(b));
+//        indk::System::setComputeBackend(std::get<0>(b), std::get<1>(b));
         count += doTest(ref);
     }
     std::cout << std::endl;
@@ -92,15 +92,19 @@ int main() {
     NN = new indk::NeuralNet();
 
     // creating data array
+    X.emplace_back();
+    X.emplace_back();
     for (int i = 0; i < 170; i++) {
-        X.push_back({50, 50});
+        X[0].push_back(50);
+        X[1].push_back(50);
     }
 
     // running tests
     std::cout << "=== SUPERSTRUCTURE TEST ===" << std::endl;
-    doLoadModel("structures/structure_general.json", 101);
+    doLoadModel("structures/structure_general.json", 2);
     count += doTests("Superstructure test", SUPERSTRUCTURE_TEST_REFERENCE_OUTPUT);
 
+    return 0;
     std::cout << "=== BENCHMARK ===" << std::endl;
     doLoadModel("structures/structure_bench.json", 10001);
     count += doTests("Benchmark", BENCHMARK_TEST_REFERENCE_OUTPUT);

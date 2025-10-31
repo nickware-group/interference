@@ -1,17 +1,24 @@
 cmake_minimum_required(VERSION 3.12)
-project(interference VERSION 2.1.0 DESCRIPTION "Interference library")
+project(interference VERSION 3.0.0 DESCRIPTION "Interference library")
 
 set(CMAKE_CXX_STANDARD 14)
 
 set(TARGET_SOURCE
-        src/neuron/neuron.cpp include/indk/neuron.h src/neuron/entry.cpp src/neuron/synapse.cpp src/neuron/receptor.cpp
-        src/neuralnet/neuralnet.cpp include/indk/neuralnet.h
-        src/error.cpp include/indk/error.h src/system.cpp include/indk/system.h src/position.cpp include/indk/position.h
-        src/computer.cpp include/indk/computer.h
-        src/backends/default.cpp include/indk/backends/default.h
-        src/backends/multithread.cpp include/indk/backends/multithread.h
-        src/backends/opencl.cpp include/indk/backends/opencl.h src/interlink.cpp include/indk/interlink.h
-        src/profiler.cpp include/indk/profiler.h)
+        src/neuron/neuron.cpp                   include/indk/neuron.h
+        src/neuron/entry.cpp
+        src/neuron/synapse.cpp
+        src/neuron/receptor.cpp
+        src/neuralnet/neuralnet.cpp             include/indk/neuralnet.h
+        src/error.cpp                           include/indk/error.h
+        src/system.cpp                          include/indk/system.h
+        src/position.cpp                        include/indk/position.h
+        src/computer.cpp                        include/indk/computer.h
+        src/backends/default.cpp                include/indk/backends/default.h
+        src/backends/multithread.cpp            include/indk/backends/multithread.h
+        src/backends/opencl.cpp                 include/indk/backends/opencl.h
+        src/interlink.cpp                       include/indk/interlink.h
+        src/profiler.cpp                        include/indk/profiler.h
+        src/instance.cpp                        include/indk/instance.h)
 
 add_library(objlib OBJECT ${TARGET_SOURCE})
 set_property(TARGET objlib PROPERTY POSITION_INDEPENDENT_CODE ON)

@@ -59,6 +59,9 @@ const char* indk::Error::what() const noexcept {
         case EX_POSITION_DIMENSIONS:
             Msg = std::string("EX_POSITION_DIMENSIONS ~ Not equal space dimensions of positions");
             break;
+        case EX_INSTANCE_OUT_OF_RANGE:
+            Msg = std::string("EX_INSTANCE_OUT_OF_RANGE ~ Compute Instance out of range (selected instance > total instances)");
+            break;
         default:
             Msg = std::string("No exception");
     }

@@ -118,7 +118,7 @@ void indk::ComputeBackendMultithread::doProcess(void* object) {
 
                     R -> setFi(FiSum);
                     R -> doUpdatePos(dRPos);
-                    P += indk::Computer::getReceptorInfluenceValue(R->doCheckActive(), R->getdFi(), dRPos, zPos);
+//                    P += indk::Computer::getReceptorInfluenceValue(R->doCheckActive(), R->getdFi(), dRPos, zPos);
                     R -> doUpdateSensitivityValue();
                 }
                 P /= (float)N->getReceptorsCount();

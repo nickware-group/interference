@@ -23,13 +23,18 @@ namespace indk {
         static std::vector<float> doCompareCPFunction(std::vector<indk::Position*>, std::vector<indk::Position*>);
         static float doCompareCPFunctionD(std::vector<indk::Position*>, std::vector<indk::Position*>);
         static float doCompareFunction(indk::Position*, indk::Position*);
+        static void doClearPosition(float*, uint64_t dimensions);
+        static void doAddPosition(float *position1, const float *position2, uint64_t dimensions);
         static float getGammaFunctionValue(float, float, float, float);
         static std::pair<float, float> getFiFunctionValue(float, float, float, float);
-        static float getReceptorInfluenceValue(bool, float, indk::Position*, indk::Position*);
+        static float getReceptorInfluenceValue(bool active, float dFi, const float *position, uint64_t dimensions);
         static float getRcValue(float, float, float, float);
         static void getNewPosition(indk::Position*, indk::Position*, indk::Position*, float, float);
+        static void getNewReceptorPosition(float *buffer, const float *r, const float *s, float length, float d, uint64_t dimensions);
         static float getLambdaValue(unsigned int);
         static float getFiVectorLength(float);
+        static float getDistance(const float*, const float*, uint64_t dimensions);
+        static bool isReceptorActive(float, float);
         static float getSynapticSensitivityValue(unsigned int, unsigned int);
     };
 }

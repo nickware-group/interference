@@ -14,7 +14,7 @@
 
 indk::Neuron::Neuron() {
     t = 0;
-    Tlo = 0;
+    Latency = 0;
     Xm = 0;
     DimensionsCount = 0;
     OutputSignal = new float;
@@ -29,7 +29,7 @@ indk::Neuron::Neuron() {
 
 indk::Neuron::Neuron(const indk::Neuron &N) {
     t = 0;
-    Tlo = N.getTlo();
+    Latency = N.getLatency();
     Xm = N.getXm();
     OutputSignal = new float;
     OutputSignalSize = 1;
@@ -45,9 +45,9 @@ indk::Neuron::Neuron(const indk::Neuron &N) {
     Links = N.getLinkOutput();
 }
 
-indk::Neuron::Neuron(unsigned int XSize, unsigned int DC, int64_t Tl, const std::vector<std::string>& InputNames) {
+indk::Neuron::Neuron(unsigned int XSize, unsigned int DC, uint64_t latency, const std::vector<std::string>& InputNames) {
     t = 0;
-    Tlo = Tl;
+    Latency = latency;
     Xm = XSize;
     DimensionsCount = DC;
     OutputSignal = new float;
@@ -507,8 +507,8 @@ unsigned int indk::Neuron::getDimensionsCount() const {
     return DimensionsCount;
 }
 
-int64_t indk::Neuron::getTlo() const {
-    return Tlo;
+uint64_t indk::Neuron::getLatency() const {
+    return Latency;
 }
 
 int indk::Neuron::getNID() const {

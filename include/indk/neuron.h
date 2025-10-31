@@ -34,7 +34,7 @@ namespace indk {
         std::vector<std::string> Links;
         std::vector<indk::Neuron::Receptor*> Receptors;
         std::atomic<int64_t> t;
-        int64_t Tlo;
+        uint64_t Latency;
         unsigned int Xm, DimensionsCount;
         float *OutputSignal;
         int64_t OutputSignalSize;
@@ -84,7 +84,7 @@ namespace indk {
 
         Neuron();
         Neuron(const indk::Neuron&);
-        Neuron(unsigned int, unsigned int, int64_t, const std::vector<std::string>& InputSignals);
+        Neuron(unsigned int, unsigned int, uint64_t, const std::vector<std::string>& InputSignals);
         void doCreateNewSynapse(const std::string&, std::vector<float>, float, int64_t, int);
         void doCreateNewSynapseCluster(const std::vector<float>& PosVector, unsigned R, float k1, int64_t Tl, int NT);
         void doCreateNewReceptor(std::vector<float>);
@@ -128,7 +128,7 @@ namespace indk {
         int64_t getTime() const;
         unsigned int getXm() const;
         unsigned int getDimensionsCount() const;
-        int64_t getTlo() const;
+        uint64_t getLatency() const;
         int getNID() const;
         std::string getName();
         int64_t getSignalBufferSize() const;

@@ -44,7 +44,9 @@ namespace indk {
             /// Not equal coordinates ranges.
             EX_POSITION_RANGES,
             /// Not equal space dimensions of positions.
-            EX_POSITION_DIMENSIONS
+            EX_POSITION_DIMENSIONS,
+            /// Compute Instance out of range (selected instance > total instances)
+            EX_INSTANCE_OUT_OF_RANGE
         } Exceptions;
 
         Error();

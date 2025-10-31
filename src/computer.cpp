@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <indk/computer.h>
+#include <cstring>
 
 indk::Computer::Computer() {
 
@@ -35,6 +36,16 @@ float indk::Computer::doCompareFunction(indk::Position *R, indk::Position *Rf) {
     return indk::Position::getDistance(R, Rf);
 }
 
+void indk::Computer::doClearPosition(float *position, uint64_t dimensions) {
+    memset(position, 0, dimensions*sizeof(float));
+}
+
+void indk::Computer::doAddPosition(float *position1, const float *position2, uint64_t dimensions) {
+    for (int i = 0; i < dimensions; i++) {
+        position1[i] += position2[2];
+    }
+}
+
 float indk::Computer::getGammaFunctionValue(float oG, float k1, float k2, float Xt) {
     float nGamma;
     nGamma = oG + (k1*Xt-oG/k2);
@@ -46,10 +57,14 @@ std::pair<float, float> indk::Computer::getFiFunctionValue(float Lambda, float G
     return std::make_pair(Gamma*E, dGamma*E);
 }
 
-float indk::Computer::getReceptorInfluenceValue(bool Active, float dFi, indk::Position *dPos, indk::Position *RPr) {
+float indk::Computer::getReceptorInfluenceValue(bool active, float dFi, const float *position, uint64_t dimensions) {
     float Yn = 0;
-    auto d = dPos -> getDistanceFrom(RPr);
-    if (d > 0 && Active) Yn = d; // TODO: research output variants
+    float d = 0;
+    for (int i = 0; i < dimensions; i++) {
+        d += (position[i])*(position[i]);
+    }
+    d = std::sqrt(d);
+    if (d > 0 && active) Yn = d; // TODO: research output variants
     return Yn;
 }
 
@@ -66,12 +81,31 @@ void indk::Computer::getNewPosition(indk::Position *nRPos, indk::Position *R, in
     nRPos -> doMultiply(FiL);
 }
 
+void indk::Computer::getNewReceptorPosition(float *buffer, const float *r, const float *s, float length, float d, uint64_t dimensions) {
+    for (int i = 0; i < dimensions; i++) {
+        buffer[i] += length * (r[i]-s[i]) / d;
+    }
+}
+
 float indk::Computer::getLambdaValue(unsigned int Xm) {
     return pow(10, -(log(Xm)/log(2)-6));
 }
 
 float indk::Computer::getFiVectorLength(float dFi) {
     return sqrt(dFi);
+}
+
+float indk::Computer::getDistance(const float *s, const float *r, uint64_t dimensions) {
+    float d = 0;
+    for (int i = 0; i < dimensions; i++) {
+        d += (s[i]-r[i])*(s[i]-r[i]);
+    }
+    d = std::sqrt(d);
+    return d;
+}
+
+bool indk::Computer::isReceptorActive(float fi, float rs) {
+    return fi >= rs;
 }
 
 float indk::Computer::getSynapticSensitivityValue(unsigned int W, unsigned int OW) {

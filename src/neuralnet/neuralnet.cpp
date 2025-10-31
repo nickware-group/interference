@@ -448,6 +448,50 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalTransfer(const std::vect
     return doSignalReceive();
 }
 
+std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs) {
+    std::cout << "Run process" << std::endl;
+    InstanceManager.doCreateInstance(0);
+    std::cout << "Parse links" << std::endl;
+    doParseLinks(Entries, "all");
+
+//    std::vector<std::string> nsync;
+    std::vector<std::string> entries = inputs;
+
+    std::cout << "Parse entries" << std::endl;
+    if (entries.empty()) {
+        for (const auto &e: Entries) {
+            entries.push_back(e.first);
+        }
+    }
+
+//
+//    if (inputs.empty()) {
+//        doParseLinks(Entries, "all");
+//        eentries = Entries;
+//    } else {
+//        std::string eseq;
+//        for (const auto &e: inputs) {
+//            auto ne = doFindEntry(e);
+//            if (ne != -1) {
+//                eentries.emplace_back(Entries[ne]);
+//                eseq.append(e);
+//                if (StateSyncEnabled) {
+//                    for (auto &nname: Entries[ne].second) {
+//                        nsync.push_back(nname);
+//                    }
+//                }
+//            }
+//        }
+//        doParseLinks(eentries, eseq);
+//    }
+    std::cout << "Translate" << std::endl;
+    InstanceManager.doTranslateToInstance(Links, Outputs, 0);
+    InstanceManager.doRunInstance(x, entries, 0);
+    auto output = InstanceManager.getOutputValues(0);
+
+    return output;
+}
+
 /**
  * Send signals to neural network asynchronously.
  * @param Xx Input data vector that contain signals.
@@ -477,7 +521,7 @@ std::vector<indk::OutputValue> indk::NeuralNet::doLearn(const std::vector<std::v
     t = 0;
     setLearned(false);
     if (prepare) doPrepare();
-    return doSignalTransfer(Xx, inputs);
+    return doSignalProcess(Xx, inputs);
 }
 
 /**
@@ -870,8 +914,9 @@ void indk::NeuralNet::setStructure(const std::string &Str) {
             auto nname = jneuron.value()["name"].get<std::string>();
             auto nsize = jneuron.value()["size"].get<unsigned int>();
             auto ndimensions = jneuron.value()["dimensions"].get<unsigned int>();
+            uint64_t nlatency = 0;
             if (jneuron.value()["latency"] != nullptr) {
-                auto nlatency = jneuron.value()["latency"].get<int>();
+                nlatency = jneuron.value()["latency"].get<uint64_t>();
                 if (indk::System::getVerbosityLevel() > 1) std::cout << nname << " with latency " << nlatency << std::endl;
                 Latencies.insert(std::make_pair(nname, nlatency));
             }
@@ -879,7 +924,7 @@ void indk::NeuralNet::setStructure(const std::string &Str) {
             for (auto &jent: jneuron.value()["input_signals"].items()) {
                 nentries.push_back(jent.value().get<std::string>());
             }
-            auto *N = new indk::Neuron(nsize, ndimensions, 0, nentries);
+            auto *N = new indk::Neuron(nsize, ndimensions, nlatency, nentries);
 
             if (jneuron.value()["ensemble"] != nullptr) {
                 auto ename = jneuron.value()["ensemble"].get<std::string>();

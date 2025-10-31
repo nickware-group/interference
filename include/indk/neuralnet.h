@@ -18,6 +18,7 @@
 #include <indk/neuron.h>
 #include <indk/system.h>
 #include <indk/interlink.h>
+#include "instance.h"
 
 namespace indk {
     typedef enum {
@@ -58,6 +59,7 @@ namespace indk {
         indk::Interlink *InterlinkService;
         std::vector<std::vector<std::string>> InterlinkDataBuffer;
 
+        indk::ComputeInstanceManager InstanceManager;
     public:
         NeuralNet();
         explicit NeuralNet(const std::string &path);
@@ -91,6 +93,11 @@ namespace indk {
         void doReplicateEnsemble(const std::string& From, const std::string& To, bool CopyEntries = false);
         void doReserveSignalBuffer(int64_t L);
         void doClearCache();
+
+
+        std::vector<indk::OutputValue> doSignalProcess(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs);
+
+
         void setStructure(std::ifstream&);
         void setStructure(const std::string &Str);
         void setLearned(bool);
