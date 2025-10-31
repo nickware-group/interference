@@ -449,15 +449,12 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalTransfer(const std::vect
 }
 
 std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs) {
-    std::cout << "Run process" << std::endl;
     InstanceManager.doCreateInstance(0);
-    std::cout << "Parse links" << std::endl;
     doParseLinks(Entries, "all");
 
 //    std::vector<std::string> nsync;
     std::vector<std::string> entries = inputs;
 
-    std::cout << "Parse entries" << std::endl;
     if (entries.empty()) {
         for (const auto &e: Entries) {
             entries.push_back(e.first);
@@ -484,7 +481,7 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vecto
 //        }
 //        doParseLinks(eentries, eseq);
 //    }
-    std::cout << "Translate" << std::endl;
+
     InstanceManager.doTranslateToInstance(Links, Outputs, 0);
     InstanceManager.doRunInstance(x, entries, 0);
     auto output = InstanceManager.getOutputValues(0);

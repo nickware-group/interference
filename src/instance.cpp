@@ -117,8 +117,6 @@ void indk::ComputeInstanceManager::doTranslateToInstance(const indk::LinkList& l
     instance -> outputs.clear();
     instance -> max_latency = std::abs(std::get<4>(links[0]));
 
-    std::cout << "Parse neurons" << std::endl;
-
     for (const auto &l: links) {
         auto from = std::get<0>(l);
         auto to = std::get<1>(l);
@@ -201,7 +199,7 @@ void indk::ComputeInstanceManager::doRunInstance(const std::vector<std::vector<f
                 o.second->output[o.second->t] = 0;
                 o.second->t++;
                 processed = true;
-                std::cout << "[" << o.second->name << "]" << " latency worked t " << o.second->t << std::endl;
+//                std::cout << "[" << o.second->name << "]" << " latency worked t " << o.second->t << std::endl;
 
                 continue;
             }
@@ -233,7 +231,7 @@ void indk::ComputeInstanceManager::doRunInstance(const std::vector<std::vector<f
 
             // go next if not ready
             if (!ready) {
-                std::cout << "[" << o.second->name << "] " << "not ready" << std::endl;
+//                std::cout << "[" << o.second->name << "] " << "not ready" << std::endl;
                 continue;
             }
 
@@ -309,7 +307,7 @@ void indk::ComputeInstanceManager::doRunInstance(const std::vector<std::vector<f
 //                std::cout << "[d_fi/rs] "  << r.d_fi << " " << r.rs << std::endl;
             }
 
-            std::cout << p << std::endl;
+//            std::cout << p << std::endl;
 
             p /= (float)o.second -> receptor_count;
             o.second->output[o.second->t] = p;
@@ -319,7 +317,7 @@ void indk::ComputeInstanceManager::doRunInstance(const std::vector<std::vector<f
 
             processed = true;
 
-            std::cout << "[" << o.second->name << "] " << "[compute done] t " << o.second->t << " / " << csize << std::endl;
+//            std::cout << "[" << o.second->name << "] " << "[compute done] t " << o.second->t << " / " << csize << std::endl;
         }
 
         if (!processed) {
@@ -327,7 +325,7 @@ void indk::ComputeInstanceManager::doRunInstance(const std::vector<std::vector<f
             break;
         }
 
-        std::cout << std::endl;
+//        std::cout << std::endl;
     }
 }
 

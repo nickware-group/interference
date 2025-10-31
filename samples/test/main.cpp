@@ -101,7 +101,7 @@ int main() {
 
     // running tests
     std::cout << "=== SUPERSTRUCTURE TEST ===" << std::endl;
-    doLoadModel("structures/structure_general.json", 2);
+    doLoadModel("structures/structure_general.json", 101);
     count += doTests("Superstructure test", SUPERSTRUCTURE_TEST_REFERENCE_OUTPUT);
 
     return 0;
