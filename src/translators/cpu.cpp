@@ -125,11 +125,8 @@ void* indk::Translators::CPU::doTranslate(const indk::LinkList &links, const std
 }
 
 void indk::Translators::CPU::doReset(indk::Translators::CPU::ModelData *model) {
-    std::cout << "123" << std::endl;
     for (const auto &o: model->objects) {
-        std::cout << "123 0" << std::endl;
         auto neuron = o.second;
-        std::cout << "123 1" << std::endl;
         neuron -> t = 0;
 
         for (int i = 0; i < neuron->receptor_count; i++) {
@@ -139,7 +136,6 @@ void indk::Translators::CPU::doReset(indk::Translators::CPU::ModelData *model) {
             r.rs = r.rs_default;
             memcpy(r.position, r.position_default, o.second->dimension_count);
         }
-        std::cout << "123 2" << std::endl;
         for (int j = 0; j < neuron->entry_count; j++) {
             auto e = o.second->entries[j];
             for (unsigned int k = 0; k < e.synapse_count; k++) {
