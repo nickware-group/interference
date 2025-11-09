@@ -8,6 +8,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include <cstring>
+#include <algorithm>
 #include <indk/backends/native_multithread.h>
 #include <indk/math.h>
 #include <indk/instance.h>
@@ -97,13 +98,19 @@ void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<st
 
 [[noreturn]] void indk::ComputeBackends::NativeCPUMultithread::tCompute(indk::ComputeBackends::NativeCPUMultithread::Context *context) {
     float fisum, d, p;
+    int ti;
 
     while (true) {
         std::unique_lock<std::mutex> lk(context->m);
         context -> cv.wait(lk);
 
+        ti = 0;
         // main loop
-        for (const auto &task: context->tasks) {
+        while (!context->tasks.empty()) {
+            if (ti >= context->tasks.size()) ti = 0;
+//        for (int ti = 0; ti < context->tasks.size(); ti++) {
+//            std::cout << "[" << ti << "]" << " task start" << std::endl;
+            auto task = context -> tasks[ti];
             if (task->done_count == task->task_size) continue;
 
             auto neurons = task->neurons[context->thread_id];
@@ -116,7 +123,7 @@ void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<st
                 if (n->t < n->latency) {
                     n->output[n->t] = 0;
                     n->t++;
-//                std::cout << "[" << n->name << "]" << " latency worked t " << n->t << std::endl;
+//                    std::cout << "[" << n->name << "]" << " latency worked t " << n->t << std::endl;
 
                     continue;
                 }
@@ -241,11 +248,16 @@ void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<st
 //            std::cout << "[" << n.second->name << "] " << "[compute done] t " << n.second->t << " / " << csize << std::endl;
             }
 
+//            std::cout << "[" << ti << "]" << " task end" << std::endl;
 //            std::cout << std::endl;
-            if (task->done_count == task->task_size) {
-                break;
-            }
 
+            ti++;
+
+            if (task->done_count == task->task_size) {
+//                std::cout << "[" << ti << "]" << " task done" << std::endl;
+                context->tasks.erase(std::remove(context->tasks.begin(), context->tasks.end(), task), context->tasks.end());
+                ti = 0;
+            }
         }
     }
 }
