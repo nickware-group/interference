@@ -18,7 +18,8 @@
 #include <indk/neuron.h>
 #include <indk/system.h>
 #include <indk/interlink.h>
-#include "instance.h"
+#include <indk/instance.h>
+#include <queue>
 
 namespace indk {
     typedef enum {
@@ -44,11 +45,10 @@ namespace indk {
         std::map<std::string, int> Latencies;
         std::vector<std::string> Outputs;
 
-        std::map<std::string, std::vector<std::string>> StateSyncList;
+        StateSyncMap StateSyncList;
 
         int64_t doFindEntry(const std::string&);
         void doParseLinks(const EntryList&, const std::string&);
-        void doSignalProcessStart(const std::vector<std::vector<float>>&, const EntryList&);
         void doSyncNeuronStates(const std::string&);
 
         indk::LinkList Links;
@@ -78,25 +78,27 @@ namespace indk {
         void doChangeScope(uint64_t);
         void doAddNewOutput(const std::string&);
         void doIncludeNeuronToEnsemble(const std::string&, const std::string&);
-        void doReset();
-        void doPrepare();
+
+        void doReset(int instance);
         void doStructurePrepare();
-        std::vector<indk::OutputValue> doSignalTransfer(const std::vector<std::vector<float>>& X, const std::vector<std::string>& inputs = {});
-        void doSignalTransferAsync(const std::vector<std::vector<float>>&, const std::function<void(std::vector<indk::OutputValue>)>& Callback = nullptr, const std::vector<std::string>& inputs = {});
-        std::vector<indk::OutputValue> doLearn(const std::vector<std::vector<float>>&, bool prepare = true, const std::vector<std::string>& inputs = {});
-        std::vector<indk::OutputValue> doRecognise(const std::vector<std::vector<float>>&, bool prepare = true, const std::vector<std::string>& inputs = {});
-        void doLearnAsync(const std::vector<std::vector<float>>&, const std::function<void(std::vector<indk::OutputValue>)>& Callback = nullptr, bool prepare = true, const std::vector<std::string>& inputs = {});
-        void doRecogniseAsync(const std::vector<std::vector<float>>&, const std::function<void(std::vector<indk::OutputValue>)>& Callback = nullptr, bool prepare = true, const std::vector<std::string>& inputs = {});
+
+        void doCreateInstance(int backend = indk::System::ComputeBackends::NativeCPU);
+
+        std::vector<indk::OutputValue> doLearn(const std::vector<std::vector<float>>&, bool prepare = true, const std::vector<std::string>& inputs = {}, int instance = 0);
+        std::vector<indk::OutputValue> doRecognise(const std::vector<std::vector<float>>&, bool prepare = true, const std::vector<std::string>& inputs = {}, int instance = 0);
+        void doLearnAsync(const std::vector<std::vector<float>>&, const std::function<void(std::vector<indk::OutputValue>)>& Callback = nullptr, bool prepare = true,
+                          const std::vector<std::string>& inputs = {}, int instance = 0);
+        void doRecogniseAsync(const std::vector<std::vector<float>>&, const std::function<void(std::vector<indk::OutputValue>)>& Callback = nullptr, bool prepare = true,
+                              const std::vector<std::string>& inputs = {}, int instance = 0);
+
         std::vector<indk::OutputValue> doSignalReceive(const std::string& ensemble = "");
         indk::Neuron* doReplicateNeuron(const std::string& from, const std::string& to, bool integrate);
         void doDeleteNeuron(const std::string& name);
         void doReplicateEnsemble(const std::string& From, const std::string& To, bool CopyEntries = false);
-        void doReserveSignalBuffer(int64_t L);
         void doClearCache();
 
 
-        std::vector<indk::OutputValue> doSignalProcess(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs);
-
+        std::vector<indk::OutputValue> doSignalProcess(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs, int instance = 0);
 
         void setStructure(std::ifstream&);
         void setStructure(const std::string &Str);
@@ -111,7 +113,6 @@ namespace indk {
         indk::Neuron* getNeuron(const std::string&);
         std::vector<indk::Neuron*> getNeurons();
         uint64_t getNeuronCount();
-        int64_t getSignalBufferSize();
         ~NeuralNet();
     };
 }

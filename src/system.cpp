@@ -8,67 +8,45 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include <indk/system.h>
-#include <indk/backends/default.h>
-#include <indk/backends/multithread.h>
-#include <indk/backends/opencl.h>
+#include <indk/backends/native.h>
+#include <indk/backends/native_multithread.h>
 
-int CurrentComputeBackend = -1, VerbosityLevel = 1;
-int ComputeBackendParameter = 0;
-bool SynchronizationNeeded;
-indk::Computer *ComputeBackend;
+int VerbosityLevel = 1;
 
-void indk::System::setComputeBackend(int Backend, int Parameter) {
-    if (CurrentComputeBackend != -1) delete ComputeBackend;
-    CurrentComputeBackend = Backend;
+std::vector<std::shared_ptr<indk::ComputeBackend>> ComputeBackendList = {
+        std::make_shared<indk::ComputeBackends::NativeCPU>(),
+        std::make_shared<indk::ComputeBackends::NativeCPUMultithread>()
+};
 
-    switch (CurrentComputeBackend) {
-        case indk::System::ComputeBackends::Default:
-            SynchronizationNeeded = false;
-            ComputeBackend = new indk::ComputeBackendDefault();
-            Parameter = 1;
-            break;
-        case indk::System::ComputeBackends::Multithread:
-            SynchronizationNeeded = true;
-            ComputeBackend = new indk::ComputeBackendMultithread(Parameter>1?Parameter:indk_MULTITHREAD_DEFAULT_NUM);
-            break;
-        case indk::System::ComputeBackends::OpenCL:
-#ifdef INDK_OPENCL_SUPPORT
-            SynchronizationNeeded = true;
-            ComputeBackend = new indk::ComputeBackendOpenCL();
-            Parameter = 1;
-            break;
-#else
-            std::cerr << std::endl;
-            std::cerr << "The OpenCL compute backend is not supported by the current build. Rebuild interfernce library with the INDK_OPENCL_SUPPORT=ON flag." << std::endl;
-            CurrentComputeBackend = -1;
-            return;
-#endif
-    }
-    ComputeBackendParameter = Parameter;
+void indk::System::doAddComputeBackend(const std::shared_ptr<indk::ComputeBackend>& backend) {
+    ComputeBackendList.push_back(backend);
 }
 
-indk::Computer* indk::System::getComputeBackend() {
-    return ComputeBackend;
+void indk::System::setComputeBackendParameters(int id, indk::ComputeBackend::Parameters *parameters) {
+    if (id >= ComputeBackendList.size()) return; // error
+    ComputeBackendList[id] -> setParameters(parameters);
 }
 
-int indk::System::getComputeBackendKind() {
-    return CurrentComputeBackend;
+std::shared_ptr<indk::ComputeBackend> indk::System::getComputeBackend(int id) {
+    if (id >= ComputeBackendList.size()) return{}; // error
+    return ComputeBackendList[id];
 }
 
-bool indk::System::isSynchronizationNeeded() {
-    return SynchronizationNeeded;
-}
-
-void indk::System::setVerbosityLevel(int VL) {
-    VerbosityLevel = VL;
+void indk::System::setVerbosityLevel(int level) {
+    VerbosityLevel = level;
 }
 
 int indk::System::getVerbosityLevel() {
     return VerbosityLevel;
 }
 
-int indk::System::getComputeBackendParameter() {
-    return ComputeBackendParameter;
+std::vector<indk::ComputeBackendsInfo> indk::System::getComputeBackendsInfo() {
+    std::vector<indk::ComputeBackendsInfo> info;
+    info.reserve(ComputeBackendList.size());
+    for (int i = 0; i < ComputeBackendList.size(); i++) {
+        info.push_back({.id=i, .backend_name=ComputeBackendList[i]->getBackendName(), .translator_name=ComputeBackendList[i]->getTranslatorName(), .ready=ComputeBackendList[i]->isReady()});
+    }
+    return info;
 }
 
 bool indk::Event::doWaitTimed(int T) {

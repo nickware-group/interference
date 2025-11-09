@@ -8,17 +8,26 @@ set(TARGET_SOURCE
         src/neuron/entry.cpp
         src/neuron/synapse.cpp
         src/neuron/receptor.cpp
+
         src/neuralnet/neuralnet.cpp             include/indk/neuralnet.h
+
         src/error.cpp                           include/indk/error.h
         src/system.cpp                          include/indk/system.h
         src/position.cpp                        include/indk/position.h
-        src/computer.cpp                        include/indk/computer.h
-        src/backends/default.cpp                include/indk/backends/default.h
-        src/backends/multithread.cpp            include/indk/backends/multithread.h
-        src/backends/opencl.cpp                 include/indk/backends/opencl.h
+        src/math.cpp include/indk/math.h
         src/interlink.cpp                       include/indk/interlink.h
         src/profiler.cpp                        include/indk/profiler.h
-        src/instance.cpp                        include/indk/instance.h)
+
+        src/instance.cpp                        include/indk/instance.h
+
+        src/backend.cpp                         include/indk/backend.h
+        src/backends/native.cpp                 include/indk/backends/native.h
+        src/backends/native_multithread.cpp     include/indk/backends/native_multithread.h
+
+        src/translators/cpu.cpp                 include/indk/translators/cpu.h
+
+        include/indk/types.h
+)
 
 add_library(objlib OBJECT ${TARGET_SOURCE})
 set_property(TARGET objlib PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -78,6 +87,6 @@ install(TARGETS ${PROJECT_NAME}_static ARCHIVE DESTINATION ${CMAKE_SOURCE_DIR}/d
 install(DIRECTORY include DESTINATION ${CMAKE_SOURCE_DIR}/dist)
 
 add_subdirectory(samples/test)
-add_subdirectory(samples/vision)
-add_subdirectory(samples/multimodal)
-add_subdirectory(samples/lang)
+#add_subdirectory(samples/vision)
+#add_subdirectory(samples/multimodal)
+#add_subdirectory(samples/lang)

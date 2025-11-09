@@ -6,20 +6,15 @@
 // Copyright: (c) NickWare Group
 // Licence: MIT licence
 /////////////////////////////////////////////////////////////////////////////
-#ifndef INTERFERENCE_COMPUTER_H
-#define INTERFERENCE_COMPUTER_H
+#ifndef INTERFERENCE_MATH_H
+#define INTERFERENCE_MATH_H
 
 #include <queue>
 #include <indk/position.h>
 
 namespace indk {
-    class Computer {
+    class Math {
     public:
-        Computer();
-        virtual void doRegisterHost(const std::vector<void*>&) = 0;
-        virtual void doUnregisterHost() = 0;
-        virtual void doWaitTarget() = 0;
-        virtual void doProcess(void*) = 0;
         static std::vector<float> doCompareCPFunction(std::vector<indk::Position*>, std::vector<indk::Position*>);
         static float doCompareCPFunctionD(std::vector<indk::Position*>, std::vector<indk::Position*>);
         static float doCompareFunction(indk::Position*, indk::Position*);
@@ -27,7 +22,7 @@ namespace indk {
         static void doAddPosition(float *position1, const float *position2, uint64_t dimensions);
         static float getGammaFunctionValue(float, float, float, float);
         static std::pair<float, float> getFiFunctionValue(float, float, float, float);
-        static float getReceptorInfluenceValue(bool active, float dFi, const float *position, uint64_t dimensions);
+        static float getReceptorInfluenceValue(bool active, const float *position, uint64_t dimensions);
         static float getRcValue(float, float, float, float);
         static void getNewPosition(indk::Position*, indk::Position*, indk::Position*, float, float);
         static void getNewReceptorPosition(float *buffer, const float *r, const float *s, float length, float d, uint64_t dimensions);
@@ -39,4 +34,4 @@ namespace indk {
     };
 }
 
-#endif //INTERFERENCE_COMPUTER_H
+#endif //INTERFERENCE_MATH_H

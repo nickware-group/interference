@@ -9,7 +9,7 @@
 #ifndef INTERFERENCE_DEFAULT_H
 #define INTERFERENCE_DEFAULT_H
 
-#include <indk/computer.h>
+#include <indk/math.h>
 
 namespace indk {
     class ComputeBackendDefault : public Computer {

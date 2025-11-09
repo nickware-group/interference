@@ -57,7 +57,7 @@ int main() {
     for (int i = 2; i <= COUNT; i++) NN -> doReplicateEnsemble("A1", "A"+std::to_string(i), true);
     NN -> doStructurePrepare();
 
-    std::cout << "Threads     : " << indk::System::getComputeBackendParameter() << std::endl;
+//    std::cout << "Threads     : " << indk::System::getComputeBackendParameter() << std::endl;
     std::cout << "Model name  : " << NN->getName() << std::endl;
     std::cout << "Model desc  : " << NN->getDescription() << std::endl;
     std::cout << "Model ver   : " << NN->getVersion() << std::endl;

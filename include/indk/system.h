@@ -1,50 +1,36 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:
 // Purpose:
-// Author: Nickolay Babbysh
-// Created: 18.10.22
-// Copyright: (c) NickWare Group
-// Licence: MIT licence
+// Author:      Nickolay Babbysh
+// Created:     18.10.22
+// Copyright:   (c) NickWare Group
+// Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////
+
 #ifndef INTERFERENCE_SYSTEM_H
 #define INTERFERENCE_SYSTEM_H
 
 #include <mutex>
+#include <vector>
 #include <condition_variable>
-#include <indk/computer.h>
+#include <indk/backend.h>
 
 namespace indk {
-    typedef std::tuple<std::string, std::string, void*, void*, int> LinkDefinition;
-    typedef std::vector<LinkDefinition> LinkList;
-
     class System {
     public:
-        static bool isSynchronizationNeeded();
+        static void doAddComputeBackend(const std::shared_ptr<indk::ComputeBackend>& backend);
 
-        /**
-        * Set compute backend.
-        * @param Backend Compute backend value.
-        * @param Parameter Custom parameter.
-        */
-        static void setComputeBackend(int Backend, int Parameter = 0);
+        static void setComputeBackendParameters(int id, indk::ComputeBackend::Parameters*);
+
+        static std::shared_ptr<indk::ComputeBackend> getComputeBackend(int id);
+
+        static std::vector<ComputeBackendsInfo> getComputeBackendsInfo();
 
         /**
          * Set library verbosity level.
-         * @param VL New verbosity level value.
+         * @param level New verbosity level value.
          */
-        static void setVerbosityLevel(int);
-
-        /**
-         * Get current compute backend.
-         * @return Pointer of current compute backend object.
-         */
-        static indk::Computer* getComputeBackend();
-
-        /**
-         * Get current compute backend.
-         * @return ID of current compute backend.
-         */
-        static int getComputeBackendKind();
+        static void setVerbosityLevel(int level);
 
         /**
          * Get current verbosity level.
@@ -53,19 +39,13 @@ namespace indk {
         static int getVerbosityLevel();
 
         /**
-         * Get current compute backend parameter. The parameter can be set as an argument to the setComputeBackend method. It is always zero for indk::ComputeBackends::Default backend.
-         * @return Backend parameter.
-         */
-        static int getComputeBackendParameter();
-
-        /**
          * Compute backends enum.
          */
         typedef enum {
             /// Native CPU compute backend.
-            Default,
+            NativeCPU,
             /// Native CPU multithread compute backend. You can set the number of threads by `parameter` argument of setComputeBackend method.
-            Multithread,
+            NativeCPUMultithread,
             /// OpenCL compute backend.
             OpenCL
         } ComputeBackends;

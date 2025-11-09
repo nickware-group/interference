@@ -11,31 +11,21 @@
 #include <indk/error.h>
 #include <indk/system.h>
 #include <algorithm>
+#include <indk/math.h>
 
 indk::Neuron::Neuron() {
-    t = 0;
     Latency = 0;
     Xm = 0;
     DimensionsCount = 0;
-    OutputSignal = new float;
-    OutputSignalSize = 1;
-    OutputSignalPointer = 0;
-    NID = 0;
     ProcessingMode = indk::Neuron::ProcessingModes::ProcessingModeDefault;
     OutputMode = indk::Neuron::OutputModes::OutputModeStream;
     Learned = false;
-//    ReceptorPositionComputer = nullptr;
 }
 
 indk::Neuron::Neuron(const indk::Neuron &N) {
-    t = 0;
     Latency = N.getLatency();
     Xm = N.getXm();
-    OutputSignal = new float;
-    OutputSignalSize = 1;
-    OutputSignalPointer = 0;
     DimensionsCount = N.getDimensionsCount();
-    NID = 0;
     ProcessingMode = N.getProcessingMode();
     OutputMode = N.getOutputMode();
     Learned = false;
@@ -46,14 +36,9 @@ indk::Neuron::Neuron(const indk::Neuron &N) {
 }
 
 indk::Neuron::Neuron(unsigned int XSize, unsigned int DC, uint64_t latency, const std::vector<std::string>& InputNames) {
-    t = 0;
     Latency = latency;
     Xm = XSize;
     DimensionsCount = DC;
-    OutputSignal = new float;
-    OutputSignalSize = 1;
-    OutputSignalPointer = 0;
-    NID = 0;
     ProcessingMode = indk::Neuron::ProcessingModes::ProcessingModeDefault;
     OutputMode = indk::Neuron::OutputModes::OutputModeStream;
     Learned = false;
@@ -147,81 +132,12 @@ void indk::Neuron::doCreateNewReceptorCluster(const std::vector<float>& PosVecto
 //    }
 }
 
-bool indk::Neuron::doSignalSendEntry(const std::string& From, float X, int64_t tn) {
-    for (const auto &e: Entries) {
-        if (e.first == From) {
-            e.second -> doIn(X, tn);
-            break;
-        }
-    }
-
-    for (auto &e: Entries) {
-        if (!e.second->doCheckState(tn)) {
-//            std::cout << "In to entry of " << Name << " from " << From << " value " << X << " (" << tn << ") - not ready" << std::endl;
-            return false;
-        }
-    }
-//    std::cout << "In to entry of " << Name << " from " << From << " value " << X <<  " (" << tn << ") - ready" << std::endl;
-    indk::System::getComputeBackend() -> doProcess((void*)this);
-    return true;
-}
-
-/**
- *
- * @param tT
- * @return
- */
-std::pair<int64_t, float> indk::Neuron::doSignalReceive(int64_t tT) {
-    auto tlocal = t.load();
-    if (tT == -1) tT = tlocal - 1;
-    auto d = tlocal - tT;
-
-    if (d > 0 && OutputSignalPointer-d >= 0) {
-        if (OutputMode != indk::Neuron::OutputModes::OutputModeStream && Learned) {
-            auto patterns = doComparePattern();
-            if (std::get<0>(patterns) < 10e-4) {
-                switch (OutputMode) {
-                    case indk::Neuron::OutputModes::OutputModeLatch:
-                        return std::make_pair(tT, OutputSignal[OutputSignalPointer-d]);
-
-                    case indk::Neuron::OutputModes::OutputModePredefined:
-                        if (std::get<1>(patterns) >= OutputsPredefined.size())
-                            return std::make_pair(tT, 0);
-                        else
-                            return std::make_pair(tT, OutputsPredefined[std::get<1>(patterns)]);
-                }
-            } else
-                return std::make_pair(tT, 0);
-        }
-        return std::make_pair(tT, OutputSignal[OutputSignalPointer-d]);
-    } else {
-        if (indk::System::getVerbosityLevel() > 1)
-            std::cerr << "[" << Name << "] Output for time " << tT << " is not ready yet" << std::endl;
-        return std::make_pair(tT, 0);
-    }
-}
-
-void indk::Neuron::doFinalizeInput(float P) {
-    if (OutputSignalPointer >= OutputSignalSize) OutputSignalPointer = 0;
-    OutputSignal[OutputSignalPointer] = P;
-    OutputSignalPointer++;
-    t.store(t.load()+1);
-//    std::cout << "Object processed " << Name << std::endl;
-}
-
 /**
  * Prepare synapses for new signal.
  */
 void indk::Neuron::doPrepare() {
-    t.store(0);
     for (auto E: Entries) E.second -> doPrepare();
     for (auto R: Receptors) R -> doPrepare();
-}
-
-void indk::Neuron::doFinalize() {
-    for (auto E: Entries) E.second -> doFinalize();
-    for (auto R: Receptors) R -> doLock();
-    Learned = true;
 }
 
 void indk::Neuron::doCreateNewScope(float output) {
@@ -237,7 +153,6 @@ void indk::Neuron::doChangeScope(uint64_t scope) {
  * Reset neuron state. During the reset, the neuron parameters (time, receptors, synapses) will be reset to the default state.
  */
 void indk::Neuron::doReset() {
-    t.store(0);
     Learned = false;
     for (auto E: Entries) E.second -> doPrepare();
     for (auto R: Receptors) R -> doReset();
@@ -248,7 +163,7 @@ void indk::Neuron::doReset() {
  * Compare neuron patterns (learning and recognition patterns).
  * @return Pattern difference value.
  */
-indk::Neuron::PatternDefinition indk::Neuron::doComparePattern(int ProcessingMethod) const {
+indk::PatternDefinition indk::Neuron::doComparePattern(int ProcessingMethod) const {
     indk::Position *RPosf;
     auto ssize = Receptors[0]->getReferencePosScopes().size();
     std::vector<float> results;
@@ -263,7 +178,7 @@ indk::Neuron::PatternDefinition indk::Neuron::doComparePattern(int ProcessingMet
         RPosf = R -> getPosf();
 
         for (uint64_t i = 0; i < scopes.size(); i++) {
-            results[i] += indk::Computer::doCompareFunction(scopes[i], RPosf) / Receptors.size();
+            results[i] += indk::Math::doCompareFunction(scopes[i], RPosf) / Receptors.size();
         }
     }
 
@@ -331,24 +246,6 @@ void indk::Neuron::doReplaceEntryName(const std::string& Original, const std::st
     }
 }
 
-void indk::Neuron::doReserveSignalBuffer(int64_t L) {
-    delete [] OutputSignal;
-    OutputSignal = new float[L];
-    OutputSignalSize = L;
-    OutputSignalPointer = 0;
-    for (auto &E: Entries) {
-        E.second -> doReserveSignalBuffer(L);
-    }
-}
-
-/**
- * Set time.
- * @param ts Time.
- */
-void indk::Neuron::setTime(int64_t ts) {
-    t.store(ts);
-}
-
 void indk::Neuron::setEntries(const std::vector<std::string>& inputs) {
     for (const auto& e: Entries)
         delete e.second;
@@ -377,10 +274,6 @@ void indk::Neuron::setk2(float _k2) {
 
 void indk::Neuron::setk3(float _k3) {
     for (auto R: Receptors) R -> setk3(_k3);
-}
-
-void indk::Neuron::setNID(int _NID) {
-    NID = _NID;
 }
 
 void indk::Neuron::setProcessingMode(int mode) {
@@ -414,14 +307,6 @@ void indk::Neuron::setLearned(bool LearnedFlag) {
  */
 bool indk::Neuron::isLearned() const {
     return Learned;
-}
-
-std::vector<std::string> indk::Neuron::getWaitingEntries() {
-    std::vector<std::string> waiting;
-    for (auto &e: Entries) {
-        if (!e.second->doCheckState(t.load())) waiting.push_back(e.first);
-    }
-    return waiting;
 }
 
 std::vector<std::string> indk::Neuron::getLinkOutput() const {
@@ -484,14 +369,6 @@ int64_t indk::Neuron::getReceptorsCount() const {
 }
 
 /**
- * Get current time.
- * @return Time value.
- */
-int64_t indk::Neuron::getTime() const {
-    return t.load();
-}
-
-/**
  * Get neuron space size.
  * @return Neuron space size value.
  */
@@ -511,34 +388,12 @@ uint64_t indk::Neuron::getLatency() const {
     return Latency;
 }
 
-int indk::Neuron::getNID() const {
-    return NID;
-}
-
 /**
  * Get neuron name.
  * @return Neuron name.
  */
 std::string indk::Neuron::getName() {
     return Name;
-}
-
-int64_t indk::Neuron::getSignalBufferSize() const {
-    return OutputSignalSize;
-}
-
-/**
- * Get current state of neuron.
- * @return Neuron state.
- */
-int indk::Neuron::getState(int64_t tT) const {
-    for (const auto &e: Entries) {
-        if (!e.second->doCheckState(tT)) {
-            return States::NotProcessed;
-        }
-    }
-    if (tT >= t.load()) return States::Pending;
-    return States::Computed;
 }
 
 int indk::Neuron::getProcessingMode() const {

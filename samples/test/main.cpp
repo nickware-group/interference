@@ -12,20 +12,33 @@
 #include <indk/neuralnet.h>
 #include <indk/profiler.h>
 #include <iomanip>
+#include "indk/backends/native_multithread.h"
 
 
 indk::NeuralNet *NN;
 std::vector<std::vector<float>> X;
 
-std::vector<std::tuple<indk::System::ComputeBackends, int, std::string>> backends = {
-        std::make_tuple(indk::System::ComputeBackends::Default, 0, "singlethread"),
-//        std::make_tuple(indk::System::ComputeBackends::Multithread, 2, "multithread"),
-//        std::make_tuple(indk::System::ComputeBackends::OpenCL, 0, "OpenCL"),
-};
+std::vector<indk::ComputeBackendsInfo> backends;
 
 uint64_t getTimestampMS() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().
                                                                                 time_since_epoch()).count();
+}
+
+void doPrintAvailableBackends() {
+    std::cout << "=== AVAILABLE COMPUTE BACKENDS ===" << std::endl;
+    std::cout << std::setw(10) << std::left << "ID" << std::setw(40) << "Backend name" << std::setw(20) << "Translator name" << std::setw(20) << "Ready" << std::endl;
+    std::cout << "-----------------------------------------------------------------------------" << std::endl;
+    for (auto &info: backends) {
+        std::cout << std::setw(10) << info.id << std::setw(40) << std::left << info.backend_name << std::setw(20) << info.translator_name << std::setw(20) << (info.ready?"Yes":"No") << std::endl;
+    }
+    std::cout << "-----------------------------------------------------------------------------" << std::endl << std::endl;
+}
+
+void doCreateInstances(indk::NeuralNet *net) {
+    for (auto &info: backends) {
+        net -> doCreateInstance(info.id);
+    }
 }
 
 void doLoadModel(const std::string& path, int size) {
@@ -44,9 +57,9 @@ void doLoadModel(const std::string& path, int size) {
     std::cout << std::endl;
 }
 
-int doTest(float ref) {
+int doTest(float ref, int instance) {
     auto T = getTimestampMS();
-    auto Y = NN -> doLearn(X);
+    auto Y = NN -> doLearn(X, true, {}, instance);
     T = getTimestampMS() - T;
     std::cout << std::setw(20) << std::left << "done ["+std::to_string(T)+" ms] ";
 
@@ -70,11 +83,10 @@ int doTest(float ref) {
 int doTests(const std::string& name, float ref) {
     int count = 0;
 
-    for (auto &b: backends) {
-        NN -> doReset();
-        std::cout << std::setw(50) << std::left << name+" ("+std::get<2>(b)+"): ";
+    for (auto &info: backends) {
+        std::cout << std::setw(60) << std::left << name+" ("+info.backend_name+"): ";
 //        indk::System::setComputeBackend(std::get<0>(b), std::get<1>(b));
-        count += doTest(ref);
+        count += doTest(ref, info.id);
     }
     std::cout << std::endl;
 
@@ -82,14 +94,23 @@ int doTests(const std::string& name, float ref) {
 }
 
 int main() {
+    backends = indk::System::getComputeBackendsInfo();
+    doPrintAvailableBackends();
+
     constexpr unsigned STRUCTURE_COUNT                      = 2;
     constexpr float SUPERSTRUCTURE_TEST_REFERENCE_OUTPUT    = 0.0291;
     constexpr float BENCHMARK_TEST_REFERENCE_OUTPUT         = 2.7622;
     const unsigned TOTAL_TEST_COUNT                         = STRUCTURE_COUNT*backends.size();
 
-    int count = 0;
+    indk::ComputeBackends::NativeCPUMultithread::Parameters parameters;
+    parameters.worker_count = 4;
+    indk::System::setComputeBackendParameters(indk::System::ComputeBackends::NativeCPUMultithread, &parameters);
     indk::System::setVerbosityLevel(1);
+
+    int count = 0;
     NN = new indk::NeuralNet();
+
+    doCreateInstances(NN);
 
     // creating data array
     X.emplace_back();
@@ -103,7 +124,7 @@ int main() {
     std::cout << "=== SUPERSTRUCTURE TEST ===" << std::endl;
     doLoadModel("structures/structure_general.json", 101);
     count += doTests("Superstructure test", SUPERSTRUCTURE_TEST_REFERENCE_OUTPUT);
-
+    std::cout << "end" << std::endl;
     return 0;
     std::cout << "=== BENCHMARK ===" << std::endl;
     doLoadModel("structures/structure_bench.json", 10001);

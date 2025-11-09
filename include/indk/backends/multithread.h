@@ -14,7 +14,7 @@
 #include <condition_variable>
 #include <map>
 #include <atomic>
-#include <indk/computer.h>
+#include <indk/math.h>
 
 #define indk_MULTITHREAD_DEFAULT_NUM 2
 

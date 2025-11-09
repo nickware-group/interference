@@ -202,7 +202,7 @@ int main() {
 //    indk::System::setVerbosityLevel(2);
     NN -> doPrepare();
 
-    std::cout << "Threads     : " << indk::System::getComputeBackendParameter() << std::endl;
+//    std::cout << "Threads     : " << indk::System::getComputeBackendParameter() << std::endl;
     std::cout << "Model name  : " << NN->getName() << std::endl;
     std::cout << "Model desc  : " << NN->getDescription() << std::endl;
     std::cout << "Model ver   : " << NN->getVersion() << std::endl;

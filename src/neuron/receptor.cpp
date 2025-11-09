@@ -104,7 +104,7 @@ void indk::Neuron::Receptor::doSavePos() {
 }
 
 void indk::Neuron::Receptor::doUpdateSensitivityValue() {
-    Rs = indk::Computer::getRcValue(k3, Rs, Fi, dFi);
+//    Rs = indk::Computer::getRcValue(k3, Rs, Fi, dFi);
 }
 
 void indk::Neuron::Receptor::doUpdatePos(indk::Position *_RPos) {
