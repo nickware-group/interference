@@ -44,7 +44,7 @@ std::vector<indk::ComputeBackendsInfo> indk::System::getComputeBackendsInfo() {
     std::vector<indk::ComputeBackendsInfo> info;
     info.reserve(ComputeBackendList.size());
     for (int i = 0; i < ComputeBackendList.size(); i++) {
-        info.push_back({.id=i, .backend_name=ComputeBackendList[i]->getBackendName(), .translator_name=ComputeBackendList[i]->getTranslatorName(), .ready=ComputeBackendList[i]->isReady()});
+        info.push_back({.backend_id=i, .backend_name=ComputeBackendList[i]->getBackendName(), .translator_name=ComputeBackendList[i]->getTranslatorName(), .ready=ComputeBackendList[i]->isReady()});
     }
     return info;
 }
