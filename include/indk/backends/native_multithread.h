@@ -39,6 +39,7 @@ namespace indk {
                 std::thread thread;
                 std::mutex m;
                 std::condition_variable cv;
+                std::mutex task_lock;
             } Context;
 
             std::vector<std::shared_ptr<Task>> Tasks;

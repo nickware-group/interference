@@ -87,7 +87,9 @@ void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<st
     }
 
     for (const auto &w: Workers) {
+        w -> task_lock.lock();
         w -> tasks.emplace_back(&task);
+        w -> task_lock.unlock();
         w -> cv.notify_one();
     }
 
@@ -106,11 +108,14 @@ void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<st
 
         ti = 0;
         // main loop
-        while (!context->tasks.empty()) {
+        while (true) {
+            context->task_lock.lock();
+            if (context->tasks.empty()) break;
+            std::cout << "task run " << context->tasks.size() << std::endl;
             if (ti >= context->tasks.size()) ti = 0;
-//        for (int ti = 0; ti < context->tasks.size(); ti++) {
-//            std::cout << "[" << ti << "]" << " task start" << std::endl;
             auto task = context -> tasks[ti];
+            context->task_lock.unlock();
+
             if (task->done_count == task->task_size) continue;
 
             auto neurons = task->neurons[context->thread_id];
@@ -254,8 +259,11 @@ void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<st
             ti++;
 
             if (task->done_count == task->task_size) {
-//                std::cout << "[" << ti << "]" << " task done" << std::endl;
+                std::cout << "[" << ti << "]" << " task done" << std::endl;
+                context->task_lock.lock();
                 context->tasks.erase(std::remove(context->tasks.begin(), context->tasks.end(), task), context->tasks.end());
+                std::cout << "[" << ti << "]" << " task size" << context->tasks.size() << std::endl;
+                context->task_lock.unlock();
                 ti = 0;
             }
         }
