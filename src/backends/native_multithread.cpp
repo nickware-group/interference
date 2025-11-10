@@ -275,3 +275,18 @@ void indk::ComputeBackends::NativeCPUMultithread::setParameters(indk::ComputeBac
         Workers.emplace_back(context);
     }
 }
+
+std::vector<indk::OutputValue> indk::ComputeBackends::NativeCPUMultithread::getOutputValues(void *_model) {
+    auto model = (indk::Translators::CPU::ModelData*)_model;
+
+    std::vector<indk::OutputValue> outputs;
+    outputs.reserve(model->outputs.size());
+
+    for (const auto &o: model->outputs) {
+        auto value = o->t == 0 ? 0 : o->output[o->t-1];
+        indk::OutputValue output = {.value=value, .source=o->name, .time=o->t};
+        outputs.emplace_back(output);
+    }
+
+    return outputs;
+}

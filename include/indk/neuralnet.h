@@ -29,7 +29,6 @@ namespace indk {
 
     typedef std::queue<std::tuple<std::string, std::string, void*, int64_t>> NQueue;
     typedef std::vector<std::pair<std::string, std::vector<std::string>>> EntryList;
-    typedef std::pair<float, std::string> OutputValue;
 
     /**
      * Main neural net class.

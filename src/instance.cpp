@@ -27,27 +27,26 @@ void indk::ComputeInstanceManager::doTranslateToInstance(const indk::LinkList& l
 
     if (links.empty()) {
         std::cout << "err no links" << std::endl;
-        return;
+        return; // TODO: exception
     }
 
     auto instance = Instances[iid];
-//    auto bdata = indk::System::getComputeBackend(instance->backend_id);
     instance -> model_data = instance -> backend -> doTranslate(links, outputs, sync);
 }
 
 void indk::ComputeInstanceManager::doRunInstance(const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, int iid) {
     if (iid >= Instances.size()) {
-        return; // exception
+        return; // TODO: exception
     }
 
     if (!Instances[iid]->model_data) {
         std::cout << "model data err" << std::endl;
-        return;
+        return; // TODO: exception
     }
 
     if (x.size() != inputs.size() || x.empty()) {
         std::cout << "input err" << std::endl;
-        return;
+        return; // TODO: exception
     }
 
     Instances[iid] -> status = InstanceBusy;
@@ -57,21 +56,16 @@ void indk::ComputeInstanceManager::doRunInstance(const std::vector<std::vector<f
 
 void indk::ComputeInstanceManager::doResetInstance(int iid) {
     if (iid >= Instances.size()) {
-        return; // exception
+        return; // TODO: exception
     }
 
     if (Instances[iid]->model_data) Instances[iid] -> backend -> doReset(Instances[iid]->model_data);
 }
 
-std::vector<std::pair<float, std::string>> indk::ComputeInstanceManager::getOutputValues(int iid) {
-//    auto model = (indk::Translators::CPU::ModelData*)Instances[iid]->model_data;
+std::vector<indk::OutputValue> indk::ComputeInstanceManager::getOutputValues(int iid) {
+    if (iid >= Instances.size()) {
+        //return; // TODO: exception
+    }
 
-    std::vector<std::pair<float, std::string> > outputs;
-//    outputs.reserve(model->outputs.size());
-//    for (const auto &o: model->outputs) {
-//        auto output = o->t == 0 ? 0 : o->output[o->t-1];
-//        outputs.emplace_back(output, o->name);
-//    }
-
-    return outputs;
+    return Instances[iid]->backend->getOutputValues(Instances[iid]->model_data);
 }

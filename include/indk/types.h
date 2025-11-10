@@ -22,11 +22,17 @@ namespace indk {
     typedef std::tuple<float, int> PatternDefinition;
 
     typedef struct compute_backends_info {
-        int id;
+        int backend_id;
         std::string backend_name;
         std::string translator_name;
         bool ready;
     } ComputeBackendsInfo;
+
+    typedef struct output_value {
+        float value;
+        std::string source;
+        uint64_t time;
+    } OutputValue;
 }
 
 #endif //INTERFERENCE_TYPES_H

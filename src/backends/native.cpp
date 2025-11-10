@@ -213,3 +213,18 @@ void indk::ComputeBackends::NativeCPU::doReset(void *model) {
 
 void indk::ComputeBackends::NativeCPU::setParameters(indk::ComputeBackend::Parameters*) {
 }
+
+std::vector<indk::OutputValue> indk::ComputeBackends::NativeCPU::getOutputValues(void *_model) {
+    auto model = (indk::Translators::CPU::ModelData*)_model;
+
+    std::vector<indk::OutputValue> outputs;
+    outputs.reserve(model->outputs.size());
+
+    for (const auto &o: model->outputs) {
+        auto value = o->t == 0 ? 0 : o->output[o->t-1];
+        indk::OutputValue output = {.value=value, .source=o->name, .time=o->t};
+        outputs.emplace_back(output);
+    }
+
+    return outputs;
+}

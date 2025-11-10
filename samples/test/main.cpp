@@ -30,14 +30,14 @@ void doPrintAvailableBackends() {
     std::cout << std::setw(10) << std::left << "ID" << std::setw(40) << "Backend name" << std::setw(20) << "Translator name" << std::setw(20) << "Ready" << std::endl;
     std::cout << "-----------------------------------------------------------------------------" << std::endl;
     for (auto &info: backends) {
-        std::cout << std::setw(10) << info.id << std::setw(40) << std::left << info.backend_name << std::setw(20) << info.translator_name << std::setw(20) << (info.ready?"Yes":"No") << std::endl;
+        std::cout << std::setw(10) << info.backend_id << std::setw(40) << std::left << info.backend_name << std::setw(20) << info.translator_name << std::setw(20) << (info.ready?"Yes":"No") << std::endl;
     }
     std::cout << "-----------------------------------------------------------------------------" << std::endl << std::endl;
 }
 
 void doCreateInstances(indk::NeuralNet *net) {
     for (auto &info: backends) {
-        net -> doCreateInstance(info.id);
+        if (info.ready) net -> doCreateInstance(info.backend_id);
     }
 }
 
@@ -63,15 +63,15 @@ int doTest(float ref, int instance) {
     T = getTimestampMS() - T;
     std::cout << std::setw(20) << std::left << "done ["+std::to_string(T)+" ms] ";
 
-    bool passed = true;
+    bool passed = false;
     for (auto &y: Y) {
-        if (std::fabs(y.first-ref) > 1e-3) {
+        if (std::fabs(y.value-ref) > 1e-3) {
             std::cout << "[FAILED]" << std::endl;
-            std::cout << "Output value " << y.first << " is not " << ref << std::endl;
+            std::cout << "Output value " << y.value << " is not " << ref << std::endl;
             std::cout << std::endl;
             passed = false;
             break;
-        }
+        } else passed = true;
     }
     if (passed) {
         std::cout << "[PASSED]" << std::endl;
@@ -84,9 +84,10 @@ int doTests(const std::string& name, float ref) {
     int count = 0;
 
     for (auto &info: backends) {
-        std::cout << std::setw(60) << std::left << name+" ("+info.backend_name+"): ";
-//        indk::System::setComputeBackend(std::get<0>(b), std::get<1>(b));
-        count += doTest(ref, info.id);
+        if (info.ready) {
+            std::cout << std::setw(60) << std::left << name+" ("+info.backend_name+"): ";
+            count += doTest(ref, info.backend_id); // using backend id as instance id
+        }
     }
     std::cout << std::endl;
 
@@ -102,6 +103,7 @@ int main() {
     constexpr float BENCHMARK_TEST_REFERENCE_OUTPUT         = 2.7622;
     const unsigned TOTAL_TEST_COUNT                         = STRUCTURE_COUNT*backends.size();
 
+    // setting up parameters
     indk::ComputeBackends::NativeCPUMultithread::Parameters parameters;
     parameters.worker_count = 4;
     indk::System::setComputeBackendParameters(indk::System::ComputeBackends::NativeCPUMultithread, &parameters);
@@ -124,8 +126,7 @@ int main() {
     std::cout << "=== SUPERSTRUCTURE TEST ===" << std::endl;
     doLoadModel("structures/structure_general.json", 101);
     count += doTests("Superstructure test", SUPERSTRUCTURE_TEST_REFERENCE_OUTPUT);
-    std::cout << "end" << std::endl;
-    return 0;
+
     std::cout << "=== BENCHMARK ===" << std::endl;
     doLoadModel("structures/structure_bench.json", 10001);
     count += doTests("Benchmark", BENCHMARK_TEST_REFERENCE_OUTPUT);

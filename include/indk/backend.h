@@ -30,6 +30,8 @@ namespace indk {
 
         virtual void setParameters(indk::ComputeBackend::Parameters*) = 0;
 
+        virtual std::vector<indk::OutputValue> getOutputValues(void*) = 0;
+
         std::string getBackendName();
         std::string getTranslatorName();
         bool isReady();
