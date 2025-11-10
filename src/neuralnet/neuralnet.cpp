@@ -308,6 +308,9 @@ void indk::NeuralNet::doParseLinks(const EntryList& entries, const std::string& 
             auto nprev = Neurons.find(from);
             auto type = 0;
             if (nprev != Neurons.end()) Links.emplace_back(from, to, nprev->second, n->second, latency);
+            else { // must be an entry
+                Links.emplace_back(from, to, nullptr, n->second, latency);
+            }
 
             auto nlinks = n -> second -> getLinkOutput();
             for (auto &nl: nlinks) {
