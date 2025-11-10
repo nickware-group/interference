@@ -60,13 +60,13 @@ namespace indk {
             } NeuronParams;
 
             typedef struct cpu_model_data {
-                std::map<void*, NeuronParams*> objects;
+                std::map<std::string, NeuronParams*> objects;
                 std::vector<NeuronParams*> outputs;
                 uint64_t batch_size;
             } ModelData;
 
             static NeuronParams* doTranslateNeuronToInstance(indk::Neuron *neuron, indk::Neuron *nfrom, NeuronParams *pfrom,
-                                                             std::map<void*, NeuronParams*>& objects);
+                                                             std::map<void*, NeuronParams*>& nobjects, std::map<std::string, NeuronParams*>& objects);
 
             static void* doTranslate(const indk::LinkList& links, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync);
             static void doReset(ModelData *model);

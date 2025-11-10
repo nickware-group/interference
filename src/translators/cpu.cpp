@@ -11,10 +11,13 @@
 #include <algorithm>
 
 indk::Translators::CPU::NeuronParams* indk::Translators::CPU::doTranslateNeuronToInstance(indk::Neuron *neuron, indk::Neuron *nfrom,
-                                                                                          NeuronParams *pfrom, std::map<void *, NeuronParams *> &objects) {
-    auto found = objects.find(neuron);
+                                                                                          NeuronParams *pfrom,
+                                                                                          std::map<void*, NeuronParams*> &nobjects,
+                                                                                          std::map<std::string, NeuronParams*> &objects) {
+    if (!neuron) return nullptr;
+    auto found = nobjects.find(neuron);
 
-    if (found != objects.end()) {
+    if (found != nobjects.end()) {
         if (nfrom != nullptr) {
             for (int j = 0; j < neuron->getEntriesCount(); j++) {
                 if (found->second->entries[j].input_from == nfrom->getName()) {
@@ -91,7 +94,8 @@ indk::Translators::CPU::NeuronParams* indk::Translators::CPU::doTranslateNeuronT
         }
     }
 
-    objects.emplace(neuron, params);
+    nobjects.emplace(neuron, params);
+    objects.emplace(params->name, params);
     return params;
 }
 
@@ -101,6 +105,8 @@ void* indk::Translators::CPU::doTranslate(const indk::LinkList &links, const std
     model -> outputs.clear();
     model -> batch_size = 0;
 
+    std::map<void*, NeuronParams*> nobjects;
+
     for (const auto &l: links) {
         auto from = std::get<0>(l);
         auto to = std::get<1>(l);
@@ -108,19 +114,18 @@ void* indk::Translators::CPU::doTranslate(const indk::LinkList &links, const std
         auto nto = (indk::Neuron*)std::get<3>(l);
 
         // translating neurons
-        auto pfrom = doTranslateNeuronToInstance(nfrom, nullptr, nullptr, model->objects);
-        auto pto = doTranslateNeuronToInstance(nto, nfrom, pfrom, model->objects);
+        auto pfrom = doTranslateNeuronToInstance(nfrom, nullptr, nullptr, nobjects, model->objects);
+        doTranslateNeuronToInstance(nto, nfrom, pfrom, nobjects, model->objects);
 
-        // linking outputs
-        for (const auto &output: outputs) {
-            auto f = std::find_if(model->outputs.begin(), model->outputs.end(), [output](NeuronParams*p) { return  p->name == output; });
-            if (f == model->outputs.end()) {
-                if (from == output) model->outputs.push_back(pfrom);
-                else if (to == output) model->outputs.push_back(pto);
-            }
-        }
+//        std::cout << "link " << from << " " << to << std::endl;
     }
 
+    // linking outputs
+    for (const auto &output: outputs) {
+        auto found = model->objects.find(output);
+        if (found != model->objects.end()) model->outputs.push_back(found->second);
+    }
+    std::cout << "linked" << std::endl;
     return model;
 }
 
