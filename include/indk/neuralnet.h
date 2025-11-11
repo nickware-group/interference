@@ -72,7 +72,8 @@ namespace indk {
                                              int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin);
         std::vector<float> doComparePatterns(std::vector<std::string> nnames,
                                              int CompareFlag = indk::PatternCompareFlags::CompareDefault,
-                                             int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin);
+                                             int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin,
+                                             int instance = 0);
         void doCreateNewScope();
         void doChangeScope(uint64_t);
         void doAddNewOutput(const std::string&);

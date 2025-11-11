@@ -9,7 +9,9 @@
 
 #include <indk/instance.h>
 #include <indk/types.h>
+#include <indk/neuron.h>
 #include <algorithm>
+#include "indk/math.h"
 
 void indk::ComputeInstanceManager::doCreateInstance(int backend) {
     auto instance = new InstanceData();
@@ -64,8 +66,16 @@ void indk::ComputeInstanceManager::doResetInstance(int iid) {
 
 std::vector<indk::OutputValue> indk::ComputeInstanceManager::getOutputValues(int iid) {
     if (iid >= Instances.size()) {
-        //return; // TODO: exception
+        return {}; // TODO: exception
     }
 
     return Instances[iid]->backend->getOutputValues(Instances[iid]->model_data);
+}
+
+std::vector<indk::PatternDefinition> indk::ComputeInstanceManager::doComparePatterns(const std::vector<std::string>& objects, int iid, int method) {
+    if (iid >= Instances.size()) {
+        return {}; // TODO: exception
+    }
+
+    return Instances[iid]->backend->getReceptorPositions(Instances[iid]->model_data);
 }

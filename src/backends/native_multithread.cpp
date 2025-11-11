@@ -283,6 +283,58 @@ void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<st
 void indk::ComputeBackends::NativeCPUMultithread::doReset(void *model) {
     indk::Translators::CPU::doReset((indk::Translators::CPU::ModelData*)model);
 }
+//
+//std::vector<indk::PatternDefinition> indk::ComputeBackends::NativeCPUMultithread::doComparePatterns(void *_model, const std::vector<std::string> &objects, int method) {
+//    auto model = (indk::Translators::CPU::ModelData*)_model;
+//
+//    std::vector<indk::PatternDefinition> patterns;
+//
+//    for (const auto &name: objects) {
+//        auto found = model->objects.find(name);
+//        if (found != model->objects.end()) {
+//            indk::Position *RPosf;
+//            auto ssize = Receptors[0]->getReferencePosScopes().size();
+//            std::vector<float> results;
+//            float value = 0;
+//            int num = -1;
+//            float rmin = -1;
+//
+//            for (uint64_t i = 0; i < ssize; i++) results.push_back(0);
+//
+//            for (uint64_t r = 0; r < found->second->receptor_count; r++) {
+//                auto scopes = R -> getReferencePosScopes();
+//
+//                for (uint64_t i = 0; i < scopes.size(); i++) {
+//                    results[i] += indk::Math::doCompareFunction(scopes[i], found->second->receptors[r].position) / found->second->receptor_count;
+//                }
+//            }
+//
+//            switch (method) {
+//                default:
+//                case indk::ScopeProcessingMethods::ProcessMin:
+//                    for (int r = 0; r < results.size(); r++) {
+//                        if (rmin == -1 || results[r] < rmin) {
+//                            rmin = results[r];
+//                            num = r;
+//                        }
+//                    }
+//                    value = rmin;
+//                    break;
+//
+//                case indk::ScopeProcessingMethods::ProcessAverage:
+//                    for (auto r: results) {
+//                        value += r;
+//                    }
+//                    value /= ssize;
+//                    break;
+//            }
+//
+//            patterns.emplace_back(value, num);
+//        }
+//    }
+//
+//    return patterns;
+//}
 
 void indk::ComputeBackends::NativeCPUMultithread::setParameters(indk::ComputeBackend::Parameters *parameters) {
     WorkerCount = ((Parameters*)parameters) -> worker_count;
@@ -307,4 +359,15 @@ std::vector<indk::OutputValue> indk::ComputeBackends::NativeCPUMultithread::getO
     }
 
     return outputs;
+}
+
+std::map<std::string, indk::Position> indk::ComputeBackends::NativeCPUMultithread::getReceptorPositions(void *_model) {
+    auto model = (indk::Translators::CPU::ModelData*)_model;
+    std::vector<indk::Position> positions;
+
+    for (auto &n: model->objects) {
+        for (uint64_t r = 0; r < n.second->receptor_count; r++) {
+            positions.insert(std::make_pair())
+        }
+    }
 }

@@ -133,7 +133,7 @@ std::vector<float> indk::NeuralNet::doComparePatterns(const std::string& ename, 
  * Compare neuron patterns (learning and recognition patterns) for all output neurons.
  * @return Vector of pattern difference values for each output neuron.
  */
-std::vector<float> indk::NeuralNet::doComparePatterns(std::vector<std::string> nnames, int CompareFlag, int ProcessingMethod) {
+std::vector<float> indk::NeuralNet::doComparePatterns(std::vector<std::string> nnames, int CompareFlag, int ProcessingMethod, int instance) {
     std::vector<float> PDiffR, PDiff;
 
     if (nnames.empty()) nnames = Outputs;

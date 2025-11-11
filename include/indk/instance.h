@@ -38,6 +38,7 @@ namespace indk {
         void doTranslateToInstance(const indk::LinkList& links, const std::vector<std::string>& outputs, const indk::StateSyncMap &sync, int iid = 0);
         void doRunInstance(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs, int iid = 0);
         void doResetInstance(int iid = 0);
+        std::vector<indk::PatternDefinition> doComparePatterns(const std::vector<std::string>& objects, int iid = 0, int method = indk::ScopeProcessingMethods::ProcessMin);
         std::vector<indk::OutputValue> getOutputValues(int iid = 0);
         ~ComputeInstanceManager() = default;
     };
