@@ -136,11 +136,17 @@ std::vector<float> indk::NeuralNet::doComparePatterns(const std::string& ename, 
 std::vector<float> indk::NeuralNet::doComparePatterns(std::vector<std::string> nnames, int CompareFlag, int ProcessingMethod, int instance) {
     std::vector<float> PDiffR, PDiff;
 
+    auto result = InstanceManager.getReceptorValues(instance);
+
     if (nnames.empty()) nnames = Outputs;
     for (const auto& O: nnames) {
         auto n = Neurons.find(O);
         if (n == Neurons.end()) break;
-        auto P = n -> second -> doComparePattern(ProcessingMethod);
+        auto r = result.find(O);
+        if (r == result.end()) break;
+
+        auto P = n -> second -> doComparePattern(r->second, ProcessingMethod);
+
         PDiffR.push_back(std::get<0>(P));
     }
 

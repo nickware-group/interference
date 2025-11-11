@@ -163,7 +163,7 @@ void indk::Neuron::doReset() {
  * Compare neuron patterns (learning and recognition patterns).
  * @return Pattern difference value.
  */
-indk::PatternDefinition indk::Neuron::doComparePattern(int ProcessingMethod) const {
+indk::PatternDefinition indk::Neuron::doComparePattern(const std::vector<indk::Position>& positions, int ProcessingMethod) const {
     indk::Position *RPosf;
     auto ssize = Receptors[0]->getReferencePosScopes().size();
     std::vector<float> results;
@@ -173,12 +173,11 @@ indk::PatternDefinition indk::Neuron::doComparePattern(int ProcessingMethod) con
 
     for (uint64_t i = 0; i < ssize; i++) results.push_back(0);
 
-    for (auto R: Receptors) {
-        auto scopes = R -> getReferencePosScopes();
-        RPosf = R -> getPosf();
-
+    for (int r = 0; r < Receptors.size(); r++) {
+        auto scopes = Receptors[r] -> getReferencePosScopes();
+        auto p = positions[r];
         for (uint64_t i = 0; i < scopes.size(); i++) {
-            results[i] += indk::Math::doCompareFunction(scopes[i], RPosf) / Receptors.size();
+            results[i] += indk::Math::doCompareFunction(scopes[i], &p) / Receptors.size();
         }
     }
 

@@ -14,6 +14,7 @@
 #include <string>
 #include <atomic>
 #include <indk/types.h>
+#include <indk/position.h>
 
 namespace indk {
     class ComputeBackend {
@@ -32,7 +33,7 @@ namespace indk {
         virtual void setParameters(indk::ComputeBackend::Parameters*) = 0;
 
         virtual std::vector<indk::OutputValue> getOutputValues(void*) = 0;
-        virtual std::map<std::string, indk::Position> getReceptorPositions(void *_model) = 0;
+        virtual std::map<std::string, std::vector<indk::Position>> getReceptorPositions(void *_model) = 0;
 
         std::string getBackendName();
         std::string getTranslatorName();

@@ -361,13 +361,17 @@ std::vector<indk::OutputValue> indk::ComputeBackends::NativeCPUMultithread::getO
     return outputs;
 }
 
-std::map<std::string, indk::Position> indk::ComputeBackends::NativeCPUMultithread::getReceptorPositions(void *_model) {
+std::map<std::string, std::vector<indk::Position>> indk::ComputeBackends::NativeCPUMultithread::getReceptorPositions(void *_model) {
     auto model = (indk::Translators::CPU::ModelData*)_model;
-    std::vector<indk::Position> positions;
+
+    std::map<std::string, std::vector<indk::Position>> list;
 
     for (auto &n: model->objects) {
+        std::vector<indk::Position> positions;
         for (uint64_t r = 0; r < n.second->receptor_count; r++) {
-            positions.insert(std::make_pair())
+            positions.emplace_back(n.second->size, std::vector<float>(n.second->receptors[r].position, n.second->receptors[r].position+n.second->dimension_count));
         }
+        list.insert(std::make_pair(n.second->name, positions));
     }
+    return list;
 }

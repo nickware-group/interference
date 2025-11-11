@@ -11,6 +11,7 @@
 #define INTERFERENCE_BACKENDS_NATIVE_H
 
 #include <indk/backend.h>
+#include <indk/position.h>
 
 namespace indk {
     namespace ComputeBackends {
@@ -22,6 +23,7 @@ namespace indk {
             void doReset(void*) override;
             void setParameters(indk::ComputeBackend::Parameters*) override;
             std::vector<indk::OutputValue> getOutputValues(void *_model) override;
+            std::map<std::string, std::vector<indk::Position>> getReceptorPositions(void *_model) override;
         };
     }
 }

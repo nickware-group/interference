@@ -33,6 +33,7 @@ indk::Translators::CPU::NeuronParams* indk::Translators::CPU::doTranslateNeuronT
 
     auto params = new NeuronParams();
     params -> name = neuron -> getName();
+    params -> size = neuron -> getXm();
     params -> dimension_count = neuron -> getDimensionsCount();
     params -> entry_count = neuron->getEntriesCount();
     params -> receptor_count = neuron->getReceptorsCount();

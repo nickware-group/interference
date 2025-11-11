@@ -51,6 +51,7 @@ namespace indk {
             typedef struct neutron_params {
                 std::atomic<uint64_t> t;
                 std::string name;
+                uint32_t size;
                 uint64_t latency;
                 uint64_t dimension_count, receptor_count, entry_count;
                 EntryParams *entries;

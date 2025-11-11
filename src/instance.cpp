@@ -72,7 +72,7 @@ std::vector<indk::OutputValue> indk::ComputeInstanceManager::getOutputValues(int
     return Instances[iid]->backend->getOutputValues(Instances[iid]->model_data);
 }
 
-std::vector<indk::PatternDefinition> indk::ComputeInstanceManager::doComparePatterns(const std::vector<std::string>& objects, int iid, int method) {
+std::map<std::string, std::vector<indk::Position>> indk::ComputeInstanceManager::getReceptorValues(int iid) {
     if (iid >= Instances.size()) {
         return {}; // TODO: exception
     }

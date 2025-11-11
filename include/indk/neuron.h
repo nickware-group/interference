@@ -79,7 +79,7 @@ namespace indk {
         void doCreateNewScope(float output = 0);
         void doChangeScope(uint64_t);
         void doReset();
-        indk::PatternDefinition doComparePattern(int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin) const;
+        indk::PatternDefinition doComparePattern(const std::vector<indk::Position>& positions, int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin) const;
 
         void doLinkOutput(const std::string&);
 
