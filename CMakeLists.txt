@@ -9,7 +9,7 @@ set(TARGET_SOURCE
         src/neuron/synapse.cpp
         src/neuron/receptor.cpp
 
-        src/neuralnet/neuralnet.cpp             include/indk/neuralnet.h
+        src/neuralnet.cpp                       include/indk/neuralnet.h
 
         src/error.cpp                           include/indk/error.h
         src/system.cpp                          include/indk/system.h
