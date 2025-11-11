@@ -27,10 +27,11 @@ namespace indk {
 
             typedef struct worker_task {
                 std::vector<std::vector<indk::Translators::CPU::NeuronParams*>> neurons;
-                indk::Event event;
-                std::atomic<uint64_t> done_count;
-                std::atomic<uint64_t> compute_size;
+                std::vector<indk::Event*> events;
+                std::atomic<uint64_t> task_elements_done;
                 std::atomic<uint64_t> task_size;
+                std::atomic<uint64_t> compute_size;
+                std::atomic<uint64_t> workers_done;
             } Task;
 
             typedef struct worker_context {

@@ -72,11 +72,13 @@ void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<st
     }
 
     Task task;
-    task.done_count = 0;
+    task.task_elements_done = 0;
+    task.workers_done = 0;
     task.compute_size = csize;
     task.task_size = model->objects.size();
     while (task.neurons.size() < WorkerCount) {
         task.neurons.emplace_back();
+        task.events.emplace_back(new indk::Event());
     }
 
     int last = 0;
@@ -93,8 +95,14 @@ void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<st
         w -> cv.notify_one();
     }
 
-    while (task.done_count != task.task_size) {
-        task.event.doWaitTimed(100);
+    while (task.workers_done != task.events.size()) {
+        for (const auto &e: task.events) {
+            e -> doWaitTimed(100);
+        }
+    }
+
+    for (auto e: task.events) {
+        delete e;
     }
 }
 
@@ -107,163 +115,165 @@ void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<st
         context -> cv.wait(lk);
 
         ti = 0;
+
         // main loop
         while (true) {
             context->task_lock.lock();
-            if (context->tasks.empty()) break;
-            std::cout << "task run " << context->tasks.size() << std::endl;
+            if (context->tasks.empty()) {
+                context->task_lock.unlock();
+                break;
+            }
             if (ti >= context->tasks.size()) ti = 0;
             auto task = context -> tasks[ti];
             context->task_lock.unlock();
 
-            if (task->done_count == task->task_size) continue;
+            if (task->task_elements_done != task->task_size) {
+                auto neurons = task->neurons[context->thread_id];
+                for (const auto &n: neurons) {
+                    if (n->t == task->compute_size) continue;
+                    p = 0;
 
-            auto neurons = task->neurons[context->thread_id];
-            for (const auto &n: neurons) {
-                if (n->t == task->compute_size) continue;
-                p = 0;
+                    bool ready = true;
 
-                bool ready = true;
-
-                if (n->t < n->latency) {
-                    n->output[n->t] = 0;
-                    n->t++;
+                    if (n->t < n->latency) {
+                        n->output[n->t] = 0;
+                        n->t++;
 //                    std::cout << "[" << n->name << "]" << " latency worked t " << n->t << std::endl;
 
-                    continue;
-                }
+                        continue;
+                    }
 
-                // checking if all signals are ready
-                for (int j = 0; j < n->entry_count; j++) {
-                    auto e = n->entries[j];
+                    // checking if all signals are ready
+                    for (int j = 0; j < n->entry_count; j++) {
+                        auto e = n->entries[j];
 //                std::cout << "entry type " << n->entries[j].entry_type << std::endl;
 
-                    if (n->entries[j].entry_type) {
-                        auto source = ((indk::Translators::CPU::NeuronParams*)n->entries[j].input);
+                        if (n->entries[j].entry_type) {
+                            auto source = ((indk::Translators::CPU::NeuronParams*)n->entries[j].input);
 //                    std::cout << "[" << n->name << "] " << source->name <<
 //                                 " t " << source->t << " <= " << n->t << " l " << n->latency << std::endl;
 
-                        if ((n->t < n->latency && source->t <= n->t) || (n->t >= n->latency && source->t <= n->t-n->latency)) {
-                            bool latency = false;
-                            for (int k = 0; k < e.synapse_count; k++) {
-                                if (e.synapses[k].tl > n->t) {
-                                    latency = true;
+                            if ((n->t < n->latency && source->t <= n->t) || (n->t >= n->latency && source->t <= n->t-n->latency)) {
+                                bool latency = false;
+                                for (int k = 0; k < e.synapse_count; k++) {
+                                    if (e.synapses[k].tl > n->t) {
+                                        latency = true;
+                                    }
                                 }
-                            }
-                            if (!latency) {
-                                ready = false;
-                                break;
+                                if (!latency) {
+                                    ready = false;
+                                    break;
+                                }
                             }
                         }
                     }
-                }
 
-                // go next if not ready
-                if (!ready) {
+                    // go next if not ready
+                    if (!ready) {
 //                std::cout << "[" << n->name << "] " << "not ready" << std::endl;
-                    continue;
-                }
-
-                // computing synapse parameters
-                for (int j = 0; j < n->entry_count; j++) {
-                    auto e = n->entries[j];
-                    float *input;
-
-                    indk::Translators::CPU::NeuronParams* source = nullptr;
-
-                    if (!n->entries[j].entry_type) input = (float*)n->entries[j].input;   // using neural network input signal
-                    else {
-                        source = ((indk::Translators::CPU::NeuronParams*)n->entries[j].input);
-                        input = source -> output;                                                       // using signal from linked neuron output
+                        continue;
                     }
 
-                    // compute synapse parameters
-                    for (int k = 0; k < e.synapse_count; k++) {
-                        float value;
-                        if (source) {
+                    // computing synapse parameters
+                    for (int j = 0; j < n->entry_count; j++) {
+                        auto e = n->entries[j];
+                        float *input;
+
+                        indk::Translators::CPU::NeuronParams* source = nullptr;
+
+                        if (!n->entries[j].entry_type) input = (float*)n->entries[j].input;   // using neural network input signal
+                        else {
+                            source = ((indk::Translators::CPU::NeuronParams*)n->entries[j].input);
+                            input = source -> output;                                                       // using signal from linked neuron output
+                        }
+
+                        // compute synapse parameters
+                        for (int k = 0; k < e.synapse_count; k++) {
+                            float value;
+                            if (source) {
 //                        std::cout << "[" << n->name << "] " << source->name << " " << n->latency <<
 //                                  " t " << n->t << std::endl;
-                            if (n->latency > n->t) value = 0;
-                            else value = input[n->t-n->latency];
-                        } else value = e.synapses[k].tl > n->t ? 0 : input[n->t-e.synapses[k].tl];
+                                if (n->latency > n->t) value = 0;
+                                else value = input[n->t-n->latency];
+                            } else value = e.synapses[k].tl > n->t ? 0 : input[n->t-e.synapses[k].tl];
 
-                        float gamma = indk::Math::getGammaFunctionValue(e.synapses[k].gamma,
+                            float gamma = indk::Math::getGammaFunctionValue(e.synapses[k].gamma,
                                                                             e.synapses[k].k1,
                                                                             e.synapses[k].k2,
                                                                             value);
 
-                        e.synapses[k].l_gamma = e.synapses[k].gamma;
-                        e.synapses[k].l_d_gamma = e.synapses[k].d_gamma;
-                        e.synapses[k].d_gamma = gamma - e.synapses[k].gamma;
-                        e.synapses[k].gamma = gamma;
+                            e.synapses[k].l_gamma = e.synapses[k].gamma;
+                            e.synapses[k].l_d_gamma = e.synapses[k].d_gamma;
+                            e.synapses[k].d_gamma = gamma - e.synapses[k].gamma;
+                            e.synapses[k].gamma = gamma;
 
 //                    std::cout << "[input value/gamma] " << value << " " << e.synapses[k].gamma << std::endl;
+                        }
                     }
-                }
 
-                // compute new receptors positions
-                for (int i = 0; i < n->receptor_count; i++) {
-                    fisum = 0;
+                    // compute new receptors positions
+                    for (int i = 0; i < n->receptor_count; i++) {
+                        fisum = 0;
 
-                    auto r = n -> receptors[i];
-                    indk::Math::doClearPosition(n->position_buffer, n->dimension_count);
+                        auto r = n -> receptors[i];
+                        indk::Math::doClearPosition(n->position_buffer, n->dimension_count);
 
-                    for (int j = 0; j < n->entry_count; j++) {
-                        auto e = n->entries[j];
-                        for (int k = 0; k < e.synapse_count; k++) {
-                            d = indk::Math::getDistance(e.synapses[k].position, r.position, n->dimension_count);
-                            auto fivalues = indk::Math::getFiFunctionValue(e.synapses[k].lambda, e.synapses[k].gamma, e.synapses[k].d_gamma, d);
-                            if (fivalues.second > 0) {
-                                indk::Math::getNewReceptorPosition(n->position_buffer,
+                        for (int j = 0; j < n->entry_count; j++) {
+                            auto e = n->entries[j];
+                            for (int k = 0; k < e.synapse_count; k++) {
+                                d = indk::Math::getDistance(e.synapses[k].position, r.position, n->dimension_count);
+                                auto fivalues = indk::Math::getFiFunctionValue(e.synapses[k].lambda, e.synapses[k].gamma, e.synapses[k].d_gamma, d);
+                                if (fivalues.second > 0) {
+                                    indk::Math::getNewReceptorPosition(n->position_buffer,
                                                                        r.position,
                                                                        e.synapses[k].position,
                                                                        indk::Math::getFiVectorLength(fivalues.second),
                                                                        d,
                                                                        n->dimension_count);
 //                            std::cout << d << " " << r.position[0] << " " << r.position[1] << " " << e.synapses[k].position[0] << " " << e.synapses[k].position[1] << " "  << n->position_buffer[0] << " " << n->position_buffer[1] << std::endl;
+                                }
+                                fisum += fivalues.first;
                             }
-                            fisum += fivalues.first;
                         }
-                    }
 
-                    r.d_fi = fisum - r.fi;
-                    r.fi = fisum;
+                        r.d_fi = fisum - r.fi;
+                        r.fi = fisum;
 
-                    indk::Math::doAddPosition(r.position, n->position_buffer, n->dimension_count);
-                    p += indk::Math::getReceptorInfluenceValue(indk::Math::isReceptorActive(r.fi, r.rs),
+                        indk::Math::doAddPosition(r.position, n->position_buffer, n->dimension_count);
+                        p += indk::Math::getReceptorInfluenceValue(indk::Math::isReceptorActive(r.fi, r.rs),
                                                                    n->position_buffer,
                                                                    n->dimension_count);
-                    r.rs = indk::Math::getRcValue(r.k3, r.rs, r.fi, r.d_fi);
+                        r.rs = indk::Math::getRcValue(r.k3, r.rs, r.fi, r.d_fi);
 
 //                std::cout << "[fi/d_fi/rs/p/pos0/pos1] "  << r.fi << " " << r.d_fi << " " << r.rs << " " << p << " " << n->position_buffer[0] << " " << n->position_buffer[1] << std::endl;
-                }
+                    }
 
-                p /= (float)n -> receptor_count;
+                    p /= (float)n -> receptor_count;
 //                std::cout << p << std::endl;
 
-                n->output[n->t] = p;
-                n->t++;
+                    n->output[n->t] = p;
+                    n->t++;
 
-                if (n->t == task->compute_size) task->done_count++;
+                    if (n->t == task->compute_size) task->task_elements_done++;
 
-                if (task->done_count == task->task_size) {
-                    task -> event.doNotifyOne();
-                    break;
+                    if (task->task_elements_done == task->task_size) {
+                        break;
+                    }
                 }
-//            std::cout << "[" << n.second->name << "] " << "[compute done] t " << n.second->t << " / " << csize << std::endl;
             }
-
-//            std::cout << "[" << ti << "]" << " task end" << std::endl;
-//            std::cout << std::endl;
 
             ti++;
 
-            if (task->done_count == task->task_size) {
-                std::cout << "[" << ti << "]" << " task done" << std::endl;
+            if (task->task_elements_done == task->task_size) {
+//                std::cout << "[" << context->thread_id << "]" << " task done" << std::endl;
+
                 context->task_lock.lock();
                 context->tasks.erase(std::remove(context->tasks.begin(), context->tasks.end(), task), context->tasks.end());
-                std::cout << "[" << ti << "]" << " task size" << context->tasks.size() << std::endl;
                 context->task_lock.unlock();
+
+                task -> workers_done++;
+                task -> events[context->thread_id] -> doNotifyOne();
+
                 ti = 0;
             }
         }

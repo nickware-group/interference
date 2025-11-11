@@ -8,6 +8,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include <indk/translators/cpu.h>
+#include <cstring>
 #include <algorithm>
 
 indk::Translators::CPU::NeuronParams* indk::Translators::CPU::doTranslateNeuronToInstance(indk::Neuron *neuron, indk::Neuron *nfrom,
@@ -116,8 +117,6 @@ void* indk::Translators::CPU::doTranslate(const indk::LinkList &links, const std
         // translating neurons
         auto pfrom = doTranslateNeuronToInstance(nfrom, nullptr, nullptr, nobjects, model->objects);
         doTranslateNeuronToInstance(nto, nfrom, pfrom, nobjects, model->objects);
-
-//        std::cout << "link " << from << " " << to << std::endl;
     }
 
     // linking outputs
@@ -125,7 +124,7 @@ void* indk::Translators::CPU::doTranslate(const indk::LinkList &links, const std
         auto found = model->objects.find(output);
         if (found != model->objects.end()) model->outputs.push_back(found->second);
     }
-    std::cout << "linked" << std::endl;
+
     return model;
 }
 

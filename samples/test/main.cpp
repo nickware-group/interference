@@ -15,7 +15,7 @@
 #include "indk/backends/native_multithread.h"
 
 
-indk::NeuralNet *NN;
+indk::NeuralNet NN;
 std::vector<std::vector<float>> X;
 
 std::vector<indk::ComputeBackendsInfo> backends;
@@ -35,31 +35,31 @@ void doPrintAvailableBackends() {
     std::cout << "-----------------------------------------------------------------------------" << std::endl << std::endl;
 }
 
-void doCreateInstances(indk::NeuralNet *net) {
+void doCreateInstances() {
     for (auto &info: backends) {
-        if (info.ready) net -> doCreateInstance(info.backend_id);
+        if (info.ready) NN.doCreateInstance(info.backend_id);
     }
 }
 
 void doLoadModel(const std::string& path, int size) {
     std::ifstream structure(path);
-    NN -> setStructure(structure);
+    NN.setStructure(structure);
 
     for (int i = 2; i < size; i++) {
-        NN -> doReplicateEnsemble("A1", "A"+std::to_string(i));
+        NN.doReplicateEnsemble("A1", "A"+std::to_string(i));
     }
-    NN -> doStructurePrepare();
+    NN.doStructurePrepare();
 
-    std::cout << "Model name  : " << NN->getName() << std::endl;
-    std::cout << "Model desc  : " << NN->getDescription() << std::endl;
-    std::cout << "Model ver   : " << NN->getVersion() << std::endl;
-    std::cout << "Neuron count: " << NN->getNeuronCount() << std::endl;
+    std::cout << "Model name  : " << NN.getName() << std::endl;
+    std::cout << "Model desc  : " << NN.getDescription() << std::endl;
+    std::cout << "Model ver   : " << NN.getVersion() << std::endl;
+    std::cout << "Neuron count: " << NN.getNeuronCount() << std::endl;
     std::cout << std::endl;
 }
 
 int doTest(float ref, int instance) {
     auto T = getTimestampMS();
-    auto Y = NN -> doLearn(X, true, {}, instance);
+    auto Y = NN.doLearn(X, true, {}, instance);
     T = getTimestampMS() - T;
     std::cout << std::setw(20) << std::left << "done ["+std::to_string(T)+" ms] ";
 
@@ -110,9 +110,8 @@ int main() {
     indk::System::setVerbosityLevel(1);
 
     int count = 0;
-    NN = new indk::NeuralNet();
 
-    doCreateInstances(NN);
+    doCreateInstances();
 
     // creating data array
     X.emplace_back();
@@ -133,7 +132,6 @@ int main() {
 
     std::cout << std::endl;
     std::cout << "Tests passed: [" << count << "/" << TOTAL_TEST_COUNT << "]" << std::endl;
-    delete NN;
 
     if (count != TOTAL_TEST_COUNT) return 1;
     return 0;
