@@ -16,6 +16,7 @@
 void indk::ComputeInstanceManager::doCreateInstance(int backend) {
     auto instance = new InstanceData();
     instance -> backend = indk::System::getComputeBackend(backend);
+    instance -> model_data = nullptr;
     instance -> status = InstanceReady;
 
     Instances.push_back(instance);
@@ -69,7 +70,7 @@ void indk::ComputeInstanceManager::setMode(bool learning, int iid) {
         return; // TODO: exception
     }
 
-    return Instances[iid]->backend->setMode(Instances[iid]->model_data, learning);
+    if (Instances[iid]->model_data) Instances[iid]->backend->setMode(Instances[iid]->model_data, learning);
 }
 
 std::vector<indk::OutputValue> indk::ComputeInstanceManager::getOutputValues(int iid) {

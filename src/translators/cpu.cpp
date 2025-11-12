@@ -91,8 +91,8 @@ indk::Translators::CPU::NeuronParams* indk::Translators::CPU::doTranslateNeuronT
         params -> receptors[j].position_default = new float[params->dimension_count];
 
         for (int p = 0; p < params->dimension_count; p++) {
-            params -> receptors[j].position[p] = r -> getPos() -> getPositionValue(p);
-            params -> receptors[j].position_default[p] = r -> getPos() -> getPositionValue(p);
+            params -> receptors[j].position[p] = r -> getPos0() -> getPositionValue(p);
+            params -> receptors[j].position_default[p] = r -> getPos0() -> getPositionValue(p);
         }
     }
 
@@ -140,7 +140,7 @@ void indk::Translators::CPU::doReset(indk::Translators::CPU::ModelData *model) {
             r.fi = 0;
             r.l = 0;
             r.rs = r.rs_default;
-            memcpy(r.position, r.position_default, o.second->dimension_count);
+            std::memcpy(r.position, r.position_default, sizeof(float)*o.second->dimension_count);
         }
         for (int j = 0; j < neuron->entry_count; j++) {
             auto e = o.second->entries[j];
