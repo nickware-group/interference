@@ -118,11 +118,7 @@ void indk::Neuron::Receptor::doUpdatePos(indk::Position *_RPos) {
 }
 
 void indk::Neuron::Receptor::setPos(indk::Position *_RPos) {
-    if (Locked) {
-        PhantomPos -> setPosition(_RPos);
-    } else {
-        ReferencePos[Scope] -> setPosition(_RPos);
-    }
+    ReferencePos[Scope] -> setPosition(_RPos);
 }
 
 void indk::Neuron::Receptor::setRs(float _Rs) {

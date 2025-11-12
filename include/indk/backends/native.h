@@ -21,6 +21,7 @@ namespace indk {
             void* doTranslate(const indk::LinkList& links, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync) override;
             void doCompute(const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, void *_instance) override;
             void doReset(void*) override;
+            void setMode(void *model, bool learning) override;
             void setParameters(indk::ComputeBackend::Parameters*) override;
             std::vector<indk::OutputValue> getOutputValues(void *_model) override;
             std::map<std::string, std::vector<indk::Position>> getReceptorPositions(void *_model) override;

@@ -67,6 +67,10 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
         bool processed = false;
         for (const auto &o: model->objects) {
             if (o.second->t == csize) continue;
+            if (!model->learning_mode) {
+                auto f = model->sync_map.find(o.second->name);
+                if (f != model->sync_map.end()) continue;
+            }
             p = 0;
 
             bool ready = true;
@@ -209,6 +213,11 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
 
 void indk::ComputeBackends::NativeCPU::doReset(void *model) {
     indk::Translators::CPU::doReset((indk::Translators::CPU::ModelData*)model);
+}
+
+void indk::ComputeBackends::NativeCPU::setMode(void *_model, bool learning) {
+    auto model = (indk::Translators::CPU::ModelData*)_model;
+    model -> learning_mode = learning;
 }
 
 void indk::ComputeBackends::NativeCPU::setParameters(indk::ComputeBackend::Parameters*) {

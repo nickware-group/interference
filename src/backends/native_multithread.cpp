@@ -72,6 +72,8 @@ void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<st
     }
 
     Task task;
+    task.sync_map = model -> sync_map;
+    task.learning_mode = model -> learning_mode;
     task.task_elements_done = 0;
     task.workers_done = 0;
     task.compute_size = csize;
@@ -131,6 +133,11 @@ void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<st
                 auto neurons = task->neurons[context->thread_id];
                 for (const auto &n: neurons) {
                     if (n->t == task->compute_size) continue;
+                    if (!task->learning_mode) {
+                        auto f = task->sync_map.find(n->name);
+                        if (f != task->sync_map.end()) continue;
+                    }
+
                     p = 0;
 
                     bool ready = true;
@@ -283,58 +290,11 @@ void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<st
 void indk::ComputeBackends::NativeCPUMultithread::doReset(void *model) {
     indk::Translators::CPU::doReset((indk::Translators::CPU::ModelData*)model);
 }
-//
-//std::vector<indk::PatternDefinition> indk::ComputeBackends::NativeCPUMultithread::doComparePatterns(void *_model, const std::vector<std::string> &objects, int method) {
-//    auto model = (indk::Translators::CPU::ModelData*)_model;
-//
-//    std::vector<indk::PatternDefinition> patterns;
-//
-//    for (const auto &name: objects) {
-//        auto found = model->objects.find(name);
-//        if (found != model->objects.end()) {
-//            indk::Position *RPosf;
-//            auto ssize = Receptors[0]->getReferencePosScopes().size();
-//            std::vector<float> results;
-//            float value = 0;
-//            int num = -1;
-//            float rmin = -1;
-//
-//            for (uint64_t i = 0; i < ssize; i++) results.push_back(0);
-//
-//            for (uint64_t r = 0; r < found->second->receptor_count; r++) {
-//                auto scopes = R -> getReferencePosScopes();
-//
-//                for (uint64_t i = 0; i < scopes.size(); i++) {
-//                    results[i] += indk::Math::doCompareFunction(scopes[i], found->second->receptors[r].position) / found->second->receptor_count;
-//                }
-//            }
-//
-//            switch (method) {
-//                default:
-//                case indk::ScopeProcessingMethods::ProcessMin:
-//                    for (int r = 0; r < results.size(); r++) {
-//                        if (rmin == -1 || results[r] < rmin) {
-//                            rmin = results[r];
-//                            num = r;
-//                        }
-//                    }
-//                    value = rmin;
-//                    break;
-//
-//                case indk::ScopeProcessingMethods::ProcessAverage:
-//                    for (auto r: results) {
-//                        value += r;
-//                    }
-//                    value /= ssize;
-//                    break;
-//            }
-//
-//            patterns.emplace_back(value, num);
-//        }
-//    }
-//
-//    return patterns;
-//}
+
+void indk::ComputeBackends::NativeCPUMultithread::setMode(void *_model, bool learning) {
+    auto model = (indk::Translators::CPU::ModelData*)_model;
+    model -> learning_mode = learning;
+}
 
 void indk::ComputeBackends::NativeCPUMultithread::setParameters(indk::ComputeBackend::Parameters *parameters) {
     WorkerCount = ((Parameters*)parameters) -> worker_count;

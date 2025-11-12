@@ -17,7 +17,7 @@
 namespace indk {
     typedef std::tuple<std::string, std::string, void*, void*, int> LinkDefinition;
     typedef std::vector<LinkDefinition> LinkList;
-    typedef std::map<std::string, std::vector<std::string>> StateSyncMap;
+    typedef std::map<std::string, std::string> StateSyncMap;
 
     typedef std::tuple<float, int> PatternDefinition;
 

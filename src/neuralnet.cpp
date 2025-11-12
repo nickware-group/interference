@@ -136,7 +136,7 @@ std::vector<float> indk::NeuralNet::doComparePatterns(const std::string& ename, 
 std::vector<float> indk::NeuralNet::doComparePatterns(std::vector<std::string> nnames, int CompareFlag, int ProcessingMethod, int instance) {
     std::vector<float> PDiffR, PDiff;
 
-    auto result = InstanceManager.getReceptorValues(instance);
+    auto result = InstanceManager.getReceptorPositions(instance);
 
     if (nnames.empty()) nnames = Outputs;
     for (const auto& O: nnames) {
@@ -425,7 +425,7 @@ void indk::NeuralNet::doCreateInstance(int backend) {
     InstanceManager.doCreateInstance(backend);
 }
 
-std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs, int instance) {
+std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs, bool mode, int instance) {
     doParseLinks(Entries, "all");
 
 //    std::vector<std::string> nsync;
@@ -459,7 +459,22 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vecto
 //    }
 
     InstanceManager.doTranslateToInstance(Links, Outputs, StateSyncList, instance);
+    InstanceManager.setMode(mode, instance);
     InstanceManager.doRunInstance(x, entries, instance);
+
+    if (mode) {
+        auto positions = InstanceManager.getReceptorPositions(instance);
+        for (const auto &p: positions) {
+            auto found = Neurons.find(p.first);
+            if (found != Neurons.end()) {
+                for (int i = 0; i< p.second.size(); i++) {
+                    auto pos = p.second[i];
+                    found -> second -> getReceptor(i) -> setPos(&pos);
+                }
+            }
+        }
+    }
+
     auto output = InstanceManager.getOutputValues(instance);
 
     return output;
@@ -474,9 +489,8 @@ std::vector<indk::OutputValue> indk::NeuralNet::doLearn(const std::vector<std::v
     if (InterlinkService && InterlinkService->isInterlinked()) {
         InterlinkService -> doUpdateStructure(getStructure());
     }
-    setLearned(false);
     if (prepare) doReset(instance);
-    return doSignalProcess(Xx, inputs, instance);
+    return doSignalProcess(Xx, inputs, true, instance);
 }
 
 /**
@@ -485,9 +499,8 @@ std::vector<indk::OutputValue> indk::NeuralNet::doLearn(const std::vector<std::v
  * @return Output signals.
  */
 std::vector<indk::OutputValue> indk::NeuralNet::doRecognise(const std::vector<std::vector<float>>& Xx, bool prepare, const std::vector<std::string>& inputs, int instance) {
-    setLearned(true);
     if (prepare) doReset(instance);
-    return doSignalProcess(Xx, inputs, instance);
+    return doSignalProcess(Xx, inputs, false, instance);
 }
 
 /**
@@ -497,7 +510,7 @@ std::vector<indk::OutputValue> indk::NeuralNet::doRecognise(const std::vector<st
  */
 void indk::NeuralNet::doLearnAsync(const std::vector<std::vector<float>>& Xx, const std::function<void(std::vector<indk::OutputValue>)>& callback, bool prepare,
                                    const std::vector<std::string>& inputs, int instance) {
-    setLearned(false);
+    InstanceManager.setMode(true, instance);
     if (prepare) doReset(instance);
 //    doSignalTransferAsync(Xx, callback, inputs);
 }
@@ -509,7 +522,7 @@ void indk::NeuralNet::doLearnAsync(const std::vector<std::vector<float>>& Xx, co
  */
 void indk::NeuralNet::doRecogniseAsync(const std::vector<std::vector<float>>& Xx, const std::function<void(std::vector<indk::OutputValue>)>& callback, bool prepare,
                                        const std::vector<std::string>& inputs, int instance) {
-    setLearned(true);
+    InstanceManager.setMode(false, instance);
     if (prepare) doReset(instance);
 //    doSignalTransferAsync(Xx, callback, inputs);
 }
@@ -706,9 +719,7 @@ void indk::NeuralNet::doReplicateEnsemble(const std::string& From, const std::st
 
                 auto sobject = StateSyncList.find(en);
                 if (sobject == StateSyncList.end()) {
-                    StateSyncList.insert(std::make_pair(en, std::vector<std::string>({nname})));
-                } else {
-                    sobject->second.push_back(nname);
+                    StateSyncList.insert(std::make_pair(nname, en));
                 }
 
                 if (eto == Ensembles.end()) {

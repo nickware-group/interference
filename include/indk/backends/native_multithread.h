@@ -27,11 +27,13 @@ namespace indk {
 
             typedef struct worker_task {
                 std::vector<std::vector<indk::Translators::CPU::NeuronParams*>> neurons;
+                indk::StateSyncMap sync_map;
                 std::vector<indk::Event*> events;
                 std::atomic<uint64_t> task_elements_done;
                 std::atomic<uint64_t> task_size;
                 std::atomic<uint64_t> compute_size;
                 std::atomic<uint64_t> workers_done;
+                bool learning_mode;
             } Task;
 
             typedef struct worker_context {
@@ -59,9 +61,11 @@ namespace indk {
             void* doTranslate(const indk::LinkList& links, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync) override;
             void doCompute(const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, void *_model) override;
             void doReset(void*) override;
+            void setMode(void *model, bool learning) override;
             void setParameters(indk::ComputeBackend::Parameters*) override;
             std::vector<indk::OutputValue> getOutputValues(void *_model) override;
             std::map<std::string, std::vector<indk::Position>> getReceptorPositions(void *_model) override;
+
         };
     }
 }

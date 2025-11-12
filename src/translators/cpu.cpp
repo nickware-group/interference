@@ -105,6 +105,7 @@ void* indk::Translators::CPU::doTranslate(const indk::LinkList &links, const std
     auto model = new ModelData;
 
     model -> outputs.clear();
+    model -> sync_map = sync;
     model -> batch_size = 0;
 
     std::map<void*, NeuronParams*> nobjects;

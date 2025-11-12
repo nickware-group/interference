@@ -98,7 +98,7 @@ namespace indk {
         void doClearCache();
 
 
-        std::vector<indk::OutputValue> doSignalProcess(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs, int instance = 0);
+        std::vector<indk::OutputValue> doSignalProcess(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs, bool mode, int instance = 0);
 
         void setStructure(std::ifstream&);
         void setStructure(const std::string &Str);

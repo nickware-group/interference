@@ -11,7 +11,7 @@
 #include <indk/types.h>
 #include <indk/neuron.h>
 #include <algorithm>
-#include "indk/math.h"
+#include <indk/math.h>
 
 void indk::ComputeInstanceManager::doCreateInstance(int backend) {
     auto instance = new InstanceData();
@@ -64,6 +64,14 @@ void indk::ComputeInstanceManager::doResetInstance(int iid) {
     if (Instances[iid]->model_data) Instances[iid] -> backend -> doReset(Instances[iid]->model_data);
 }
 
+void indk::ComputeInstanceManager::setMode(bool learning, int iid) {
+    if (iid >= Instances.size()) {
+        return; // TODO: exception
+    }
+
+    return Instances[iid]->backend->setMode(Instances[iid]->model_data, learning);
+}
+
 std::vector<indk::OutputValue> indk::ComputeInstanceManager::getOutputValues(int iid) {
     if (iid >= Instances.size()) {
         return {}; // TODO: exception
@@ -72,7 +80,7 @@ std::vector<indk::OutputValue> indk::ComputeInstanceManager::getOutputValues(int
     return Instances[iid]->backend->getOutputValues(Instances[iid]->model_data);
 }
 
-std::map<std::string, std::vector<indk::Position>> indk::ComputeInstanceManager::getReceptorValues(int iid) {
+std::map<std::string, std::vector<indk::Position>> indk::ComputeInstanceManager::getReceptorPositions(int iid) {
     if (iid >= Instances.size()) {
         return {}; // TODO: exception
     }

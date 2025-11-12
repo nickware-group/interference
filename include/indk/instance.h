@@ -38,7 +38,8 @@ namespace indk {
         void doTranslateToInstance(const indk::LinkList& links, const std::vector<std::string>& outputs, const indk::StateSyncMap &sync, int iid = 0);
         void doRunInstance(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs, int iid = 0);
         void doResetInstance(int iid = 0);
-        std::map<std::string, std::vector<indk::Position>> getReceptorValues(int iid = 0);
+        void setMode(bool learning, int iid = 0);
+        std::map<std::string, std::vector<indk::Position>> getReceptorPositions(int iid = 0);
         std::vector<indk::OutputValue> getOutputValues(int iid = 0);
         ~ComputeInstanceManager() = default;
     };
