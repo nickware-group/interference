@@ -10,12 +10,14 @@
 #include <indk/system.h>
 #include <indk/backends/native.h>
 #include <indk/backends/native_multithread.h>
+#include <indk/backends/opencl.h>
 
 int VerbosityLevel = 1;
 
 std::vector<std::shared_ptr<indk::ComputeBackend>> ComputeBackendList = {
         std::make_shared<indk::ComputeBackends::NativeCPU>(),
-        std::make_shared<indk::ComputeBackends::NativeCPUMultithread>()
+        std::make_shared<indk::ComputeBackends::NativeCPUMultithread>(),
+        std::make_shared<indk::ComputeBackends::OpenCL>()
 };
 
 void indk::System::doAddComputeBackend(const std::shared_ptr<indk::ComputeBackend>& backend) {

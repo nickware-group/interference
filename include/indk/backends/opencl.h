@@ -2,56 +2,51 @@
 // Name:
 // Purpose:
 // Author:      Nickolay Babbysh
-// Created:     06.04.23
+// Created:     04.11.2025
 // Copyright:   (c) NickWare Group
-// Licence:     MIT licence
+// Licence:
 /////////////////////////////////////////////////////////////////////////////
-#ifndef INTERFERENCE_OPENCL_H
-#define INTERFERENCE_OPENCL_H
 
-#include <indk/math.h>
-#include <thread>
-#include <condition_variable>
-#include <atomic>
+#ifndef INTERFERENCE_BACKENDS_OPENCL_H
+#define INTERFERENCE_BACKENDS_OPENCL_H
 
-#ifdef INDK_OPENCL_SUPPORT
-    #include <CL/cl.hpp>
-#endif
+#include <indk/backend.h>
+#include <indk/position.h>
+#include <indk/translators/cl.h>
 
 namespace indk {
-    class ComputeBackendOpenCL : public Computer {
-    private:
+    namespace ComputeBackends {
+        class OpenCL : public indk::ComputeBackend {
+        private:
+            std::string CurrentDeviceName;
 #ifdef INDK_OPENCL_SUPPORT
-        cl::Context Context;
-        cl::Kernel KernelPairs;
-        cl::Kernel KernelReceptors;
-        cl::Kernel KernelNeurons;
-        cl::CommandQueue Queue;
+            typedef struct device_context {
+//                cl::Device device;
+                cl::Kernel pairs;
+                cl::Kernel receptors;
+                cl::Kernel neurons;
+                bool ready;
+            } DeviceContext;
 
-        cl_float16 *PairsInfo;
-        cl_float8 *ReceptorsInfo;
-        cl_float3 *NeuronsInfo;
-        cl_float2 *Inputs;
-        cl_float *Outputs;
-
-        cl::Buffer PairsBuffer;
-        cl::Buffer ReceptorsBuffer;
-        cl::Buffer NeuronsBuffer;
-        cl::Buffer InputsBuffer;
-        cl::Buffer OutputsBuffer;
+            cl::Context Context;
+            std::vector<DeviceContext> DeviceList;
 #endif
-        uint64_t PairPoolSize;
-        uint64_t ReceptorPoolSize;
-        uint64_t NeuronPoolSize;
-        uint64_t InputPoolSize;
-        std::vector<void*> Objects;
-    public:
-        ComputeBackendOpenCL();
-        void doRegisterHost(const std::vector<void*>&) override;
-        void doUnregisterHost() override;
-        void doWaitTarget() override;
-        void doProcess(void*) override;
-    };
+        public:
+            typedef struct Parameters : public indk::ComputeBackend::Parameters {
+                std::string device_name;
+            } Parameters;
+
+            OpenCL();
+            void doInitDevice();
+            void* doTranslate(const indk::LinkList& links, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync) override;
+            void doCompute(const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, void *_instance) override;
+            void doReset(void*) override;
+            void setMode(void *model, bool learning) override;
+            void setParameters(indk::ComputeBackend::Parameters*) override;
+            std::vector<indk::OutputValue> getOutputValues(void *_model) override;
+            std::map<std::string, std::vector<indk::Position>> getReceptorPositions(void *_model) override;
+        };
+    }
 }
 
-#endif //INTERFERENCE_OPENCL_H
+#endif //INTERFERENCE_BACKENDS_OPENCL_H

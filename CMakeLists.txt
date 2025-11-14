@@ -23,8 +23,10 @@ set(TARGET_SOURCE
         src/backend.cpp                         include/indk/backend.h
         src/backends/native.cpp                 include/indk/backends/native.h
         src/backends/native_multithread.cpp     include/indk/backends/native_multithread.h
+        src/backends/opencl.cpp                 include/indk/backends/opencl.h
 
         src/translators/cpu.cpp                 include/indk/translators/cpu.h
+        src/translators/cl.cpp                  include/indk/translators/cl.h
 
         include/indk/types.h
 )

@@ -7,8 +7,8 @@
 // Licence:
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef INTERFERENCE_TRANSLATOR_CPU_H
-#define INTERFERENCE_TRANSLATOR_CPU_H
+#ifndef INTERFERENCE_TRANSLATOR_CL_H
+#define INTERFERENCE_TRANSLATOR_CL_H
 
 #include <cstdint>
 #include <string>
@@ -16,9 +16,13 @@
 #include <indk/neuron.h>
 #include <indk/types.h>
 
+#ifdef INDK_OPENCL_SUPPORT
+    #include <CL/cl2.hpp>
+#endif
+
 namespace indk {
     namespace Translators {
-        class CPU {
+        class CL {
         public:
             // synapse imprint
             typedef struct synapse_params {
@@ -60,16 +64,29 @@ namespace indk {
                 float *output;
             } NeuronParams;
 
-            typedef struct cpu_model_data {
-                std::map<std::string, NeuronParams*> objects;
-                std::vector<NeuronParams*> outputs;
-                indk::StateSyncMap sync_map;
-                uint64_t batch_size;
+            typedef struct cl_model_data {
+#ifdef INDK_OPENCL_SUPPORT
+                    cl::CommandQueue Queue;
+
+                    cl_float16 *PairsInfo;
+                    cl_float8 *ReceptorsInfo;
+                    cl_float3 *NeuronsInfo;
+                    cl_float2 *Inputs;
+                    cl_float *Outputs;
+
+//                    cl::Buffer PairsBuffer;
+//                    cl::Buffer ReceptorsBuffer;
+//                    cl::Buffer NeuronsBuffer;
+//                    cl::Buffer InputsBuffer;
+//                    cl::Buffer OutputsBuffer;
+#endif
+                uint64_t pair_pool_size;
+                uint64_t receptor_pool_size;
+                uint64_t neuron_pool_size;
+                uint64_t input_pool_size;
+                std::vector<void*> objects;
                 bool learning_mode;
             } ModelData;
-
-            static NeuronParams* doTranslateNeuronToInstance(indk::Neuron *neuron, indk::Neuron *nfrom, NeuronParams *pfrom,
-                                                             std::map<void*, NeuronParams*>& nobjects, std::map<std::string, NeuronParams*>& objects);
 
             static void* doTranslate(const indk::LinkList& links, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync);
             static void doReset(ModelData *model);
@@ -79,4 +96,4 @@ namespace indk {
     }
 }
 
-#endif //INTERFERENCE_TRANSLATOR_CPU_H
+#endif //INTERFERENCE_TRANSLATOR_CL_H

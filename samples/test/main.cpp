@@ -13,7 +13,7 @@
 #include <indk/profiler.h>
 #include <iomanip>
 #include "indk/backends/native_multithread.h"
-
+#include "indk/backends/opencl.h"
 
 indk::NeuralNet NN;
 std::vector<std::vector<float>> X;
@@ -104,9 +104,14 @@ int main() {
     const unsigned TOTAL_TEST_COUNT                         = STRUCTURE_COUNT*backends.size();
 
     // setting up parameters
-    indk::ComputeBackends::NativeCPUMultithread::Parameters parameters;
-    parameters.worker_count = 4;
-    indk::System::setComputeBackendParameters(indk::System::ComputeBackends::NativeCPUMultithread, &parameters);
+    indk::ComputeBackends::NativeCPUMultithread::Parameters parameters_mt;
+    parameters_mt.worker_count = 4;
+    indk::System::setComputeBackendParameters(indk::System::ComputeBackends::NativeCPUMultithread, &parameters_mt);
+
+    indk::ComputeBackends::OpenCL::Parameters parameters_cl;
+    parameters_cl.device_name = "gfx1036";
+    indk::System::setComputeBackendParameters(indk::System::ComputeBackends::OpenCL, &parameters_cl);
+
     indk::System::setVerbosityLevel(1);
 
     int count = 0;
