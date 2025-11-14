@@ -69,7 +69,10 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
             if (o.second->t == csize) continue;
             if (!model->learning_mode) {
                 auto f = model->sync_map.find(o.second->name);
-                if (f != model->sync_map.end()) continue;
+                if (f != model->sync_map.end()) {
+                    o.second -> t = csize;
+                    continue;
+                }
             }
             p = 0;
 
@@ -206,8 +209,44 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
             std::cout << "[processing error] no signal passing" << std::endl;
             break;
         }
-
 //        std::cout << std::endl;
+    }
+
+    if (!model->learning_mode) {
+        for (const auto &obj: model->sync_map) {
+            auto to = model->objects.find(obj.first);
+            auto from = model->objects.find(obj.second);
+            if (to != model->objects.end() && from != model->objects.end()) {
+                auto neuron1 = to->second;
+                auto neuron2 = from->second;
+                neuron1 -> t = neuron2 -> t.load();
+
+                if (neuron1->receptor_count != neuron2->receptor_count) continue;
+
+                for (int i = 0; i < neuron1->receptor_count; i++) {
+                    auto r1 = neuron1 -> receptors[i];
+                    auto r2 = neuron2 -> receptors[i];
+                    r1.fi = r2.fi;
+                    r1.l = r2.l;
+                    r1.rs = r2.rs;
+                    std::memcpy(r1.position, r2.position, sizeof(float)*neuron1->dimension_count);
+                }
+
+                if (neuron1->entry_count != neuron2->entry_count) continue;
+
+                for (int j = 0; j < neuron1->entry_count; j++) {
+                    auto e1 = neuron1->entries[j];
+                    auto e2 = neuron2->entries[j];
+                    if (e1.synapse_count != e2.synapse_count) continue;
+                    for (unsigned int k = 0; k < e1.synapse_count; k++) {
+                        e1.synapses[k].gamma = e2.synapses[k].gamma;
+                        e1.synapses[k].d_gamma = e2.synapses[k].d_gamma;
+                        e1.synapses[k].l_gamma = e2.synapses[k].l_gamma;
+                        e1.synapses[k].l_d_gamma = e2.synapses[k].l_d_gamma;
+                    }
+                }
+            }
+        }
     }
 }
 
