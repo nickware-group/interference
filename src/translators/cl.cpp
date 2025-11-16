@@ -11,16 +11,17 @@
 #include <cstring>
 #include <algorithm>
 
-void* indk::Translators::CL::doTranslate(const indk::LinkList &links, const std::vector<std::string> &outputs, const indk::StateSyncMap& sync) {
+void* indk::Translators::CL::doTranslate(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string> &outputs, const indk::StateSyncMap& sync) {
     auto model = new ModelData;
 
+    model -> objects = neurons;
+    model -> outputs = outputs;
     model -> pair_pool_size = 0;
     model -> receptor_pool_size = 0;
     model -> input_pool_size = 0;
-    model -> neuron_pool_size = model->objects.size();
+    model -> neuron_pool_size = neurons.size();
 
-    for (const auto &o: model->objects) {
-        auto n = (indk::Neuron*)o;
+    for (const auto &n: neurons) {
         model -> pair_pool_size += n->getReceptorsCount() * n->getSynapsesCount();
         model -> receptor_pool_size += n->getReceptorsCount();
         model -> input_pool_size += n->getEntriesCount();
@@ -38,10 +39,8 @@ void* indk::Translators::CL::doTranslate(const indk::LinkList &links, const std:
     uint64_t rx = 0, rxstart;
     uint64_t ex = 0, exstart;
 
-    for (uint64_t ni = 0; ni < model->objects.size(); ni++) {
-        auto n = (indk::Neuron*)model->objects[ni];
-
-        std::vector<std::pair<std::string, uint64_t>> emap;
+    for (uint64_t ni = 0; ni < neurons.size(); ni++) {
+        auto n = (indk::Neuron*)neurons[ni];
 
         rxstart = rx;
         exstart = ex;

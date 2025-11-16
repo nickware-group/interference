@@ -21,7 +21,7 @@ namespace indk {
             std::string CurrentDeviceName;
 #ifdef INDK_OPENCL_SUPPORT
             typedef struct device_context {
-//                cl::Device device;
+                cl::Device device;
                 cl::Kernel pairs;
                 cl::Kernel receptors;
                 cl::Kernel neurons;
@@ -29,7 +29,7 @@ namespace indk {
             } DeviceContext;
 
             cl::Context Context;
-            std::vector<DeviceContext> DeviceList;
+            std::map<std::string, DeviceContext> DeviceList;
 #endif
         public:
             typedef struct Parameters : public indk::ComputeBackend::Parameters {
@@ -37,8 +37,8 @@ namespace indk {
             } Parameters;
 
             OpenCL();
-            void doInitDevice();
-            void* doTranslate(const indk::LinkList& links, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync) override;
+            indk::ComputeBackends::OpenCL::DeviceContext doInitCurrentDevice();
+            void* doTranslate(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync) override;
             void doCompute(const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, void *_instance) override;
             void doReset(void*) override;
             void setMode(void *model, bool learning) override;

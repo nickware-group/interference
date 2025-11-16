@@ -17,7 +17,7 @@
 #include <indk/types.h>
 
 #ifdef INDK_OPENCL_SUPPORT
-    #include <CL/cl2.hpp>
+    #include <CL/cl.hpp>
 #endif
 
 namespace indk {
@@ -84,11 +84,13 @@ namespace indk {
                 uint64_t receptor_pool_size;
                 uint64_t neuron_pool_size;
                 uint64_t input_pool_size;
-                std::vector<void*> objects;
+                uint64_t t;
+                std::vector<indk::Neuron*> objects;
+                std::vector<std::string> outputs;
                 bool learning_mode;
             } ModelData;
 
-            static void* doTranslate(const indk::LinkList& links, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync);
+            static void* doTranslate(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync);
             static void doReset(ModelData *model);
 
             static std::string getTranslatorName();

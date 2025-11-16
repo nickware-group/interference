@@ -11,6 +11,7 @@
 #include <indk/backends/opencl.h>
 #include <indk/math.h>
 #include <indk/instance.h>
+#include <algorithm>
 
 #define KERNEL(name, ...) std::string name = #__VA_ARGS__
 
@@ -35,11 +36,13 @@ indk::ComputeBackends::OpenCL::OpenCL() {
         std::vector<cl::Device> devices;
         p.getDevices(CL_DEVICE_TYPE_ALL, &devices);
         for (auto &d: devices) {
-            std::cout << "Device: " << d.getInfo<CL_DEVICE_NAME>() << std::endl;
+            auto name = d.getInfo<CL_DEVICE_NAME>();
+            std::cout << "Device: " << name << std::endl;
+            if (CurrentDeviceName.empty()) CurrentDeviceName = name;
             DeviceContext device;
             device.ready = false;
-
-            DeviceList.emplace_back(device);
+            device.device = d;
+            DeviceList.insert(std::make_pair(name, device));
 //            DeviceList.back().device = d;
 //            DeviceList.back().ready = false;
         }
@@ -51,43 +54,16 @@ indk::ComputeBackends::OpenCL::OpenCL() {
 #endif
 }
 
-void indk::ComputeBackends::OpenCL::doInitDevice() {
-    auto dcontext = DeviceList[0];
-    std::vector<cl::Platform> platforms;
-    std::vector<cl::Device> devices;
+indk::ComputeBackends::OpenCL::DeviceContext indk::ComputeBackends::OpenCL::doInitCurrentDevice() {
+    auto found = DeviceList.find(CurrentDeviceName);
 
-    cl::Platform::get(&platforms);
-
-    if (platforms.empty()) {
-        std::cerr << "No platforms found. Check OpenCL installation!" << std::endl;
-        return;
-    }
-    cl::Platform platform = platforms[2];
-    platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
-
-    if (devices.empty()) {
-        std::cerr << "No devices found. Check OpenCL installation!" << std::endl;;
-        return;
+    if (found == DeviceList.end()) {
+        return {}; // TODO: must be exception
     }
 
-//    for (auto &p: platforms) {
-//        std::cout << "Platform: " << p.getInfo<CL_PLATFORM_NAME>() << std::endl;
-//        bool found = false;
-//
-//        p.getDevices(CL_DEVICE_TYPE_ALL, &devices);
-//        for (int i = 0; i < devices.size(); i++) {
-//            auto name = devices[i].getInfo<CL_DEVICE_NAME>();
-//            std::cout << "Device: " << devices[i].getInfo<CL_DEVICE_NAME>() << std::endl;
-//            if (CurrentDeviceName == name) {
-////                device = devices[i];
-//                found = true;
-//                break;
-//            }
-//        }
-//        if (found) break;
-//    }
+    auto dcontext = found->second;
 
-    cl::Device device = devices[0];
+    if (dcontext.ready) return dcontext;
 
     KERNEL(kernel_code_pairs,
            __kernel void indk_kernel_pairs(__global float16 *pairs, __global float2 *inputs) {
@@ -211,24 +187,21 @@ void indk::ComputeBackends::OpenCL::doInitDevice() {
 
     int status;
 
-    std::cout << "Using device  : " << device.getInfo<CL_DEVICE_NAME>() << " (CU: " << device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << ")" << std::endl;
-    std::cout << "Driver version: " << device.getInfo<CL_DRIVER_VERSION>() << std::endl;
-
     auto pairs = cl::Program(Context, {kernel_code_pairs.c_str(),kernel_code_pairs.length()+1});
-    if ((status = pairs.build({device})) != CL_SUCCESS) {
-        std::cerr << "Error building: status " << status << " " << pairs.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << std::endl;
+    if ((status = pairs.build({dcontext.device})) != CL_SUCCESS) {
+        std::cerr << "Error building: status " << status << " " << pairs.getBuildInfo<CL_PROGRAM_BUILD_LOG>(dcontext.device) << std::endl;
 
     }
 
     auto receptors = cl::Program(Context, {kernel_code_receptors.c_str(),kernel_code_receptors.length()+1});
-    if ((status = receptors.build({device})) != CL_SUCCESS) {
-        std::cerr << "Error building: status " << status << " " << receptors.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << std::endl;
+    if ((status = receptors.build({dcontext.device})) != CL_SUCCESS) {
+        std::cerr << "Error building: status " << status << " " << receptors.getBuildInfo<CL_PROGRAM_BUILD_LOG>(dcontext.device) << std::endl;
 
     }
 
     auto neurons = cl::Program(Context, {kernel_code_neurons.c_str(),kernel_code_neurons.length()+1});
-    if ((status = neurons.build({device})) != CL_SUCCESS) {
-        std::cerr << "Error building: status " << status << " " << neurons.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << std::endl;
+    if ((status = neurons.build({dcontext.device})) != CL_SUCCESS) {
+        std::cerr << "Error building: status " << status << " " << neurons.getBuildInfo<CL_PROGRAM_BUILD_LOG>(dcontext.device) << std::endl;
 
     }
 
@@ -237,21 +210,19 @@ void indk::ComputeBackends::OpenCL::doInitDevice() {
     dcontext.neurons = cl::Kernel(neurons, "indk_kernel_neurons");
 
     dcontext.ready = true;
+
+    return dcontext;
 }
 
-void* indk::ComputeBackends::OpenCL::doTranslate(const indk::LinkList &links, const std::vector<std::string> &outputs, const indk::StateSyncMap &sync) {
-    return indk::Translators::CL::doTranslate(links, outputs, sync);
+void* indk::ComputeBackends::OpenCL::doTranslate(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string> &outputs, const indk::StateSyncMap &sync) {
+    return indk::Translators::CL::doTranslate(neurons, outputs, sync);
 }
 
 void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, void *_model) {
     auto model = (indk::Translators::CL::ModelData*)_model;
 
 #ifdef INDK_OPENCL_SUPPORT
-    auto dcontext = DeviceList[0];
-
-    if (!dcontext.ready) doInitDevice();
-
-    std::cout << "Ready" << std::endl;
+    auto dcontext = doInitCurrentDevice();
 
     cl::Buffer pairs_buffer(Context, CL_MEM_READ_WRITE, sizeof(cl_float16)*model->pair_pool_size);
     cl::Buffer receptors_buffer(Context, CL_MEM_READ_WRITE, sizeof(cl_float8)*model->receptor_pool_size);
@@ -271,53 +242,52 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
     dcontext.neurons.setArg(2, inputs_buffer);
     dcontext.neurons.setArg(3, outputs_buffer);
 
-//    auto Queue = cl::CommandQueue(Context, dcontext.device);
-//    Queue.enqueueWriteBuffer(pairs_buffer, CL_TRUE, 0, sizeof(cl_float16)*model->pair_pool_size, model->PairsInfo);
-//    Queue.enqueueWriteBuffer(receptors_buffer, CL_TRUE, 0, sizeof(cl_float8)*model->receptor_pool_size, model->ReceptorsInfo);
-//    Queue.enqueueWriteBuffer(neurons_buffer, CL_TRUE, 0, sizeof(cl_float3)*model->neuron_pool_size, model->NeuronsInfo);
-//    Queue.enqueueWriteBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size,  model->Outputs);
+    auto Queue = cl::CommandQueue(Context, dcontext.device);
+    Queue.enqueueWriteBuffer(pairs_buffer, CL_TRUE, 0, sizeof(cl_float16)*model->pair_pool_size, model->PairsInfo);
+    Queue.enqueueWriteBuffer(receptors_buffer, CL_TRUE, 0, sizeof(cl_float8)*model->receptor_pool_size, model->ReceptorsInfo);
+    Queue.enqueueWriteBuffer(neurons_buffer, CL_TRUE, 0, sizeof(cl_float3)*model->neuron_pool_size, model->NeuronsInfo);
+    Queue.enqueueWriteBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size,  model->Outputs);
 
-    uint64_t xi = 0;
-    for (const auto &o: model->objects) {
-        auto n = (indk::Neuron*)o;
-//        auto state = n->getState(n->getTime());
-//        auto ec = n -> getEntriesCount();
-//
-//        for (int j = 0; j < ec; j++) {
-//            auto e = n -> getEntry(j);
-//            if (state == indk::Neuron::States::Pending) {
-//                Inputs[xi] = {
-//                        static_cast<cl_float>(1),
-//                        static_cast<cl_float>(e->getIn()),
-//                };
-//            } else {
-//                Inputs[xi] = {
-//                        static_cast<cl_float>(0),
-//                        static_cast<cl_float>(0),
-//                };
-//            }
-//            xi++;
-//        }
+    model->t = 0;
+
+    while (model->t < x[0].size()) {
+        uint64_t xi = 0;
+        for (const auto &o: model->objects) {
+            auto n = (indk::Neuron*)o;
+            auto elist = n -> getEntries();
+
+            for (const auto &e: elist) {
+                auto found = std::find(inputs.begin(), inputs.end(), e);
+                if (found != inputs.end()) {
+                    auto index = std::distance(inputs.begin(), found);
+                    model->Inputs[xi] = {
+                            static_cast<cl_float>(1),
+                            static_cast<cl_float>(x[index][model->t]),
+                    };
+                } else {
+                    model->Inputs[xi] = {
+                            static_cast<cl_float>(0),
+                            static_cast<cl_float>(0),
+                    };
+                }
+                xi++;
+            }
+        }
+
+        Queue.enqueueWriteBuffer(inputs_buffer, CL_TRUE, 0, sizeof(cl_float2)*model->input_pool_size, model->Inputs);
+
+        Queue.enqueueNDRangeKernel(dcontext.pairs, cl::NullRange, cl::NDRange(model->pair_pool_size), cl::NullRange);
+        Queue.finish();
+        Queue.enqueueNDRangeKernel(dcontext.receptors, cl::NullRange, cl::NDRange(model->receptor_pool_size), cl::NullRange);
+        Queue.finish();
+        Queue.enqueueNDRangeKernel(dcontext.neurons, cl::NullRange, cl::NDRange(model->neuron_pool_size), cl::NullRange);
+        Queue.finish();
+
+        model->t++;
     }
 
-//    Queue.enqueueWriteBuffer(inputs_buffer, CL_TRUE, 0, sizeof(cl_float2)*model->input_pool_size, model->Inputs);
-//
-//    Queue.enqueueNDRangeKernel(dcontext.pairs, cl::NullRange, cl::NDRange(model->pair_pool_size), cl::NullRange);
-//    Queue.finish();
-//    Queue.enqueueNDRangeKernel(dcontext.receptors, cl::NullRange, cl::NDRange(model->receptor_pool_size), cl::NullRange);
-//    Queue.finish();
-//    Queue.enqueueNDRangeKernel(dcontext.neurons, cl::NullRange, cl::NDRange(model->neuron_pool_size), cl::NullRange);
-//    Queue.finish();
-//
-//    Queue.enqueueReadBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size, model->Outputs);
-
-//    for (int ni = 0; ni < Objects.size(); ni++) {
-//        if (Inputs[(int)NeuronsInfo[ni].s2].s0 == 0) {
-//            continue;
-//        }
-//        auto n = (indk::Neuron*)Objects[ni];
-//        n -> doFinalizeInput(Outputs[ni]);
-//    }
+    Queue.enqueueReadBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size, model->Outputs);
+    Queue.finish();
 #endif
 }
 
@@ -338,13 +308,18 @@ std::vector<indk::OutputValue> indk::ComputeBackends::OpenCL::getOutputValues(vo
     auto model = (indk::Translators::CL::ModelData*)_model;
 
     std::vector<indk::OutputValue> outputs;
-//    outputs.reserve(model->outputs.size());
-//
-//    for (const auto &o: model->outputs) {
-//        auto value = o->t == 0 ? 0 : o->output[o->t-1];
-//        indk::OutputValue output = {.value=value, .source=o->name, .time=o->t};
-//        outputs.emplace_back(output);
-//    }
+    outputs.reserve(model->outputs.size());
+
+    for (const auto &o: model->outputs) {
+        auto found = std::find_if(model->objects.begin(), model->objects.end(), [o](indk::Neuron *n){ return n->getName() == o; });
+        if (found != model->objects.end()) {
+            auto index = std::distance(model->objects.begin(), found);
+//            std::cout << o << " " << model->Outputs[index] << std::endl;
+            auto value = model->t == 0 ? 0 : model->Outputs[index];
+            indk::OutputValue output = {.value=value, .source=o, .time=model->t};
+            outputs.emplace_back(output);
+        }
+    }
 
     return outputs;
 }

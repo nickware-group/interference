@@ -89,7 +89,7 @@ int doTests(const std::string& name, float ref) {
             count += doTest(ref, info.backend_id); // using backend id as instance id
         }
     }
-    std::cout << std::endl;
+    std::cout << std::endl << std::endl;
 
     return count;
 }
@@ -108,9 +108,9 @@ int main() {
     parameters_mt.worker_count = 4;
     indk::System::setComputeBackendParameters(indk::System::ComputeBackends::NativeCPUMultithread, &parameters_mt);
 
-    indk::ComputeBackends::OpenCL::Parameters parameters_cl;
-    parameters_cl.device_name = "gfx1036";
-    indk::System::setComputeBackendParameters(indk::System::ComputeBackends::OpenCL, &parameters_cl);
+//    indk::ComputeBackends::OpenCL::Parameters parameters_cl;
+//    parameters_cl.device_name = "NVIDIA GeForce RTX 5070";
+//    indk::System::setComputeBackendParameters(indk::System::ComputeBackends::OpenCL, &parameters_cl);
 
     indk::System::setVerbosityLevel(1);
 
