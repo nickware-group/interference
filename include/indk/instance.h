@@ -35,7 +35,7 @@ namespace indk {
     public:
         ComputeInstanceManager() = default;
         void doCreateInstance(int backend = indk::System::ComputeBackends::NativeCPU);
-        void doTranslateToInstance(const indk::LinkList& links, const std::vector<std::string>& outputs, const indk::StateSyncMap &sync, int iid = 0);
+        void doTranslateToInstance(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string>& outputs, const indk::StateSyncMap &sync, int iid = 0);
         void doRunInstance(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs, int iid = 0);
         void doResetInstance(int iid = 0);
         void setMode(bool learning, int iid = 0);

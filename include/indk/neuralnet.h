@@ -27,7 +27,7 @@ namespace indk {
         CompareNormalized
     } PatternCompareFlags;
 
-    typedef std::queue<std::tuple<std::string, std::string, void*, int64_t>> NQueue;
+    typedef std::queue<std::string> NQueue;
     typedef std::vector<std::pair<std::string, std::vector<std::string>>> EntryList;
 
     /**
@@ -47,8 +47,9 @@ namespace indk {
         StateSyncMap StateSyncList;
 
         int64_t doFindEntry(const std::string&);
-        void doParseLinks(const EntryList&, const std::string&);
+//        void doParseLinks(const EntryList&, const std::string&);
         void doSyncNeuronStates(const std::string&);
+        std::vector<indk::Neuron*> doParseActiveNeurons(const std::vector<std::string>& inputs);
 
         indk::LinkList Links;
         std::string PrepareID;

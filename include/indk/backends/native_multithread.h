@@ -58,7 +58,7 @@ namespace indk {
             } Parameters;
 
             NativeCPUMultithread();
-            void* doTranslate(const indk::LinkList& links, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync) override;
+            void* doTranslate(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync) override;
             void doCompute(const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, void *_model) override;
             void doReset(void*) override;
             void setMode(void *model, bool learning) override;

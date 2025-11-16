@@ -30,8 +30,8 @@ indk::ComputeBackends::NativeCPUMultithread::NativeCPUMultithread() {
     Ready = true;
 }
 
-void* indk::ComputeBackends::NativeCPUMultithread::doTranslate(const indk::LinkList &links, const std::vector<std::string> &outputs, const indk::StateSyncMap& sync) {
-    return indk::Translators::CPU::doTranslate(links, outputs, sync);
+void* indk::ComputeBackends::NativeCPUMultithread::doTranslate(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string> &outputs, const indk::StateSyncMap& sync) {
+    return indk::Translators::CPU::doTranslate(neurons, outputs, sync);
 }
 
 void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, void *_model) {

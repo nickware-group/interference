@@ -68,10 +68,9 @@ namespace indk {
                 bool learning_mode;
             } ModelData;
 
-            static NeuronParams* doTranslateNeuronToInstance(indk::Neuron *neuron, indk::Neuron *nfrom, NeuronParams *pfrom,
-                                                             std::map<void*, NeuronParams*>& nobjects, std::map<std::string, NeuronParams*>& objects);
+            static NeuronParams* doTranslateNeuronToInstance(indk::Neuron *neuron, std::map<std::string, NeuronParams*>& objects);
 
-            static void* doTranslate(const indk::LinkList& links, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync);
+            static void* doTranslate(const std::vector<indk::Neuron*> &neurons, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync);
             static void doReset(ModelData *model);
 
             static std::string getTranslatorName();

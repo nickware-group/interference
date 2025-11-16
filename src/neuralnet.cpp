@@ -278,155 +278,123 @@ void indk::NeuralNet::doReset(int instance) {
 //        } else if (Xx.empty()) indk::System::getComputeBackend() -> doWaitTarget();
 //    }
 //}
+//
+//void indk::NeuralNet::doParseLinks(const EntryList& entries, const std::string& id) {
+//    if (id == PrepareID) return;
+//
+//    Links.clear();
+//
+//    NQueue nqueue;
+//
+//    for (auto &e: entries) {
+//        for (auto &en: e.second) {
+//            nqueue.emplace(e.first, en, nullptr, 0);
+//        }
+//    }
+//
+//    while (!nqueue.empty()) {
+//        auto i = nqueue.front();
+//        nqueue.pop();
+//
+//        auto from = std::get<0>(i);
+//        auto to = std::get<1>(i);
+//        auto latency = std::get<3>(i);
+//
+//        auto n = Neurons.find(to);
+//
+//        if (n != Neurons.end()) {
+//            bool skip = false;
+//            for (auto l: Links) {
+//                if (from == std::get<0>(l) && to == std::get<1>(l)) {
+//                    skip = true;
+//                    break;
+//                }
+//            }
+//            if (skip) continue;
+//            auto nprev = Neurons.find(from);
+//            auto type = 0;
+//            if (nprev != Neurons.end()) Links.emplace_back(from, to, nprev->second, n->second, latency);
+//            else { // must be an entry
+//                Links.emplace_back(from, to, nullptr, n->second, latency);
+//            }
+//
+//            auto nlinks = n -> second -> getLinkOutput();
+//            for (auto &nl: nlinks) {
+//                auto shift = 0;
+//                auto nlatency = 0;
+//                auto lnext = Latencies.find(nl);
+//                if (lnext != Latencies.end()) nlatency = lnext -> second;
+//                auto lto = Latencies.find(to);
+//                auto latencyto = lto != Latencies.end() ? lto->second : 0;
+//                shift = nlatency-latencyto;
+//                nqueue.emplace(to, nl, nullptr, shift);
+//            }
+//        }
+//    }
+//
+//    std::sort(Links.begin(), Links.end(), [] (const indk::LinkDefinition& l1, const indk::LinkDefinition& l2) {
+//        if (std::get<4>(l1) < std::get<4>(l2)) return true;
+//        return false;
+//    });
+//
+////    std::cout << std::endl;
+////    for (auto l: Links) {
+////        std::cerr << std::get<0>(l) << " -> " << std::get<1>(l) << " " << std::get<4>(l) << std::endl;
+////    }
+//
+//    PrepareID = id;
+//}
 
-void indk::NeuralNet::doParseLinks(const EntryList& entries, const std::string& id) {
-    if (id == PrepareID) return;
-
-    Links.clear();
+std::vector<indk::Neuron*> indk::NeuralNet::doParseActiveNeurons(const std::vector<std::string>& inputs) {
+    std::vector<indk::Neuron*> aneurons;
 
     NQueue nqueue;
 
-    for (auto &e: entries) {
-        for (auto &en: e.second) {
-            nqueue.emplace(e.first, en, nullptr, 0);
+    for (auto &e: Entries) {
+        auto found = std::find(inputs.begin(), inputs.end(), e.first);
+        if (found != inputs.end()) {
+            for (auto &en: e.second) {
+                nqueue.emplace(en);
+            }
         }
     }
 
     while (!nqueue.empty()) {
-        auto i = nqueue.front();
+        auto nname = nqueue.front();
         nqueue.pop();
 
-        auto from = std::get<0>(i);
-        auto to = std::get<1>(i);
-        auto latency = std::get<3>(i);
-
-        auto n = Neurons.find(to);
+        auto n = Neurons.find(nname);
 
         if (n != Neurons.end()) {
-            bool skip = false;
-            for (auto l: Links) {
-                if (from == std::get<0>(l) && to == std::get<1>(l)) {
-                    skip = true;
-                    break;
-                }
-            }
-            if (skip) continue;
-            auto nprev = Neurons.find(from);
-            auto type = 0;
-            if (nprev != Neurons.end()) Links.emplace_back(from, to, nprev->second, n->second, latency);
-            else { // must be an entry
-                Links.emplace_back(from, to, nullptr, n->second, latency);
-            }
+            auto found = std::find(aneurons.begin(), aneurons.end(), n->second);
+            if (found != aneurons.end()) continue;
+
+            aneurons.push_back(n->second);
 
             auto nlinks = n -> second -> getLinkOutput();
             for (auto &nl: nlinks) {
-                auto shift = 0;
-                auto nlatency = 0;
-                auto lnext = Latencies.find(nl);
-                if (lnext != Latencies.end()) nlatency = lnext -> second;
-                auto lto = Latencies.find(to);
-                auto latencyto = lto != Latencies.end() ? lto->second : 0;
-                shift = nlatency-latencyto;
-                nqueue.emplace(to, nl, nullptr, shift);
+                nqueue.emplace(nl);
             }
         }
     }
-
-    std::sort(Links.begin(), Links.end(), [] (const indk::LinkDefinition& l1, const indk::LinkDefinition& l2) {
-        if (std::get<4>(l1) < std::get<4>(l2)) return true;
-        return false;
-    });
 
 //    std::cout << std::endl;
 //    for (auto l: Links) {
 //        std::cerr << std::get<0>(l) << " -> " << std::get<1>(l) << " " << std::get<4>(l) << std::endl;
 //    }
-
-    PrepareID = id;
+    return aneurons;
 }
 
 void indk::NeuralNet::doStructurePrepare() {
-    doParseLinks(Entries, "all");
+//    doParseLinks(Entries, "all");
 }
-
-/**
- * Send signals to neural network and get output signals.
- * @param Xx Input data vector that contain signals.
- * @return Output signals.
- */
-//std::vector<indk::OutputValue> indk::NeuralNet::doSignalTransfer(const std::vector<std::vector<float>>& Xx, const std::vector<std::string>& inputs) {
-//    std::vector<void*> v;
-//    std::vector<std::string> nsync;
-//    EntryList eentries;
-//
-//    if (inputs.empty()) {
-//        doParseLinks(Entries, "all");
-//        eentries = Entries;
-//    } else {
-//        std::string eseq;
-//        for (const auto &e: inputs) {
-//            auto ne = doFindEntry(e);
-//            if (ne != -1) {
-//                eentries.emplace_back(Entries[ne]);
-//                eseq.append(e);
-//                if (StateSyncEnabled) {
-//                    for (auto &nname: Entries[ne].second) {
-//                        nsync.push_back(nname);
-//                    }
-//                }
-//            }
-//        }
-//        doParseLinks(eentries, eseq);
-//    }
-//
-//    switch (indk::System::getComputeBackendKind()) {
-//        case indk::System::ComputeBackends::Default:
-//            doReserveSignalBuffer(1);
-//            for (auto &X: Xx) {
-//                doSignalProcessStart({X}, eentries);
-//                indk::Profiler::doEmit(this, indk::Profiler::EventFlags::EventTick);
-//            }
-//            break;
-//
-//        case indk::System::ComputeBackends::Multithread:
-//            if (getSignalBufferSize() != Xx.size()) doReserveSignalBuffer(Xx.size());
-//            for (const auto &n: Neurons) v.push_back((void*)n.second);
-//            indk::System::getComputeBackend() -> doRegisterHost(v);
-//            doSignalProcessStart(Xx, eentries);
-//            indk::System::getComputeBackend() -> doWaitTarget();
-//            indk::System::getComputeBackend() -> doUnregisterHost();
-//            break;
-//
-//        case indk::System::ComputeBackends::OpenCL:
-//            if (getSignalBufferSize() != Xx.size()) doReserveSignalBuffer(Xx.size());
-//            for (const auto &n: Neurons) v.push_back((void*)n.second);
-//            indk::System::getComputeBackend() -> doRegisterHost(v);
-//            for (auto &X: Xx) {
-//                doSignalProcessStart({X}, eentries);
-//            }
-//            doSignalProcessStart({}, eentries);
-//            indk::System::getComputeBackend() -> doUnregisterHost();
-//            break;
-//    }
-//
-//    LastUsedComputeBackend = indk::System::getComputeBackendKind();
-//    indk::Profiler::doEmit(this, indk::Profiler::EventFlags::EventProcessed);
-//
-//    if (!inputs.empty() && StateSyncEnabled) {
-//        for (const auto &name: nsync) {
-//            doSyncNeuronStates(name);
-//        }
-//    }
-//
-//    return doSignalReceive();
-//}
 
 void indk::NeuralNet::doCreateInstance(int backend) {
     InstanceManager.doCreateInstance(backend);
 }
 
 std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs, bool mode, int instance) {
-    doParseLinks(Entries, "all");
+//    doParseLinks(Entries, "all");
 
 //    std::vector<std::string> nsync;
     std::vector<std::string> entries = inputs;
@@ -437,6 +405,8 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vecto
         }
     }
 
+    auto aneurons = doParseActiveNeurons(entries);
+
 //
 //    if (inputs.empty()) {
 //        doParseLinks(Entries, "all");
@@ -458,7 +428,7 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vecto
 //        doParseLinks(eentries, eseq);
 //    }
 
-    InstanceManager.doTranslateToInstance(Links, Outputs, StateSyncList, instance);
+    InstanceManager.doTranslateToInstance(aneurons, Outputs, StateSyncList, instance);
     InstanceManager.setMode(mode, instance);
     InstanceManager.doRunInstance(x, entries, instance);
 

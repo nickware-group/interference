@@ -11,26 +11,7 @@
 #include <cstring>
 #include <algorithm>
 
-indk::Translators::CPU::NeuronParams* indk::Translators::CPU::doTranslateNeuronToInstance(indk::Neuron *neuron, indk::Neuron *nfrom,
-                                                                                          NeuronParams *pfrom,
-                                                                                          std::map<void*, NeuronParams*> &nobjects,
-                                                                                          std::map<std::string, NeuronParams*> &objects) {
-    if (!neuron) return nullptr;
-    auto found = nobjects.find(neuron);
-
-    if (found != nobjects.end()) {
-        if (nfrom != nullptr) {
-            for (int j = 0; j < neuron->getEntriesCount(); j++) {
-                if (found->second->entries[j].input_from == nfrom->getName()) {
-                    found->second->entries[j].input = pfrom;
-                    found->second->entries[j].entry_type = 1;
-                }
-            }
-        }
-
-        return found->second;
-    }
-
+indk::Translators::CPU::NeuronParams* indk::Translators::CPU::doTranslateNeuronToInstance(indk::Neuron *neuron, std::map<std::string, NeuronParams*> &objects) {
     auto params = new NeuronParams();
     params -> name = neuron -> getName();
     params -> size = neuron -> getXm();
@@ -71,11 +52,11 @@ indk::Translators::CPU::NeuronParams* indk::Translators::CPU::doTranslateNeuronT
         }
 
         params -> entries[j].input = nullptr;
-        if (nfrom != nullptr) {
-            if (params->entries[j].input_from == nfrom->getName()) {
-                params -> entries[j].input = pfrom;
-                params -> entries[j].entry_type = 1;
-            }
+        auto found = objects.find(elist[j]);
+        if (found != objects.end()) {
+//            std::cout << params->name << " <- " << elist[j] << std::endl;
+            params -> entries[j].input = found->second;
+            params -> entries[j].entry_type = 1;
         }
     }
 
@@ -96,29 +77,34 @@ indk::Translators::CPU::NeuronParams* indk::Translators::CPU::doTranslateNeuronT
         }
     }
 
-    nobjects.emplace(neuron, params);
+    auto outputs = neuron -> getLinkOutput();
+    for (const auto &oname: outputs) {
+        auto found = objects.find(oname);
+        if (found != objects.end()) {
+            for (int i = 0; i < found->second->entry_count; i++) {
+                if (found->second->entries[i].input_from == params->name) {
+//                    std::cout << params->name << " -> " << oname << std::endl;
+                    found->second->entries[i].input = params;
+                    found->second->entries[i].entry_type = 1;
+                }
+            }
+        }
+    }
+
     objects.emplace(params->name, params);
     return params;
 }
 
-void* indk::Translators::CPU::doTranslate(const indk::LinkList &links, const std::vector<std::string> &outputs, const indk::StateSyncMap& sync) {
+void* indk::Translators::CPU::doTranslate(const std::vector<indk::Neuron*> &neurons, const std::vector<std::string> &outputs, const indk::StateSyncMap& sync) {
     auto model = new ModelData;
 
     model -> outputs.clear();
     model -> sync_map = sync;
     model -> batch_size = 0;
 
-    std::map<void*, NeuronParams*> nobjects;
-
-    for (const auto &l: links) {
-        auto from = std::get<0>(l);
-        auto to = std::get<1>(l);
-        auto nfrom = (indk::Neuron*)std::get<2>(l);
-        auto nto = (indk::Neuron*)std::get<3>(l);
-
-        // translating neurons
-        auto pfrom = doTranslateNeuronToInstance(nfrom, nullptr, nullptr, nobjects, model->objects);
-        doTranslateNeuronToInstance(nto, nfrom, pfrom, nobjects, model->objects);
+    // translating neurons
+    for (const auto &n: neurons) {
+        doTranslateNeuronToInstance(n, model->objects);
     }
 
     // linking outputs

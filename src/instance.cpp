@@ -22,19 +22,19 @@ void indk::ComputeInstanceManager::doCreateInstance(int backend) {
     Instances.push_back(instance);
 }
 
-void indk::ComputeInstanceManager::doTranslateToInstance(const indk::LinkList& links, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync, int iid) {
+void indk::ComputeInstanceManager::doTranslateToInstance(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync, int iid) {
     if (iid >= Instances.size()) {
         if (!iid) doCreateInstance();
         else return; // exception
     }
 
-    if (links.empty()) {
-        std::cout << "err no links" << std::endl;
+    if (neurons.empty()) {
+        std::cout << "err no neurons" << std::endl;
         return; // TODO: exception
     }
 
     auto instance = Instances[iid];
-    instance -> model_data = instance -> backend -> doTranslate(links, outputs, sync);
+    instance -> model_data = instance -> backend -> doTranslate(neurons, outputs, sync);
 }
 
 void indk::ComputeInstanceManager::doRunInstance(const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, int iid) {
