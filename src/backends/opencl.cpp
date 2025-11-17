@@ -291,6 +291,9 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
     }
 
     queue.enqueueReadBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size, model->Outputs);
+
+    queue.enqueueReadBuffer(pairs_buffer, CL_TRUE, 0, sizeof(cl_float16)*model->pair_pool_size, model->PairsInfo);
+    queue.enqueueReadBuffer(receptors_buffer, CL_TRUE, 0, sizeof(cl_float8)*model->receptor_pool_size, model->ReceptorsInfo);
 #endif
 }
 
