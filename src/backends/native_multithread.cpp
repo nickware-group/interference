@@ -306,32 +306,10 @@ void indk::ComputeBackends::NativeCPUMultithread::setParameters(indk::ComputeBac
     }
 }
 
-std::vector<indk::OutputValue> indk::ComputeBackends::NativeCPUMultithread::getOutputValues(void *_model) {
-    auto model = (indk::Translators::CPU::ModelData*)_model;
-
-    std::vector<indk::OutputValue> outputs;
-    outputs.reserve(model->outputs.size());
-
-    for (const auto &o: model->outputs) {
-        auto value = o->t == 0 ? 0 : o->output[o->t-1];
-        indk::OutputValue output = {.value=value, .source=o->name, .time=o->t};
-        outputs.emplace_back(output);
-    }
-
-    return outputs;
+std::vector<indk::OutputValue> indk::ComputeBackends::NativeCPUMultithread::getOutputValues(void *model) {
+    return indk::Translators::CPU::getOutputValues((indk::Translators::CPU::ModelData*)model);
 }
 
-std::map<std::string, std::vector<indk::Position>> indk::ComputeBackends::NativeCPUMultithread::getReceptorPositions(void *_model) {
-    auto model = (indk::Translators::CPU::ModelData*)_model;
-
-    std::map<std::string, std::vector<indk::Position>> list;
-
-    for (auto &n: model->objects) {
-        std::vector<indk::Position> positions;
-        for (uint64_t r = 0; r < n.second->receptor_count; r++) {
-            positions.emplace_back(n.second->size, std::vector<float>(n.second->receptors[r].position, n.second->receptors[r].position+n.second->dimension_count));
-        }
-        list.insert(std::make_pair(n.second->name, positions));
-    }
-    return list;
+std::map<std::string, std::vector<indk::Position>> indk::ComputeBackends::NativeCPUMultithread::getReceptorPositions(void *model) {
+    return indk::Translators::CPU::getReceptorPositions((indk::Translators::CPU::ModelData*)model);
 }
