@@ -20,19 +20,22 @@ uint64_t getTimestampMS() {
 
 std::vector<std::vector<float>> doBuildInputVector(std::vector<BMPImage> images) {
     std::vector<std::vector<float>> input;
-    for (int d = 0; d < images[0].size(); d+=2) {
-        input.emplace_back();
-        for (int i = 0; i < images.size(); i++) {
-            for (int s = 0; s < 2; s++) {
+    for (int i = 0; i < images.size(); i++) {
+        for (int s = 0; s < 2; s++) {
+            std::vector<float> channels[3];
+            for (int d = s; d < images[i].size(); d+=2) {
                 float r = images[i][d+s][0];
                 float g = images[i][d+s][1];
                 float b = images[i][d+s][2];
                 auto rgbn = std::vector<float>({r/255, g/255, b/255});
                 auto HSI = RGB2HSI(rgbn[0], rgbn[1], rgbn[2]);
-                input.back().emplace_back(HSI[0]/(2*M_PI));
-                input.back().emplace_back(HSI[1]);
-                input.back().emplace_back(HSI[2]);
+                channels[0].emplace_back(HSI[0]/(2*M_PI));
+                channels[1].emplace_back(HSI[1]);
+                channels[2].emplace_back(HSI[2]);
             }
+            input.push_back(channels[0]);
+            input.push_back(channels[1]);
+            input.push_back(channels[2]);
         }
     }
     return input;
@@ -47,7 +50,6 @@ void doLog(const std::string& element, uint64_t time, float speed, bool endl = t
 }
 
 int main() {
-//    indk::System::setComputeBackend(indk::System::ComputeBackends::Multithread, 2);
     constexpr uint8_t TEACH_COUNT = 10;
     constexpr uint8_t TEST_COUNT = 10;
     constexpr uint8_t TEST_ELEMENTS = 10;
@@ -59,17 +61,18 @@ int main() {
     // load neural network structure from file
     std::ifstream structure(STRUCTURE_PATH);
     auto NN = new indk::NeuralNet(STRUCTURE_PATH);
+//    NN -> doCreateInstance();
     NN -> setStateSyncEnabled();
 //    NN -> doInterlinkInit(4408, 1);
 
     // replicate neurons for classification
     for (int i = 2; i <= TEACH_COUNT; i++) NN -> doReplicateEnsemble("A1", "A"+std::to_string(i), true);
 
-//    std::cout << "Threads     : " << indk::System::getComputeBackendParameter() << std::endl;
-    std::cout << "Model name  : " << NN->getName() << std::endl;
-    std::cout << "Model desc  : " << NN->getDescription() << std::endl;
-    std::cout << "Model ver   : " << NN->getVersion() << std::endl;
-    std::cout << "Neuron count: " << NN->getNeuronCount() << std::endl;
+    std::cout << "Model name           : " << NN->getName() << std::endl;
+    std::cout << "Model desc           : " << NN->getDescription() << std::endl;
+    std::cout << "Model ver            : " << NN->getVersion() << std::endl;
+    std::cout << "Neuron count         : " << NN->getNeuronCount() << std::endl;
+    std::cout << "Total parameter count: " << NN->getTotalParameterCount() << std::endl;
     std::cout << std::endl;
 
     // load the images
@@ -132,7 +135,7 @@ int main() {
     }
 
     std::cout << std::endl;
-    std::cout << "================================== SUMMARY ==================================" << std::endl;
+    std::cout << "================================== SUMMARY ===================================" << std::endl;
     std::cout << "Recognition accuracy: " << rcount/(TEST_COUNT*TEST_ELEMENTS) << " (" << rcount << "/" << TEST_COUNT*TEST_ELEMENTS << ")" << std::endl;
     std::cout << "Recognition time: " << Ttotal << " ms" << std::endl;
     std::cout << "Recognition speed: " << Stotal/(TEST_COUNT*TEST_ELEMENTS) << " mbit/s (" << 1000/(Ttotal/float(TEST_COUNT*TEST_ELEMENTS))  << " FPS)" << std::endl;

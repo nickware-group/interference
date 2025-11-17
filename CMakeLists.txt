@@ -89,6 +89,6 @@ install(TARGETS ${PROJECT_NAME}_static ARCHIVE DESTINATION ${CMAKE_SOURCE_DIR}/d
 install(DIRECTORY include DESTINATION ${CMAKE_SOURCE_DIR}/dist)
 
 add_subdirectory(samples/test)
-#add_subdirectory(samples/vision)
+add_subdirectory(samples/vision)
 #add_subdirectory(samples/multimodal)
 #add_subdirectory(samples/lang)
