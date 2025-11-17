@@ -36,25 +36,20 @@ namespace indk {
     class NeuralNet {
     private:
         std::string Name, Description, Version;
-        int64_t t;
 
         EntryList Entries;
         std::map<std::string, std::vector<std::string>> Ensembles;
         std::map<std::string, indk::Neuron*> Neurons;
-        std::map<std::string, int> Latencies;
         std::vector<std::string> Outputs;
 
         StateSyncMap StateSyncList;
 
         int64_t doFindEntry(const std::string&);
-//        void doParseLinks(const EntryList&, const std::string&);
-        void doSyncNeuronStates(const std::string&);
         std::vector<indk::Neuron*> doParseActiveNeurons(const std::vector<std::string>& inputs);
 
-        indk::LinkList Links;
+        std::vector<indk::Neuron*> LastActiveNeurons;
         std::string PrepareID;
         bool StateSyncEnabled;
-        int LastUsedComputeBackend;
 
         indk::Interlink *InterlinkService;
         std::vector<std::vector<std::string>> InterlinkDataBuffer;
@@ -84,6 +79,7 @@ namespace indk {
         void doStructurePrepare();
 
         void doCreateInstance(int backend = indk::System::ComputeBackends::NativeCPU);
+        void doCreateInstances(int count, int backend = indk::System::ComputeBackends::NativeCPU);
 
         std::vector<indk::OutputValue> doLearn(const std::vector<std::vector<float>>&, bool prepare = true, const std::vector<std::string>& inputs = {}, int instance = 0);
         std::vector<indk::OutputValue> doRecognise(const std::vector<std::vector<float>>&, bool prepare = true, const std::vector<std::string>& inputs = {}, int instance = 0);
@@ -114,6 +110,7 @@ namespace indk {
         indk::Neuron* getNeuron(const std::string&);
         std::vector<indk::Neuron*> getNeurons();
         uint64_t getNeuronCount();
+        uint64_t getTotalParameterCount();
         ~NeuralNet();
     };
 }
