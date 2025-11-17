@@ -50,10 +50,11 @@ void doLoadModel(const std::string& path, int size) {
     }
     NN.doStructurePrepare();
 
-    std::cout << "Model name  : " << NN.getName() << std::endl;
-    std::cout << "Model desc  : " << NN.getDescription() << std::endl;
-    std::cout << "Model ver   : " << NN.getVersion() << std::endl;
-    std::cout << "Neuron count: " << NN.getNeuronCount() << std::endl;
+    std::cout << "Model name           : " << NN.getName() << std::endl;
+    std::cout << "Model desc           : " << NN.getDescription() << std::endl;
+    std::cout << "Model ver            : " << NN.getVersion() << std::endl;
+    std::cout << "Neuron count         : " << NN.getNeuronCount() << std::endl;
+    std::cout << "Total parameter count: " << NN.getTotalParameterCount() << std::endl;
     std::cout << std::endl;
 }
 

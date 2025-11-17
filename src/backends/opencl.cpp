@@ -55,6 +55,9 @@ indk::ComputeBackends::OpenCL::OpenCL() {
 }
 
 indk::ComputeBackends::OpenCL::DeviceContext indk::ComputeBackends::OpenCL::doInitCurrentDevice() {
+    if (!Ready) return {};
+
+#ifdef INDK_OPENCL_SUPPORT
     auto found = DeviceList.find(CurrentDeviceName);
 
     if (found == DeviceList.end()) {
@@ -212,6 +215,7 @@ indk::ComputeBackends::OpenCL::DeviceContext indk::ComputeBackends::OpenCL::doIn
     dcontext.ready = true;
 
     return dcontext;
+#endif
 }
 
 void* indk::ComputeBackends::OpenCL::doTranslate(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string> &outputs, const indk::StateSyncMap &sync) {
@@ -242,11 +246,11 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
     dcontext.neurons.setArg(2, inputs_buffer);
     dcontext.neurons.setArg(3, outputs_buffer);
 
-    auto Queue = cl::CommandQueue(Context, dcontext.device);
-    Queue.enqueueWriteBuffer(pairs_buffer, CL_TRUE, 0, sizeof(cl_float16)*model->pair_pool_size, model->PairsInfo);
-    Queue.enqueueWriteBuffer(receptors_buffer, CL_TRUE, 0, sizeof(cl_float8)*model->receptor_pool_size, model->ReceptorsInfo);
-    Queue.enqueueWriteBuffer(neurons_buffer, CL_TRUE, 0, sizeof(cl_float3)*model->neuron_pool_size, model->NeuronsInfo);
-    Queue.enqueueWriteBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size,  model->Outputs);
+    auto queue = cl::CommandQueue(Context, dcontext.device);
+    queue.enqueueWriteBuffer(pairs_buffer, CL_TRUE, 0, sizeof(cl_float16)*model->pair_pool_size, model->PairsInfo);
+    queue.enqueueWriteBuffer(receptors_buffer, CL_TRUE, 0, sizeof(cl_float8)*model->receptor_pool_size, model->ReceptorsInfo);
+    queue.enqueueWriteBuffer(neurons_buffer, CL_TRUE, 0, sizeof(cl_float3)*model->neuron_pool_size, model->NeuronsInfo);
+    queue.enqueueWriteBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size,  model->Outputs);
 
     model->t = 0;
 
@@ -274,20 +278,19 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
             }
         }
 
-        Queue.enqueueWriteBuffer(inputs_buffer, CL_TRUE, 0, sizeof(cl_float2)*model->input_pool_size, model->Inputs);
+        queue.enqueueWriteBuffer(inputs_buffer, CL_TRUE, 0, sizeof(cl_float2)*model->input_pool_size, model->Inputs);
 
-        Queue.enqueueNDRangeKernel(dcontext.pairs, cl::NullRange, cl::NDRange(model->pair_pool_size), cl::NullRange);
-        Queue.finish();
-        Queue.enqueueNDRangeKernel(dcontext.receptors, cl::NullRange, cl::NDRange(model->receptor_pool_size), cl::NullRange);
-        Queue.finish();
-        Queue.enqueueNDRangeKernel(dcontext.neurons, cl::NullRange, cl::NDRange(model->neuron_pool_size), cl::NullRange);
-        Queue.finish();
+        queue.enqueueNDRangeKernel(dcontext.pairs, cl::NullRange, cl::NDRange(model->pair_pool_size), cl::NullRange);
+        queue.finish();
+        queue.enqueueNDRangeKernel(dcontext.receptors, cl::NullRange, cl::NDRange(model->receptor_pool_size), cl::NullRange);
+        queue.finish();
+        queue.enqueueNDRangeKernel(dcontext.neurons, cl::NullRange, cl::NDRange(model->neuron_pool_size), cl::NullRange);
+        queue.finish();
 
         model->t++;
     }
 
-    Queue.enqueueReadBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size, model->Outputs);
-    Queue.finish();
+    queue.enqueueReadBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size, model->Outputs);
 #endif
 }
 
@@ -329,12 +332,24 @@ std::map<std::string, std::vector<indk::Position>> indk::ComputeBackends::OpenCL
 
     std::map<std::string, std::vector<indk::Position>> list;
 
-//    for (auto &n: model->objects) {
-//        std::vector<indk::Position> positions;
-//        for (uint64_t r = 0; r < n.second->receptor_count; r++) {
-//            positions.emplace_back(n.second->size, std::vector<float>(n.second->receptors[r].position, n.second->receptors[r].position+n.second->dimension_count));
-//        }
-//        list.insert(std::make_pair(n.second->name, positions));
-//    }
+    uint64_t ri = 0;
+    for (uint64_t i = 0; i < model->objects.size(); i++) {
+        auto n = model->objects[i];
+        std::vector<indk::Position> positions;
+
+        for (uint64_t r = 0; r < n->getReceptorsCount(); r++) {
+            std::vector<float> coords;
+
+            coords.emplace_back(model->PairsInfo[(int)model->ReceptorsInfo[ri].s0].s0);
+            coords.emplace_back(model->PairsInfo[(int)model->ReceptorsInfo[ri].s0].s1);
+
+            while (coords.size() < n->getDimensionsCount()) coords.emplace_back(0);
+
+            positions.emplace_back(n->getXm(), coords);
+            ri++;
+        }
+        list.insert(std::make_pair(n->getName(), positions));
+    }
+
     return list;
 }
