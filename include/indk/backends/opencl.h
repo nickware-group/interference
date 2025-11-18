@@ -17,19 +17,27 @@
 namespace indk {
     namespace ComputeBackends {
         class OpenCL : public indk::ComputeBackend {
-        private:
-            std::string CurrentDeviceName;
-#ifdef INDK_OPENCL_SUPPORT
+        public:
             typedef struct device_context {
+#ifdef INDK_OPENCL_SUPPORT
                 cl::Device device;
                 cl::Kernel pairs;
                 cl::Kernel receptors;
                 cl::Kernel neurons;
+#endif
                 bool ready;
+                std::string platform_name;
+                std::string device_name;
             } DeviceContext;
 
+            typedef struct cl_device_info {
+                std::string platform_name;
+                std::string device_name;
+            } DeviceInfo;
+        private:
+            std::string CurrentDeviceName;
+#ifdef INDK_OPENCL_SUPPORT
             cl::Context Context;
-            std::map<std::string, DeviceContext> DeviceList;
 #endif
         public:
             typedef struct Parameters : public indk::ComputeBackend::Parameters {
@@ -45,6 +53,7 @@ namespace indk {
             void setParameters(indk::ComputeBackend::Parameters*) override;
             std::vector<indk::OutputValue> getOutputValues(void *_model) override;
             std::map<std::string, std::vector<indk::Position>> getReceptorPositions(void *_model) override;
+            static std::vector<DeviceInfo> getDevicesInfo();
         };
     }
 }

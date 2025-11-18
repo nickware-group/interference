@@ -33,6 +33,12 @@ void doPrintAvailableBackends() {
         std::cout << std::setw(10) << info.backend_id << std::setw(40) << std::left << info.backend_name << std::setw(20) << info.translator_name << std::setw(20) << (info.ready?"Yes":"No") << std::endl;
     }
     std::cout << "-----------------------------------------------------------------------------" << std::endl << std::endl;
+
+    // uncomment if you want to print all OpenCL devices
+    // auto info = indk::ComputeBackends::OpenCL::getDevicesInfo();
+    // for (auto &i: info) {
+    //    std::cout << i.device_name << std::endl << std::endl;
+    // }
 }
 
 void doCreateInstances() {

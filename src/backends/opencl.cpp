@@ -15,6 +15,8 @@
 
 #define KERNEL(name, ...) std::string name = #__VA_ARGS__
 
+std::map<std::string, indk::ComputeBackends::OpenCL::DeviceContext> DeviceList;
+
 indk::ComputeBackends::OpenCL::OpenCL() {
     BackendName = "OpenCL";
     TranslatorName = indk::Translators::CL::getTranslatorName();
@@ -31,20 +33,17 @@ indk::ComputeBackends::OpenCL::OpenCL() {
     }
 
     for (auto &p: platforms) {
-        std::cout << "Platform: " << p.getInfo<CL_PLATFORM_NAME>() << std::endl;
-
         std::vector<cl::Device> devices;
         p.getDevices(CL_DEVICE_TYPE_ALL, &devices);
         for (auto &d: devices) {
             auto name = d.getInfo<CL_DEVICE_NAME>();
-            std::cout << "Device: " << name << std::endl;
             if (CurrentDeviceName.empty()) CurrentDeviceName = name;
             DeviceContext device;
             device.ready = false;
             device.device = d;
+            device.platform_name = p.getInfo<CL_PLATFORM_NAME>();
+            device.device_name = name;
             DeviceList.insert(std::make_pair(name, device));
-//            DeviceList.back().device = d;
-//            DeviceList.back().ready = false;
         }
     }
 
@@ -355,4 +354,15 @@ std::map<std::string, std::vector<indk::Position>> indk::ComputeBackends::OpenCL
     }
 
     return list;
+}
+
+std::vector<indk::ComputeBackends::OpenCL::DeviceInfo> indk::ComputeBackends::OpenCL::getDevicesInfo() {
+    std::vector<DeviceInfo> info;
+    for (auto &d: DeviceList) {
+        DeviceInfo di;
+        di.platform_name = d.second.platform_name;
+        di.device_name = d.second.device_name;
+        info.emplace_back(di);
+    }
+    return info;
 }
