@@ -45,11 +45,9 @@ namespace indk {
                 std::mutex task_lock;
             } Context;
 
-            std::vector<std::shared_ptr<Task>> Tasks;
-            std::vector<std::shared_ptr<Context>> Workers;
-//            std::map<void*, unsigned int> ObjectTable;
+            std::vector<Task*> Tasks;
+            std::vector<Context*> Workers;
             int WorkerCount;
-            std::mutex WorkersLock;
 
             [[noreturn]] static void tCompute(Context *context);
         public:
@@ -65,7 +63,7 @@ namespace indk {
             void setParameters(indk::ComputeBackend::Parameters*) override;
             std::vector<indk::OutputValue> getOutputValues(void *_model) override;
             std::map<std::string, std::vector<indk::Position>> getReceptorPositions(void *_model) override;
-
+            ~NativeCPUMultithread();
         };
     }
 }
