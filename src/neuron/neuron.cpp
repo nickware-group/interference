@@ -164,7 +164,6 @@ void indk::Neuron::doReset() {
  * @return Pattern difference value.
  */
 indk::PatternDefinition indk::Neuron::doComparePattern(const std::vector<indk::Position>& positions, int ProcessingMethod) const {
-    indk::Position *RPosf;
     auto ssize = Receptors[0]->getReferencePosScopes().size();
     std::vector<float> results;
     float value = 0;

@@ -113,14 +113,14 @@ int64_t indk::NeuralNet::doFindEntry(const std::string& ename) {
     return std::distance(Entries.begin(), ne);
 }
 
-std::vector<float> indk::NeuralNet::doComparePatterns(int CompareFlag, int ProcessingMethod) {
-    return doComparePatterns(std::vector<std::string>(), CompareFlag, ProcessingMethod);
+std::vector<float> indk::NeuralNet::doComparePatterns(int CompareFlag, int ProcessingMethod, int instance) {
+    return doComparePatterns(std::vector<std::string>(), CompareFlag, ProcessingMethod, instance);
 }
 
-std::vector<float> indk::NeuralNet::doComparePatterns(const std::string& ename, int CompareFlag, int ProcessingMethod) {
+std::vector<float> indk::NeuralNet::doComparePatterns(const std::string& ename, int CompareFlag, int ProcessingMethod, int instance) {
     auto en = Ensembles.find(ename);
     if (en != Ensembles.end()) {
-        return doComparePatterns(en->second, CompareFlag, ProcessingMethod);
+        return doComparePatterns(en->second, CompareFlag, ProcessingMethod, instance);
     }
     return {};
 }
@@ -191,8 +191,8 @@ void indk::NeuralNet::doReset(int instance) {
     InstanceManager.doResetInstance(instance);
 }
 
-std::vector<indk::Neuron*> indk::NeuralNet::doParseActiveNeurons(const std::vector<std::string>& inputs) {
-    std::string id;
+std::vector<indk::Neuron*> indk::NeuralNet::doParseActiveNeurons(const std::vector<std::string>& inputs, int mode) {
+    std::string id = std::to_string(mode);
     for (auto &i: inputs) id += i;
     if (PrepareID == id) return LastActiveNeurons;
 
@@ -228,16 +228,26 @@ std::vector<indk::Neuron*> indk::NeuralNet::doParseActiveNeurons(const std::vect
         }
     }
 
+    if (!mode) { // state sync working if mode is not learning
+        for (const auto &s: StateSyncList) {
+            auto found = std::find_if(aneurons.begin(), aneurons.end(), [s](indk::Neuron *n) { return n->getName() == s.second; });
+            if (found != aneurons.end()) {
+                auto n = Neurons.find(s.first);
+                if (n != Neurons.end()) aneurons.push_back(n->second);
+            }
+        }
+    }
+
     LastActiveNeurons = aneurons;
     PrepareID = id;
 
     return LastActiveNeurons;
 }
 
-void indk::NeuralNet::doStructurePrepare() {
+void indk::NeuralNet::doStructurePrepare(int mode) {
     std::vector<std::string> entries;
     for (const auto &e: Entries) entries.push_back(e.first);
-    doParseActiveNeurons(entries);
+    doParseActiveNeurons(entries, mode);
 }
 
 void indk::NeuralNet::doCreateInstance(int backend) {
@@ -257,7 +267,7 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vecto
         }
     }
 
-    auto aneurons = doParseActiveNeurons(entries);
+    auto aneurons = doParseActiveNeurons(entries, mode);
 
     InstanceManager.doTranslateToInstance(aneurons, Outputs, StateSyncList, instance);
     InstanceManager.setMode(mode, instance);
@@ -1001,6 +1011,10 @@ uint64_t indk::NeuralNet::getTotalParameterCount() {
     }
 
     return count;
+}
+
+int indk::NeuralNet::getInstanceCount() {
+    return InstanceManager.getInstanceCount();
 }
 
 indk::NeuralNet::~NeuralNet() {

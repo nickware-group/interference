@@ -11,7 +11,6 @@
 #include <indk/backends/native.h>
 #include <indk/translators/cpu.h>
 #include <indk/math.h>
-#include <indk/instance.h>
 
 indk::ComputeBackends::NativeCPU::NativeCPU() {
     BackendName = "Native CPU";
@@ -71,6 +70,8 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
                 auto f = model->sync_map.find(o.second->name);
                 if (f != model->sync_map.end()) {
                     o.second -> t = csize;
+                    done++;
+                    processed = true;
                     continue;
                 }
             }

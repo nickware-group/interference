@@ -135,7 +135,11 @@ void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<st
                     if (n->t == task->compute_size) continue;
                     if (!task->learning_mode) {
                         auto f = task->sync_map.find(n->name);
-                        if (f != task->sync_map.end()) continue;
+                        if (f != task->sync_map.end()) {
+                            n -> t = task->compute_size.load();
+                            task -> task_elements_done++;
+                            continue;
+                        }
                     }
 
                     p = 0;
@@ -312,4 +316,10 @@ std::vector<indk::OutputValue> indk::ComputeBackends::NativeCPUMultithread::getO
 
 std::map<std::string, std::vector<indk::Position>> indk::ComputeBackends::NativeCPUMultithread::getReceptorPositions(void *model) {
     return indk::Translators::CPU::getReceptorPositions((indk::Translators::CPU::ModelData*)model);
+}
+
+indk::ComputeBackends::NativeCPUMultithread::~NativeCPUMultithread() {
+    for (const auto &w: Workers) {
+        w -> thread.detach();
+    }
 }

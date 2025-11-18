@@ -45,7 +45,7 @@ namespace indk {
         StateSyncMap StateSyncList;
 
         int64_t doFindEntry(const std::string&);
-        std::vector<indk::Neuron*> doParseActiveNeurons(const std::vector<std::string>& inputs);
+        std::vector<indk::Neuron*> doParseActiveNeurons(const std::vector<std::string>& inputs, int mode);
 
         std::vector<indk::Neuron*> LastActiveNeurons;
         std::string PrepareID;
@@ -62,10 +62,12 @@ namespace indk {
         void doInterlinkSyncStructure();
         void doInterlinkSyncData();
         std::vector<float> doComparePatterns(int CompareFlag = indk::PatternCompareFlags::CompareDefault,
-                                             int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin);
+                                             int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin,
+                                             int instance = 0);
         std::vector<float> doComparePatterns(const std::string& ename,
                                              int CompareFlag = indk::PatternCompareFlags::CompareDefault,
-                                             int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin);
+                                             int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin,
+                                             int instance = 0);
         std::vector<float> doComparePatterns(std::vector<std::string> nnames,
                                              int CompareFlag = indk::PatternCompareFlags::CompareDefault,
                                              int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin,
@@ -76,7 +78,7 @@ namespace indk {
         void doIncludeNeuronToEnsemble(const std::string&, const std::string&);
 
         void doReset(int instance);
-        void doStructurePrepare();
+        void doStructurePrepare(int mode = 0);
 
         void doCreateInstance(int backend = indk::System::ComputeBackends::NativeCPU);
         void doCreateInstances(int count, int backend = indk::System::ComputeBackends::NativeCPU);
@@ -111,6 +113,7 @@ namespace indk {
         std::vector<indk::Neuron*> getNeurons();
         uint64_t getNeuronCount();
         uint64_t getTotalParameterCount();
+        int getInstanceCount();
         ~NeuralNet();
     };
 }
