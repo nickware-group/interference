@@ -25,7 +25,11 @@ void indk::ComputeInstanceManager::doCreateInstance(int backend) {
 void indk::ComputeInstanceManager::doTranslateToInstance(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync, int iid) {
     if (iid >= Instances.size()) {
         if (!iid) doCreateInstance();
-        else return; // exception
+        else return; // TODO: exception
+    }
+
+    if (Instances[iid]->status != InstanceReady) {
+        return; // TODO: instance busy exception
     }
 
     if (neurons.empty()) {
@@ -40,6 +44,10 @@ void indk::ComputeInstanceManager::doTranslateToInstance(const std::vector<indk:
 void indk::ComputeInstanceManager::doRunInstance(const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, int iid) {
     if (iid >= Instances.size()) {
         return; // TODO: exception
+    }
+
+    if (Instances[iid]->status != InstanceReady) {
+        return; // TODO: instance busy exception
     }
 
     if (!Instances[iid]->model_data) {
@@ -62,11 +70,24 @@ void indk::ComputeInstanceManager::doResetInstance(int iid) {
         return; // TODO: exception
     }
 
+    if (Instances[iid]->status != InstanceReady) {
+        return; // TODO: instance busy exception
+    }
+
     if (Instances[iid]->model_data) Instances[iid] -> backend -> doReset(Instances[iid]->model_data);
 }
 
 void indk::ComputeInstanceManager::setMode(bool learning, int iid) {
     if (iid >= Instances.size()) {
+        return; // TODO: exception
+    }
+
+    if (Instances[iid]->status != InstanceReady) {
+        return; // TODO: instance busy exception
+    }
+
+    if (!Instances[iid]->model_data) {
+        std::cout << "model data err" << std::endl;
         return; // TODO: exception
     }
 
@@ -78,6 +99,15 @@ std::vector<indk::OutputValue> indk::ComputeInstanceManager::getOutputValues(int
         return {}; // TODO: exception
     }
 
+    if (Instances[iid]->status != InstanceReady) {
+        return {}; // TODO: instance busy exception
+    }
+
+    if (!Instances[iid]->model_data) {
+        std::cout << "model data err" << std::endl;
+        return {}; // TODO: exception
+    }
+
     return Instances[iid]->backend->getOutputValues(Instances[iid]->model_data);
 }
 
@@ -86,5 +116,18 @@ std::map<std::string, std::vector<indk::Position>> indk::ComputeInstanceManager:
         return {}; // TODO: exception
     }
 
+    if (Instances[iid]->status != InstanceReady) {
+        return {}; // TODO: instance busy exception
+    }
+
+    if (!Instances[iid]->model_data) {
+        std::cout << "model data err" << std::endl;
+        return{}; // TODO: exception
+    }
+
     return Instances[iid]->backend->getReceptorPositions(Instances[iid]->model_data);
+}
+
+int indk::ComputeInstanceManager::getInstanceCount() {
+    return Instances.size();
 }

@@ -41,6 +41,7 @@ namespace indk {
         void setMode(bool learning, int iid = 0);
         std::map<std::string, std::vector<indk::Position>> getReceptorPositions(int iid = 0);
         std::vector<indk::OutputValue> getOutputValues(int iid = 0);
+        int getInstanceCount();
         ~ComputeInstanceManager() = default;
     };
 }
