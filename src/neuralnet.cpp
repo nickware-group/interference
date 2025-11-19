@@ -228,7 +228,7 @@ std::vector<indk::Neuron*> indk::NeuralNet::doParseActiveNeurons(const std::vect
         }
     }
 
-    if (!mode) { // state sync working if mode is not learning
+    if (!mode && StateSyncEnabled) { // state sync working if mode is not learning
         for (const auto &s: StateSyncList) {
             auto found = std::find_if(aneurons.begin(), aneurons.end(), [s](indk::Neuron *n) { return n->getName() == s.second; });
             if (found != aneurons.end()) {
@@ -269,10 +269,13 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vecto
 
     auto aneurons = doParseActiveNeurons(entries, mode);
 
-    InstanceManager.doTranslateToInstance(aneurons, Outputs, StateSyncList, instance);
+    if (StateSyncEnabled) InstanceManager.doTranslateToInstance(aneurons, Outputs, StateSyncList, instance);
+    else InstanceManager.doTranslateToInstance(aneurons, Outputs, {}, instance);
+
     InstanceManager.setMode(mode, instance);
     InstanceManager.doRunInstance(x, entries, instance);
 
+    // if mode == learning, save receptor positions in current scope
     if (mode) {
         auto positions = InstanceManager.getReceptorPositions(instance);
         for (const auto &p: positions) {
