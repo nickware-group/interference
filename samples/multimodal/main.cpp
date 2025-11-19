@@ -20,25 +20,34 @@ uint64_t getTimestampMS() {
 
 std::vector<std::vector<float>> doBuildInputVector(std::vector<BMPImage> &images, std::vector<std::string> &texts) {
     std::vector<std::vector<float>> input;
-    for (int d = 0,t = 0; d < images[0].size(); d+=2, t++) {
-        input.emplace_back();
-        for (int i = 0; i < images.size(); i++) {
-            for (int s = 0; s < 2; s++) {
+    for (int i = 0; i < images.size(); i++) {
+        for (int s = 0; s < 2; s++) {
+            std::vector<float> channels[4];
+            for (int d = s; d < images[i].size(); d+=2) {
                 float r = images[i][d+s][0];
                 float g = images[i][d+s][1];
                 float b = images[i][d+s][2];
                 auto rgbn = std::vector<float>({r/255, g/255, b/255});
                 auto HSI = RGB2HSI(rgbn[0], rgbn[1], rgbn[2]);
-                input.back().emplace_back(HSI[0]/(2*M_PI));
-                input.back().emplace_back(HSI[1]);
-                input.back().emplace_back(HSI[2]);
+                channels[0].emplace_back(HSI[0]/(2*M_PI));
+                channels[1].emplace_back(HSI[1]);
+                channels[2].emplace_back(HSI[2]);
             }
-
-            auto words = texts[i];
-            if (t < words.size()) input.back().emplace_back(float(words[t])/255);
-            else input.back().emplace_back(0);
+            input.push_back(channels[0]);
+            input.push_back(channels[1]);
+            input.push_back(channels[2]);
         }
+
+        auto words = texts[i];
+        std::vector<float> winput;
+        for (int d = 0; d < images[i].size()/2; d++) {
+            if (d < words.size()) winput.emplace_back(float(words[d])/255);
+            else winput.emplace_back(0);
+        }
+
+        input.push_back(winput);
     }
+
     return input;
 }
 
@@ -55,13 +64,14 @@ int main() {
 
     // replicate neurons
     for (int i = 2; i <= COUNT; i++) NN -> doReplicateEnsemble("A1", "A"+std::to_string(i), true);
-    NN -> doStructurePrepare();
+    NN -> doCreateInstance();
 
-//    std::cout << "Threads     : " << indk::System::getComputeBackendParameter() << std::endl;
-    std::cout << "Model name  : " << NN->getName() << std::endl;
-    std::cout << "Model desc  : " << NN->getDescription() << std::endl;
-    std::cout << "Model ver   : " << NN->getVersion() << std::endl;
-    std::cout << "Neuron count: " << NN->getNeuronCount() << std::endl;
+    std::cout << "Model name            : " << NN->getName() << std::endl;
+    std::cout << "Model desc            : " << NN->getDescription() << std::endl;
+    std::cout << "Model ver             : " << NN->getVersion() << std::endl;
+    std::cout << "Neuron count          : " << NN->getNeuronCount() << std::endl;
+    std::cout << "Total parameter count : " << NN->getTotalParameterCount() << std::endl;
+    std::cout << "Compute Instance count: " << NN->getInstanceCount() << std::endl;
     std::cout << std::endl;
 
     std::cout << "List of objects:" << std::endl;
