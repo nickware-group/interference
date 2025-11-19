@@ -94,8 +94,12 @@ int main() {
     // loading neural network structure from file
     std::ifstream structure(STRUCTURE_PATH);
     auto NN = new indk::NeuralNet(STRUCTURE_PATH);
-    NN -> doCreateInstances(2);
-//    NN -> setStateSyncEnabled();
+
+    // creating 3 instances, all of them use native CPU backend
+    NN -> doCreateInstances(3);
+
+    // setting additional parameters
+    NN -> setStateSyncEnabled();
 //    NN -> doInterlinkInit(4408, 1);
 
     // replicating neurons for classification
@@ -132,21 +136,26 @@ int main() {
     auto S = (IMAGE_SIZE*TEACH_COUNT*24.f/1024/1024)*1000 / T;
     doLog("Teaching neural network", T, S);
 
-    // recognizing the images in 2 instances in parallel
-    // 50 images in the first instance and 50 in the second
+    // recognizing all the 100 images in 3 instances in parallel
+    // 30 images in the first instance, 30 in the second and 40 in the third
     std::array<std::tuple<std::string, bool, uint64_t, float>, TEST_COUNT*TEST_ELEMENTS> results = {};
     T = getTimestampMS();
 
     std::thread worker1([NN, &results]() {
-        doRecognizeImages(NN, 1, 5, results, 0);
+        doRecognizeImages(NN, 1, 3, results, 0);
     });
 
     std::thread worker2([NN, &results]() {
-        doRecognizeImages(NN, 6, 10, results, 1);
+        doRecognizeImages(NN, 4, 6, results, 1);
+    });
+
+    std::thread worker3([NN, &results]() {
+        doRecognizeImages(NN, 7, 10, results, 2);
     });
 
     worker1.join();
     worker2.join();
+    worker3.join();
 
     T = getTimestampMS() - T;
     ttotal += T;
