@@ -71,7 +71,7 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
     if (dcontext->ready) return dcontext;
 
     KERNEL(kernel_code_pairs,
-           __kernel void indk_kernel_pairs(__global float16 *pairs, __global float2 *inputs) {
+           __kernel void indk_kernel_pairs(__global float16 *pairs, __global float2 *inputs, __global float *outputs) {
                    int id = get_global_id(0);
                    // pairs.s0 - receptor x
                    // pairs.s1 - receptor y
@@ -92,7 +92,9 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
                    // check if we need to compute this pair by flag
                    bool run = inputs[(int)pairs[id].s5].s0;
                    if (run) {
-                       float in = inputs[(int)pairs[id].s5].s1;
+                       float in = 0;
+                       if (run == 2) in = outputs[(int)pairs[id].s9];
+                       else in = inputs[(int)pairs[id].s5].s1;
 
                        // vector length
                        float d = 0;
@@ -238,6 +240,7 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
 
     dcontext->pairs.setArg(0, pairs_buffer);
     dcontext->pairs.setArg(1, inputs_buffer);
+    dcontext->pairs.setArg(2, outputs_buffer);
 
     dcontext->receptors.setArg(0, receptors_buffer);
     dcontext->receptors.setArg(1, pairs_buffer);
@@ -322,7 +325,6 @@ std::vector<indk::OutputValue> indk::ComputeBackends::OpenCL::getOutputValues(vo
         auto found = std::find_if(model->objects.begin(), model->objects.end(), [o](indk::Neuron *n){ return n->getName() == o; });
         if (found != model->objects.end()) {
             auto index = std::distance(model->objects.begin(), found);
-//            std::cout << o << " " << model->Outputs[index] << std::endl;
             auto value = model->t == 0 ? 0 : model->Outputs[index];
             indk::OutputValue output = {.value=value, .source=o, .time=model->t};
             outputs.emplace_back(output);

@@ -41,6 +41,8 @@ void* indk::Translators::CL::doTranslate(const std::vector<indk::Neuron*>& neuro
 
     for (uint64_t ni = 0; ni < neurons.size(); ni++) {
         auto n = (indk::Neuron*)neurons[ni];
+        auto elist = n -> getEntries();
+        uint64_t nei = 0;
 
         rxstart = rx;
         exstart = ex;
@@ -54,6 +56,12 @@ void* indk::Translators::CL::doTranslate(const std::vector<indk::Neuron*>& neuro
             ex = exstart;
             for (int j = 0; j < n->getEntriesCount(); j++) {
                 auto e = n -> getEntry(j);
+
+                nei = 0;
+                auto found = std::find_if(neurons.begin(), neurons.end(), [elist, j](indk::Neuron *n){ return n->getName()==elist[j]; });
+                if (found != neurons.end()) {
+                    nei = std::distance(neurons.begin(), found);
+                }
 
                 for (unsigned int k = 0; k < e->getSynapsesCount(); k++) {
                     auto s = e -> getSynapse(k);
@@ -70,15 +78,23 @@ void* indk::Translators::CL::doTranslate(const std::vector<indk::Neuron*>& neuro
                             static_cast<cl_float>(s->getLambda()),
                             static_cast<cl_float>(s->getk1()),
                             static_cast<cl_float>(s->getk2()),
+                            static_cast<cl_float>(nei),
                     };
                     px++;
                 }
 
                 if (!i) {
-                    model -> Inputs[ex] = {
-                            static_cast<cl_float>(0),
-                            static_cast<cl_float>(0),
-                    };
+                    if (!nei) {
+                        model -> Inputs[ex] = {
+                                static_cast<cl_float>(0),
+                                static_cast<cl_float>(0),
+                        };
+                    } else {
+                        model -> Inputs[ex] = {
+                                static_cast<cl_float>(2),
+                                static_cast<cl_float>(0),
+                        };
+                    }
                 }
                 ex++;
             }
