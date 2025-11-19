@@ -90,7 +90,7 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
                    // pairs.sB - reserved
 
                    // check if we need to compute this pair by flag
-                   bool run = inputs[(int)pairs[id].s5].s0;
+                   int run = inputs[(int)pairs[id].s5].s0;
                    if (run) {
                        float in = 0;
                        if (run == 2) in = outputs[(int)pairs[id].s9];
@@ -138,7 +138,7 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
 
                    // receptors.s6 - reserved
 
-                   bool run = inputs[(int)receptors[id].s2].s0;
+                   int run = inputs[(int)receptors[id].s2].s0;
                    if (run) {
                        float drx = 0, dry = 0, fisum = 0;
 
@@ -177,7 +177,7 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
                    // neurons.s1 - right receptors range edge          (const)
                    // neurons.s2 - input index                         (const)
 
-                   bool run = inputs[(int)neurons[id].s2].s0;
+                   int run = inputs[(int)neurons[id].s2].s0;
                    if (run) {
                        float p = 0;
                        int rcount = neurons[id].s1 - neurons[id].s0;
@@ -270,13 +270,8 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
                 if (found != inputs.end()) {
                     auto index = std::distance(inputs.begin(), found);
                     model->Inputs[xi] = {
-                            static_cast<cl_float>(1),
-                            static_cast<cl_float>(x[index][model->t]),
-                    };
-                } else {
-                    model->Inputs[xi] = {
-                            static_cast<cl_float>(0),
-                            static_cast<cl_float>(0),
+                        static_cast<cl_float>(1),
+                        static_cast<cl_float>(x[index][model->t]),
                     };
                 }
                 xi++;
@@ -293,9 +288,14 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
         queue.finish();
 
         model->t++;
+
+        queue.enqueueReadBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size, model->Outputs);
+
+//        for (int i = 0; i < model->neuron_pool_size; i++) {
+//            std::cout << model->objects[i]->getName() << " " << model->Outputs[i] << std::endl;
+//        }
     }
 
-    queue.enqueueReadBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size, model->Outputs);
 
     queue.enqueueReadBuffer(pairs_buffer, CL_TRUE, 0, sizeof(cl_float16)*model->pair_pool_size, model->PairsInfo);
     queue.enqueueReadBuffer(receptors_buffer, CL_TRUE, 0, sizeof(cl_float8)*model->receptor_pool_size, model->ReceptorsInfo);
@@ -326,6 +326,7 @@ std::vector<indk::OutputValue> indk::ComputeBackends::OpenCL::getOutputValues(vo
         if (found != model->objects.end()) {
             auto index = std::distance(model->objects.begin(), found);
             auto value = model->t == 0 ? 0 : model->Outputs[index];
+//            std::cout << o << " " << model->Outputs[index] << std::endl;
             indk::OutputValue output = {.value=value, .source=o, .time=model->t};
             outputs.emplace_back(output);
         }

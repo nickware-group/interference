@@ -33,6 +33,7 @@ void* indk::Translators::CL::doTranslate(const std::vector<indk::Neuron*>& neuro
     model -> NeuronsInfo = new cl_float3[model->neuron_pool_size];
     model -> Inputs = new cl_float2[model->input_pool_size];
     model -> Outputs = new cl_float[model->neuron_pool_size];
+    memset(model->Outputs, 0, sizeof(cl_float)*model->neuron_pool_size);
 
     indk::Position *rpos, *spos;
     uint64_t px = 0, pxstart;
@@ -42,7 +43,6 @@ void* indk::Translators::CL::doTranslate(const std::vector<indk::Neuron*>& neuro
     for (uint64_t ni = 0; ni < neurons.size(); ni++) {
         auto n = (indk::Neuron*)neurons[ni];
         auto elist = n -> getEntries();
-        uint64_t nei = 0;
 
         rxstart = rx;
         exstart = ex;
@@ -57,61 +57,56 @@ void* indk::Translators::CL::doTranslate(const std::vector<indk::Neuron*>& neuro
             for (int j = 0; j < n->getEntriesCount(); j++) {
                 auto e = n -> getEntry(j);
 
-                nei = 0;
-                auto found = std::find_if(neurons.begin(), neurons.end(), [elist, j](indk::Neuron *n){ return n->getName()==elist[j]; });
-                if (found != neurons.end()) {
-                    nei = std::distance(neurons.begin(), found);
-                }
-
                 for (unsigned int k = 0; k < e->getSynapsesCount(); k++) {
                     auto s = e -> getSynapse(k);
                     spos = s -> getPos();
 
                     model -> PairsInfo[px] = {
-                            static_cast<cl_float>(rpos->getPositionValue(0)),
-                            static_cast<cl_float>(rpos->getPositionValue(1)),
-                            static_cast<cl_float>(spos->getPositionValue(0)),
-                            static_cast<cl_float>(spos->getPositionValue(1)),
-                            static_cast<cl_float>(s->getGamma()),
-                            static_cast<cl_float>(ex),
+                        static_cast<cl_float>(rpos->getPositionValue(0)),
+                        static_cast<cl_float>(rpos->getPositionValue(1)),
+                        static_cast<cl_float>(spos->getPositionValue(0)),
+                        static_cast<cl_float>(spos->getPositionValue(1)),
+                        static_cast<cl_float>(s->getGamma()),
+                        static_cast<cl_float>(ex),
 
-                            static_cast<cl_float>(s->getLambda()),
-                            static_cast<cl_float>(s->getk1()),
-                            static_cast<cl_float>(s->getk2()),
-                            static_cast<cl_float>(nei),
+                        static_cast<cl_float>(s->getLambda()),
+                        static_cast<cl_float>(s->getk1()),
+                        static_cast<cl_float>(s->getk2()),
                     };
                     px++;
                 }
 
                 if (!i) {
-                    if (!nei) {
+                    auto found = std::find_if(neurons.begin(), neurons.end(), [elist, j](indk::Neuron *n){ return n->getName()==elist[j]; });
+                    if (found != neurons.end()) {
+                        auto nei = std::distance(neurons.begin(), found);
                         model -> Inputs[ex] = {
-                                static_cast<cl_float>(0),
-                                static_cast<cl_float>(0),
+                            static_cast<cl_float>(2),
+                            static_cast<cl_float>(nei),
                         };
                     } else {
                         model -> Inputs[ex] = {
-                                static_cast<cl_float>(2),
-                                static_cast<cl_float>(0),
+                            static_cast<cl_float>(0),
+                            static_cast<cl_float>(0),
                         };
                     }
                 }
                 ex++;
             }
             model -> ReceptorsInfo[rx] = {
-                    static_cast<cl_float>(pxstart),
-                    static_cast<cl_float>(px),
-                    static_cast<cl_float>(exstart),
-                    static_cast<cl_float>(r->getRs()),
-                    static_cast<cl_float>(r->getFi()),
-                    static_cast<cl_float>(r->getk3()),
+                static_cast<cl_float>(pxstart),
+                static_cast<cl_float>(px),
+                static_cast<cl_float>(exstart),
+                static_cast<cl_float>(r->getRs()),
+                static_cast<cl_float>(r->getFi()),
+                static_cast<cl_float>(r->getk3()),
             };
             rx++;
         }
         model -> NeuronsInfo[ni] = {
-                static_cast<cl_float>(rxstart),
-                static_cast<cl_float>(rx),
-                static_cast<cl_float>(exstart),
+            static_cast<cl_float>(rxstart),
+            static_cast<cl_float>(rx),
+            static_cast<cl_float>(exstart),
         };
     }
 #endif

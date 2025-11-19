@@ -61,7 +61,7 @@ void doLoadModel(const std::string& path, int size) {
     std::ifstream structure(path);
     NN.setStructure(structure);
 
-    for (int i = 2; i < size; i++) {
+    for (int i = 2; i <= size; i++) {
         NN.doReplicateEnsemble("A1", "A"+std::to_string(i));
     }
     NN.doStructurePrepare();
@@ -146,11 +146,11 @@ int main() {
 
     // running tests
     std::cout << "=== SUPERSTRUCTURE TEST ===" << std::endl;
-    doLoadModel("structures/structure_general.json", 101);
+    doLoadModel("structures/structure_general.json", 100);
     count += doTests("Superstructure test", SUPERSTRUCTURE_TEST_REFERENCE_OUTPUT);
 
     std::cout << "=== BENCHMARK ===" << std::endl;
-    doLoadModel("structures/structure_bench.json", 10001);
+    doLoadModel("structures/structure_bench.json", 10000);
     count += doTests("Benchmark", BENCHMARK_TEST_REFERENCE_OUTPUT);
 
     std::cout << std::endl;
