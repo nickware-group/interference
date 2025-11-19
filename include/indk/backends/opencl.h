@@ -28,11 +28,15 @@ namespace indk {
                 bool ready;
                 std::string platform_name;
                 std::string device_name;
+                unsigned int compute_units;
+                unsigned int workgroup_size;
             } DeviceContext;
 
             typedef struct cl_device_info {
                 std::string platform_name;
                 std::string device_name;
+                unsigned int compute_units;
+                unsigned int workgroup_size;
             } DeviceInfo;
         private:
             std::map<std::string, indk::ComputeBackends::OpenCL::DeviceContext*> DeviceList;

@@ -26,6 +26,8 @@ namespace indk {
 
         static std::vector<ComputeBackendsInfo> getComputeBackendsInfo();
 
+        static bool isComputeBackendAvailable(int id);
+
         /**
          * Set library verbosity level.
          * @param level New verbosity level value.

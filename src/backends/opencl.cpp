@@ -44,6 +44,8 @@ indk::ComputeBackends::OpenCL::OpenCL() {
             device->device = d;
             device->platform_name = p.getInfo<CL_PLATFORM_NAME>();
             device->device_name = name;
+            device->compute_units = d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>();
+            device->workgroup_size = d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
             DeviceList.insert(std::make_pair(name, device));
         }
     }
@@ -363,6 +365,8 @@ std::vector<indk::ComputeBackends::OpenCL::DeviceInfo> indk::ComputeBackends::Op
         DeviceInfo di;
         di.platform_name = d.second->platform_name;
         di.device_name = d.second->device_name;
+        di.compute_units = d.second->compute_units;
+        di.workgroup_size = d.second->workgroup_size;
         info.emplace_back(di);
     }
     return info;

@@ -36,13 +36,18 @@ int doCheckAvailableBackends() {
     }
     std::cout << "-----------------------------------------------------------------------------" << std::endl << std::endl;
 
-    // uncomment if you want to print all OpenCL devices
-    // auto info = indk::ComputeBackends::OpenCL::getDevicesInfo();
-    // for (auto &i: info) {
-    //    std::cout << i.device_name << std::endl;
-    // }
+    if (indk::System::isComputeBackendAvailable(indk::System::ComputeBackends::OpenCL)) {
+        auto info = indk::ComputeBackends::OpenCL::getDevicesInfo();
+        std::cout << "=== OPENCL DEVICES ===" << std::endl;
+        std::cout << std::setw(40) << std::left << "Platform name" << std::setw(80) << "Device name" << std::setw(20) << "Compute units" << std::setw(20) << "Workgroup size" << std::endl;
+        std::cout << "------------------------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
+        for (auto &i: info) {
+            std::cout << std::setw(40) << i.platform_name << std::setw(80) << std::left << i.device_name << std::setw(20) << i.compute_units << std::setw(20) << i.workgroup_size << std::endl;
+        }
+        std::cout << "------------------------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
+        std::cout << std::endl;
+    }
 
-    std::cout << std::endl;
     return rcount;
 }
 

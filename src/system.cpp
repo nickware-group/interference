@@ -51,6 +51,11 @@ std::vector<indk::ComputeBackendsInfo> indk::System::getComputeBackendsInfo() {
     return info;
 }
 
+bool indk::System::isComputeBackendAvailable(int id) {
+    if (id < ComputeBackendList.size() && ComputeBackendList[id]->isReady()) return true;
+    return false;
+}
+
 bool indk::Event::doWaitTimed(int T) {
     auto rTimeout = std::chrono::milliseconds(T);
     bool bTimeout = false;
