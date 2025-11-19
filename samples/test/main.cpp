@@ -25,20 +25,25 @@ uint64_t getTimestampMS() {
                                                                                 time_since_epoch()).count();
 }
 
-void doPrintAvailableBackends() {
+int doCheckAvailableBackends() {
+    int rcount = 0;
     std::cout << "=== AVAILABLE COMPUTE BACKENDS ===" << std::endl;
     std::cout << std::setw(10) << std::left << "ID" << std::setw(40) << "Backend name" << std::setw(20) << "Translator name" << std::setw(20) << "Ready" << std::endl;
     std::cout << "-----------------------------------------------------------------------------" << std::endl;
     for (auto &info: backends) {
         std::cout << std::setw(10) << info.backend_id << std::setw(40) << std::left << info.backend_name << std::setw(20) << info.translator_name << std::setw(20) << (info.ready?"Yes":"No") << std::endl;
+        rcount += info.ready;
     }
     std::cout << "-----------------------------------------------------------------------------" << std::endl << std::endl;
 
     // uncomment if you want to print all OpenCL devices
     // auto info = indk::ComputeBackends::OpenCL::getDevicesInfo();
     // for (auto &i: info) {
-    //    std::cout << i.device_name << std::endl << std::endl;
+    //    std::cout << i.device_name << std::endl;
     // }
+
+    std::cout << std::endl;
+    return rcount;
 }
 
 void doCreateInstances() {
@@ -56,11 +61,12 @@ void doLoadModel(const std::string& path, int size) {
     }
     NN.doStructurePrepare();
 
-    std::cout << "Model name           : " << NN.getName() << std::endl;
-    std::cout << "Model desc           : " << NN.getDescription() << std::endl;
-    std::cout << "Model ver            : " << NN.getVersion() << std::endl;
-    std::cout << "Neuron count         : " << NN.getNeuronCount() << std::endl;
-    std::cout << "Total parameter count: " << NN.getTotalParameterCount() << std::endl;
+    std::cout << "Model name            : " << NN.getName() << std::endl;
+    std::cout << "Model desc            : " << NN.getDescription() << std::endl;
+    std::cout << "Model ver             : " << NN.getVersion() << std::endl;
+    std::cout << "Neuron count          : " << NN.getNeuronCount() << std::endl;
+    std::cout << "Total parameter count : " << NN.getTotalParameterCount() << std::endl;
+    std::cout << "Compute Instance count: " << NN.getInstanceCount() << std::endl;
     std::cout << std::endl;
 }
 
@@ -103,12 +109,12 @@ int doTests(const std::string& name, float ref) {
 
 int main() {
     backends = indk::System::getComputeBackendsInfo();
-    doPrintAvailableBackends();
+    auto rbackends = doCheckAvailableBackends();
 
     constexpr unsigned STRUCTURE_COUNT                      = 2;
     constexpr float SUPERSTRUCTURE_TEST_REFERENCE_OUTPUT    = 0.0291;
     constexpr float BENCHMARK_TEST_REFERENCE_OUTPUT         = 2.7622;
-    const unsigned TOTAL_TEST_COUNT                         = STRUCTURE_COUNT*backends.size();
+    const unsigned TOTAL_TEST_COUNT                         = STRUCTURE_COUNT*rbackends;
 
     // setting up parameters
     indk::ComputeBackends::NativeCPUMultithread::Parameters parameters_mt;
