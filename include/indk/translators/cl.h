@@ -30,7 +30,7 @@ namespace indk {
 
                     cl_float16 *PairsInfo;
                     cl_float8 *ReceptorsInfo;
-                    cl_float3 *NeuronsInfo;
+                    cl_float8 *NeuronsInfo;
                     cl_float2 *Inputs;
                     cl_float *Outputs;
 #endif

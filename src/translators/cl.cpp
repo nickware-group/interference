@@ -30,7 +30,7 @@ void* indk::Translators::CL::doTranslate(const std::vector<indk::Neuron*>& neuro
 #ifdef INDK_OPENCL_SUPPORT
     model -> PairsInfo = new cl_float16[model->pair_pool_size];
     model -> ReceptorsInfo = new cl_float8[model->receptor_pool_size];
-    model -> NeuronsInfo = new cl_float3[model->neuron_pool_size];
+    model -> NeuronsInfo = new cl_float8[model->neuron_pool_size];
     model -> Inputs = new cl_float2[model->input_pool_size];
     model -> Outputs = new cl_float[model->neuron_pool_size];
     memset(model->Outputs, 0, sizeof(cl_float)*model->neuron_pool_size);
@@ -107,6 +107,8 @@ void* indk::Translators::CL::doTranslate(const std::vector<indk::Neuron*>& neuro
             static_cast<cl_float>(rxstart),
             static_cast<cl_float>(rx),
             static_cast<cl_float>(exstart),
+            static_cast<cl_float>(n->getLatency()),
+            static_cast<cl_float>(0),
         };
     }
 #endif

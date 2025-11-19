@@ -153,7 +153,6 @@ int main() {
     doLoadModel("structures/structure_bench.json", 10000);
     count += doTests("Benchmark", BENCHMARK_TEST_REFERENCE_OUTPUT);
 
-    std::cout << std::endl;
     std::cout << "Tests passed: [" << count << "/" << TOTAL_TEST_COUNT << "]" << std::endl;
 
     if (count != TOTAL_TEST_COUNT) return 1;
