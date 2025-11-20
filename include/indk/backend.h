@@ -29,6 +29,7 @@ namespace indk {
         virtual void* doTranslate(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync) = 0;
         virtual void doCompute(const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, void *instance) = 0;
         virtual void doReset(void*) = 0;
+        virtual void doClear(void*) = 0;
 
         virtual void setMode(void *model, bool learning) = 0;
         virtual void setParameters(indk::ComputeBackend::Parameters*) = 0;

@@ -196,6 +196,8 @@ std::vector<indk::Neuron*> indk::NeuralNet::doParseActiveNeurons(const std::vect
     for (auto &i: inputs) id += i;
     if (PrepareID == id) return LastActiveNeurons;
 
+    InstanceManager.doClearInstances();
+
     std::vector<indk::Neuron*> aneurons;
 
     NQueue nqueue;
@@ -244,10 +246,13 @@ std::vector<indk::Neuron*> indk::NeuralNet::doParseActiveNeurons(const std::vect
     return LastActiveNeurons;
 }
 
-void indk::NeuralNet::doStructurePrepare(int mode) {
+void indk::NeuralNet::doStructurePrepare(int mode, int instance) {
     std::vector<std::string> entries;
     for (const auto &e: Entries) entries.push_back(e.first);
-    doParseActiveNeurons(entries, mode);
+    auto aneurons = doParseActiveNeurons(entries, mode);
+
+    if (StateSyncEnabled) InstanceManager.doTranslateToInstance(aneurons, Outputs, StateSyncList, PrepareID, instance);
+    else InstanceManager.doTranslateToInstance(aneurons, Outputs, {}, PrepareID, instance);
 }
 
 void indk::NeuralNet::doCreateInstance(int backend) {
@@ -255,7 +260,7 @@ void indk::NeuralNet::doCreateInstance(int backend) {
 }
 
 void indk::NeuralNet::doCreateInstances(int count, int backend) {
-    for (int i = 0; i < count; i++) InstanceManager.doCreateInstance(backend);
+    InstanceManager.doCreateInstances(count, backend);
 }
 
 std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs, bool mode, int instance) {
@@ -267,10 +272,10 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vecto
         }
     }
 
-    auto aneurons = doParseActiveNeurons(entries, mode);
+    auto aneurons = doParseActiveNeurons(entries, mode); // TODO: move parsing to TranslateToInstance
 
-    if (StateSyncEnabled) InstanceManager.doTranslateToInstance(aneurons, Outputs, StateSyncList, instance);
-    else InstanceManager.doTranslateToInstance(aneurons, Outputs, {}, instance);
+    if (StateSyncEnabled) InstanceManager.doTranslateToInstance(aneurons, Outputs, StateSyncList, PrepareID, instance);
+    else InstanceManager.doTranslateToInstance(aneurons, Outputs, {}, PrepareID, instance);
 
     InstanceManager.setMode(mode, instance);
     InstanceManager.doRunInstance(x, entries, instance);

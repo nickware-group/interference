@@ -78,7 +78,7 @@ namespace indk {
         void doIncludeNeuronToEnsemble(const std::string&, const std::string&);
 
         void doReset(int instance);
-        void doStructurePrepare(int mode = 0);
+        void doStructurePrepare(int mode = 0, int instance = 0);
 
         void doCreateInstance(int backend = indk::System::ComputeBackends::NativeCPU);
         void doCreateInstances(int count, int backend = indk::System::ComputeBackends::NativeCPU);

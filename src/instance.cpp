@@ -22,7 +22,11 @@ void indk::ComputeInstanceManager::doCreateInstance(int backend) {
     Instances.push_back(instance);
 }
 
-void indk::ComputeInstanceManager::doTranslateToInstance(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync, int iid) {
+void indk::ComputeInstanceManager::doCreateInstances(int count, int backend) {
+    for (int i = 0; i < count; i++) doCreateInstance(backend);
+}
+
+void indk::ComputeInstanceManager::doTranslateToInstance(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync, const std::string& prepareid, int iid) {
     if (iid >= Instances.size()) {
         if (!iid) doCreateInstance();
         else return; // TODO: exception
@@ -38,6 +42,11 @@ void indk::ComputeInstanceManager::doTranslateToInstance(const std::vector<indk:
     }
 
     auto instance = Instances[iid];
+
+    if (prepareid == instance->hash) return;
+
+    doClearInstance(iid);
+    instance -> hash = prepareid;
     instance -> model_data = instance -> backend -> doTranslate(neurons, outputs, sync);
 }
 
@@ -75,6 +84,26 @@ void indk::ComputeInstanceManager::doResetInstance(int iid) {
     }
 
     if (Instances[iid]->model_data) Instances[iid] -> backend -> doReset(Instances[iid]->model_data);
+}
+
+void indk::ComputeInstanceManager::doClearInstance(int iid) {
+    if (iid >= Instances.size()) {
+        return; // TODO: exception
+    }
+
+    if (Instances[iid]->status != InstanceReady) {
+        return; // TODO: instance busy exception
+    }
+
+    if (Instances[iid]->model_data) Instances[iid] -> backend -> doClear(Instances[iid]->model_data);
+    Instances[iid] -> model_data = nullptr;
+    Instances[iid] -> hash = "";
+}
+
+void indk::ComputeInstanceManager::doClearInstances() {
+    for (int i = 0; i < Instances.size(); i++) {
+        doClearInstance(i);
+    }
 }
 
 void indk::ComputeInstanceManager::setMode(bool learning, int iid) {
