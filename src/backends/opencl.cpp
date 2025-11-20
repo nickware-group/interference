@@ -71,7 +71,7 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
     if (dcontext->ready) return dcontext;
 
     KERNEL(kernel_code_pairs,
-           __kernel void indk_kernel_pairs(__global float16 *pairs, __global float2 *inputs, __global float *outputs, __global float8 *neurons) {
+           __kernel void indk_kernel_pairs(__global float16 *pairs, __global float2 *inputs, __global float *outputs, __global float4 *neurons) {
                    int id = get_global_id(0);
                    // pairs.s0 - receptor x
                    // pairs.s1 - receptor y
@@ -93,10 +93,8 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
                    int run = inputs[(int)pairs[id].s5].s0;
                    if (run) {
                        float in;
-                       int time = neurons[(int)pairs[id].s9].s4;
-                       int latency = neurons[(int)pairs[id].s9].s5;
-
-                       if (time < latency) in = 0;
+                       int latency = neurons[(int)pairs[id].s9].s3;
+                       if (latency > 0) in = 0;
                        else if (run == 2) in = outputs[(int)pairs[id].s9];
                        else in = inputs[(int)pairs[id].s5].s1;
 
@@ -175,13 +173,12 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
     );
 
     KERNEL(kernel_code_neurons,
-           __kernel void indk_kernel_neurons(__global float8 *neurons,  __global float8 *receptors, __global float2 *inputs, __global float *outputs) {
+           __kernel void indk_kernel_neurons(__global float4 *neurons,  __global float8 *receptors, __global float2 *inputs, __global float *outputs) {
                    int id = get_global_id(0);
                    // neurons.s0 - left receptors range edge           (const)
                    // neurons.s1 - right receptors range edge          (const)
                    // neurons.s2 - input index                         (const)
-                   // neurons.s3 - latency                             (const)
-                   // neurons.s4 - time
+                   // neurons.s3 - latency
 
                    int run = inputs[(int)neurons[id].s2].s0;
                    if (run) {
@@ -193,7 +190,7 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
                        }
                        p /= (float)rcount;
 
-                       neurons[id].s4++;
+                       if (neurons[id].s3 > 0) neurons[id].s3 = neurons[id].s3 - 1;
                        outputs[id] = p;
                    };
            }
@@ -241,7 +238,7 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
 
     cl::Buffer pairs_buffer(Context, CL_MEM_READ_WRITE, sizeof(cl_float16)*model->pair_pool_size);
     cl::Buffer receptors_buffer(Context, CL_MEM_READ_WRITE, sizeof(cl_float8)*model->receptor_pool_size);
-    cl::Buffer neurons_buffer(Context, CL_MEM_READ_WRITE, sizeof(cl_float3)*model->neuron_pool_size);
+    cl::Buffer neurons_buffer(Context, CL_MEM_READ_WRITE, sizeof(cl_float4)*model->neuron_pool_size);
     cl::Buffer inputs_buffer(Context, CL_MEM_READ_WRITE, sizeof(cl_float2)*model->input_pool_size);
     cl::Buffer outputs_buffer(Context, CL_MEM_READ_WRITE, sizeof(cl_float)*model->neuron_pool_size);
 
@@ -262,7 +259,7 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
     auto queue = cl::CommandQueue(Context, dcontext->device);
     queue.enqueueWriteBuffer(pairs_buffer, CL_TRUE, 0, sizeof(cl_float16)*model->pair_pool_size, model->PairsInfo);
     queue.enqueueWriteBuffer(receptors_buffer, CL_TRUE, 0, sizeof(cl_float8)*model->receptor_pool_size, model->ReceptorsInfo);
-    queue.enqueueWriteBuffer(neurons_buffer, CL_TRUE, 0, sizeof(cl_float8)*model->neuron_pool_size, model->NeuronsInfo);
+    queue.enqueueWriteBuffer(neurons_buffer, CL_TRUE, 0, sizeof(cl_float4)*model->neuron_pool_size, model->NeuronsInfo);
     queue.enqueueWriteBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size,  model->Outputs);
 
     model->t = 0;
@@ -309,6 +306,11 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
 
 void indk::ComputeBackends::OpenCL::doReset(void *model) {
     indk::Translators::CL::doReset((indk::Translators::CL::ModelData*)model);
+}
+
+void indk::ComputeBackends::OpenCL::doClear(void *_model) {
+    auto model = (indk::Translators::CL::ModelData*)_model;
+    delete model; // TODO: correct deleting
 }
 
 void indk::ComputeBackends::OpenCL::setMode(void *_model, bool learning) {

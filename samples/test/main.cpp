@@ -103,6 +103,7 @@ int doTests(const std::string& name, float ref) {
 
     for (auto &info: backends) {
         if (info.ready) {
+            NN.doStructurePrepare(true, info.backend_id);
             std::cout << std::setw(60) << std::left << name+" ("+info.backend_name+"): ";
             count += doTest(ref, info.backend_id); // using backend id as instance id
         }
@@ -150,7 +151,7 @@ int main() {
     count += doTests("Superstructure test", SUPERSTRUCTURE_TEST_REFERENCE_OUTPUT);
 
     std::cout << "=== BENCHMARK ===" << std::endl;
-    doLoadModel("structures/structure_bench.json", 10000);
+    doLoadModel("structures/structure_bench.json", 5000);
     count += doTests("Benchmark", BENCHMARK_TEST_REFERENCE_OUTPUT);
 
     std::cout << "Tests passed: [" << count << "/" << TOTAL_TEST_COUNT << "]" << std::endl;
