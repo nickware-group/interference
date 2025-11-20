@@ -38,7 +38,7 @@ indk::Position::Position(unsigned int _Xm, std::vector<float> _X) {
     X = new float[DimensionsCount];
     for (int i = 0; i < DimensionsCount; i++) {
         if (_X[i] < 0 || _X[i] > Xm) {
-            throw indk::Error(indk::Error::EX_POSITION_OUT_RANGES, {_X[i], (float)Xm});
+            throw indk::Error(indk::Error::EX_POSITION_OUT_RANGES, std::to_string(X[i])+" / "+std::to_string(Xm));
         }
         X[i] = _X[i];
     }
@@ -54,7 +54,7 @@ void indk::Position::doAdd(const indk::Position *P) {
     for (unsigned int i = 0; i < DimensionsCount; i++) {
         X[i] += P->getPositionValue(i);
         if (X[i] > Xm) {
-            throw indk::Error(indk::Error::EX_POSITION_OUT_RANGES, {X[i], (float)Xm});
+            throw indk::Error(indk::Error::EX_POSITION_OUT_RANGES, std::to_string(X[i])+" / "+std::to_string(Xm));
         }
     }
 }
@@ -69,7 +69,7 @@ void indk::Position::doSubtract(const indk::Position *P) {
     for (unsigned int i = 0; i < DimensionsCount; i++) {
         X[i] = (X[i]-P->getPositionValue(i));
         if (X[i] > Xm) {
-            throw indk::Error(indk::Error::EX_POSITION_OUT_RANGES, {X[i], (float)Xm});
+            throw indk::Error(indk::Error::EX_POSITION_OUT_RANGES, std::to_string(X[i])+" / "+std::to_string(Xm));
         }
     }
 }
@@ -84,7 +84,7 @@ void indk::Position::doMultiply(float M) {
     for (unsigned int i = 0; i < DimensionsCount; i++) {
         X[i] *= M;
         if (X[i] > Xm) {
-            throw indk::Error(indk::Error::EX_POSITION_OUT_RANGES, {X[i], (float)Xm});
+            throw indk::Error(indk::Error::EX_POSITION_OUT_RANGES, std::to_string(X[i])+" / "+std::to_string(Xm));
         }
     }
 }
@@ -113,7 +113,7 @@ void indk::Position::setPosition(std::vector<float> _X) {
     }
     for (int i = 0; i < DimensionsCount; i++) {
         if (_X[i] < 0 || _X[i] > Xm) {
-            throw indk::Error(indk::Error::EX_POSITION_OUT_RANGES, {_X[i], (float)Xm});
+            throw indk::Error(indk::Error::EX_POSITION_OUT_RANGES, std::to_string(_X[i])+" / "+std::to_string(Xm));
         }
         X[i] = _X[i];
     }

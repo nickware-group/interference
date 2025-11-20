@@ -272,7 +272,7 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vecto
         }
     }
 
-    auto aneurons = doParseActiveNeurons(entries, mode); // TODO: move parsing to TranslateToInstance
+    auto aneurons = doParseActiveNeurons(entries, mode);
 
     if (StateSyncEnabled) InstanceManager.doTranslateToInstance(aneurons, Outputs, StateSyncList, PrepareID, instance);
     else InstanceManager.doTranslateToInstance(aneurons, Outputs, {}, PrepareID, instance);

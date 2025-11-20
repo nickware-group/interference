@@ -46,16 +46,26 @@ namespace indk {
             /// Not equal space dimensions of positions.
             EX_POSITION_DIMENSIONS,
             /// Compute Instance out of range (selected instance > total instances)
-            EX_INSTANCE_OUT_OF_RANGE
+            EX_INSTANCE_OUT_OF_RANGE,
+            /// Compute Instance is not ready
+            EX_INSTANCE_BUSY,
+            /// Compute Instance model data is null
+            EX_INSTANCE_MODEL_DATA_ERROR,
+            /// No neurons for translation
+            EX_INSTANCE_TRANSLATION_NO_NEURONS,
+            /// The number of received signals does not match the number of inputs
+            EX_INSTANCE_RUN_INPUT_ERROR,
+            /// OpenCL device not found
+            EX_BACKEND_CL_DEVICE_NOT_FOUND,
         } Exceptions;
 
         Error();
         explicit Error(ExceptionType);
-        explicit Error(ExceptionType, std::vector<float>);
+        explicit Error(ExceptionType, std::string);
         const char* what() const noexcept override;
     private:
         ExceptionType ET;
-        std::vector<float> ED;
+        std::string ED;
     };
 }
 

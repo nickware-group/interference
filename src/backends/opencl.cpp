@@ -63,7 +63,7 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
     auto found = DeviceList.find(CurrentDeviceName);
 
     if (found == DeviceList.end()) {
-        return {}; // TODO: must be exception
+        throw indk::Error(indk::Error::EX_BACKEND_CL_DEVICE_NOT_FOUND, "selected device name "+CurrentDeviceName);
     }
 
     auto dcontext = found->second;

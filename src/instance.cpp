@@ -29,16 +29,15 @@ void indk::ComputeInstanceManager::doCreateInstances(int count, int backend) {
 void indk::ComputeInstanceManager::doTranslateToInstance(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync, const std::string& prepareid, int iid) {
     if (iid >= Instances.size()) {
         if (!iid) doCreateInstance();
-        else return; // TODO: exception
+        else throw indk::Error(indk::Error::EX_INSTANCE_OUT_OF_RANGE, "instance "+std::to_string(iid));
     }
 
     if (Instances[iid]->status != InstanceReady) {
-        return; // TODO: instance busy exception
+        throw indk::Error(indk::Error::EX_INSTANCE_BUSY, "instance "+std::to_string(iid));
     }
 
     if (neurons.empty()) {
-        std::cout << "err no neurons" << std::endl;
-        return; // TODO: exception
+        throw indk::Error(indk::Error::EX_INSTANCE_TRANSLATION_NO_NEURONS, "instance "+std::to_string(iid));
     }
 
     auto instance = Instances[iid];
@@ -52,21 +51,19 @@ void indk::ComputeInstanceManager::doTranslateToInstance(const std::vector<indk:
 
 void indk::ComputeInstanceManager::doRunInstance(const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, int iid) {
     if (iid >= Instances.size()) {
-        return; // TODO: exception
+        throw indk::Error(indk::Error::EX_INSTANCE_OUT_OF_RANGE, "instance "+std::to_string(iid));
     }
 
     if (Instances[iid]->status != InstanceReady) {
-        return; // TODO: instance busy exception
+        throw indk::Error(indk::Error::EX_INSTANCE_BUSY, "instance "+std::to_string(iid));
     }
 
     if (!Instances[iid]->model_data) {
-        std::cout << "model data err" << std::endl;
-        return; // TODO: exception
+        throw indk::Error(indk::Error::EX_INSTANCE_MODEL_DATA_ERROR, "instance "+std::to_string(iid));
     }
 
     if (x.size() != inputs.size() || x.empty()) {
-        std::cout << "input err" << std::endl;
-        return; // TODO: exception
+        throw indk::Error(indk::Error::EX_INSTANCE_RUN_INPUT_ERROR, "instance "+std::to_string(iid));
     }
 
     Instances[iid] -> status = InstanceBusy;
@@ -76,11 +73,11 @@ void indk::ComputeInstanceManager::doRunInstance(const std::vector<std::vector<f
 
 void indk::ComputeInstanceManager::doResetInstance(int iid) {
     if (iid >= Instances.size()) {
-        return; // TODO: exception
+        throw indk::Error(indk::Error::EX_INSTANCE_OUT_OF_RANGE, "instance "+std::to_string(iid));
     }
 
     if (Instances[iid]->status != InstanceReady) {
-        return; // TODO: instance busy exception
+        throw indk::Error(indk::Error::EX_INSTANCE_BUSY, "instance "+std::to_string(iid));
     }
 
     if (Instances[iid]->model_data) Instances[iid] -> backend -> doReset(Instances[iid]->model_data);
@@ -88,11 +85,11 @@ void indk::ComputeInstanceManager::doResetInstance(int iid) {
 
 void indk::ComputeInstanceManager::doClearInstance(int iid) {
     if (iid >= Instances.size()) {
-        return; // TODO: exception
+        throw indk::Error(indk::Error::EX_INSTANCE_OUT_OF_RANGE, "instance "+std::to_string(iid));
     }
 
     if (Instances[iid]->status != InstanceReady) {
-        return; // TODO: instance busy exception
+        throw indk::Error(indk::Error::EX_INSTANCE_BUSY, "instance "+std::to_string(iid));
     }
 
     if (Instances[iid]->model_data) Instances[iid] -> backend -> doClear(Instances[iid]->model_data);
@@ -108,16 +105,15 @@ void indk::ComputeInstanceManager::doClearInstances() {
 
 void indk::ComputeInstanceManager::setMode(bool learning, int iid) {
     if (iid >= Instances.size()) {
-        return; // TODO: exception
+        throw indk::Error(indk::Error::EX_INSTANCE_OUT_OF_RANGE, "instance "+std::to_string(iid));
     }
 
     if (Instances[iid]->status != InstanceReady) {
-        return; // TODO: instance busy exception
+        throw indk::Error(indk::Error::EX_INSTANCE_BUSY, "instance "+std::to_string(iid));
     }
 
     if (!Instances[iid]->model_data) {
-        std::cout << "model data err" << std::endl;
-        return; // TODO: exception
+        throw indk::Error(indk::Error::EX_INSTANCE_MODEL_DATA_ERROR, "instance "+std::to_string(iid));
     }
 
     if (Instances[iid]->model_data) Instances[iid]->backend->setMode(Instances[iid]->model_data, learning);
@@ -125,16 +121,15 @@ void indk::ComputeInstanceManager::setMode(bool learning, int iid) {
 
 std::vector<indk::OutputValue> indk::ComputeInstanceManager::getOutputValues(int iid) {
     if (iid >= Instances.size()) {
-        return {}; // TODO: exception
+        throw indk::Error(indk::Error::EX_INSTANCE_OUT_OF_RANGE, "instance "+std::to_string(iid));
     }
 
     if (Instances[iid]->status != InstanceReady) {
-        return {}; // TODO: instance busy exception
+        throw indk::Error(indk::Error::EX_INSTANCE_BUSY, "instance "+std::to_string(iid));
     }
 
     if (!Instances[iid]->model_data) {
-        std::cout << "model data err" << std::endl;
-        return {}; // TODO: exception
+        throw indk::Error(indk::Error::EX_INSTANCE_MODEL_DATA_ERROR, "instance "+std::to_string(iid));
     }
 
     return Instances[iid]->backend->getOutputValues(Instances[iid]->model_data);
@@ -142,16 +137,15 @@ std::vector<indk::OutputValue> indk::ComputeInstanceManager::getOutputValues(int
 
 std::map<std::string, std::vector<indk::Position>> indk::ComputeInstanceManager::getReceptorPositions(int iid) {
     if (iid >= Instances.size()) {
-        return {}; // TODO: exception
+        throw indk::Error(indk::Error::EX_INSTANCE_OUT_OF_RANGE, "instance "+std::to_string(iid));
     }
 
     if (Instances[iid]->status != InstanceReady) {
-        return {}; // TODO: instance busy exception
+        throw indk::Error(indk::Error::EX_INSTANCE_BUSY, "instance "+std::to_string(iid));
     }
 
     if (!Instances[iid]->model_data) {
-        std::cout << "model data err" << std::endl;
-        return{}; // TODO: exception
+        throw indk::Error(indk::Error::EX_INSTANCE_MODEL_DATA_ERROR, "instance "+std::to_string(iid));
     }
 
     return Instances[iid]->backend->getReceptorPositions(Instances[iid]->model_data);
