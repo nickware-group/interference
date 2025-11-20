@@ -182,16 +182,20 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
 
                    int run = inputs[(int)neurons[id].s2].s0;
                    if (run) {
-                       float p = 0;
-                       int rcount = neurons[id].s1 - neurons[id].s0;
+                       if (neurons[id].s3 > 0) {
+                           neurons[id].s3 = neurons[id].s3 - 1;
+                           outputs[id] = 0;
+                       } else {
+                           float p = 0;
+                           int rcount = neurons[id].s1 - neurons[id].s0;
 
-                       for (int i = neurons[id].s0; i < neurons[id].s1; i++) {
-                           p += receptors[i].s6;
+                           for (int i = neurons[id].s0; i < neurons[id].s1; i++) {
+                                p += receptors[i].s6;
+                           }
+                           p /= (float)rcount;
+
+                           outputs[id] = p;
                        }
-                       p /= (float)rcount;
-
-                       if (neurons[id].s3 > 0) neurons[id].s3 = neurons[id].s3 - 1;
-                       outputs[id] = p;
                    };
            }
     );
@@ -295,7 +299,7 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
         queue.enqueueNDRangeKernel(dcontext->neurons, cl::NullRange, cl::NDRange(model->neuron_pool_size), cl::NullRange);
         queue.finish();
 
-        model->t++;
+        model -> t++;
     }
 
     queue.enqueueReadBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size, model->Outputs);
