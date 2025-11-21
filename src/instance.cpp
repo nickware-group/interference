@@ -63,7 +63,7 @@ void indk::ComputeInstanceManager::doRunInstance(const std::vector<std::vector<f
     }
 
     if (x.size() != inputs.size() || x.empty()) {
-        throw indk::Error(indk::Error::EX_INSTANCE_RUN_INPUT_ERROR, "instance "+std::to_string(iid));
+        throw indk::Error(indk::Error::EX_INSTANCE_RUN_INPUT_ERROR, "instance "+std::to_string(iid)+", total inputs "+std::to_string(inputs.size())+", total signals "+std::to_string(x.size()));
     }
 
     Instances[iid] -> status = InstanceBusy;

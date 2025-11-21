@@ -13,10 +13,12 @@
 #include <indk/neuralnet.h>
 #include "bmp.hpp"
 
-constexpr uint8_t TEACH_COUNT = 10;
-constexpr uint8_t TEST_COUNT = 10;
+constexpr uint8_t TEACH_COUNT = 15;
+constexpr uint8_t TEST_COUNT = 15;
 constexpr uint8_t TEST_ELEMENTS = 10;
-constexpr uint16_t IMAGE_SIZE = 128*128;
+constexpr uint8_t IMAGE_WIDTH = 128;
+constexpr uint8_t IMAGE_HEIGHT = 128;
+constexpr uint16_t IMAGE_SIZE = IMAGE_WIDTH*IMAGE_HEIGHT;
 constexpr char STRUCTURE_PATH[128] = "structures/structure.json";
 constexpr char IMAGES_TEACHING_PATH[128] = "images/learn/";
 constexpr char IMAGES_TESTING_PATH[128] = "images/test/";
@@ -28,13 +30,13 @@ uint64_t getTimestampMS() {
 
 std::vector<std::vector<float>> doBuildInputVector(std::vector<BMPImage> images) {
     std::vector<std::vector<float>> input;
-    for (int i = 0; i < images.size(); i++) {
+    for (const auto &image: images) {
         for (int s = 0; s < 2; s++) {
             std::vector<float> channels[3];
-            for (int d = s; d < images[i].size(); d+=2) {
-                float r = images[i][d+s][0];
-                float g = images[i][d+s][1];
-                float b = images[i][d+s][2];
+            for (int d = s; d < image.size(); d+=2) {
+                float r = image[d+s][0];
+                float g = image[d+s][1];
+                float b = image[d+s][2];
                 auto rgbn = std::vector<float>({r/255, g/255, b/255});
                 auto HSI = RGB2HSI(rgbn[0], rgbn[1], rgbn[2]);
                 channels[0].emplace_back(HSI[0]/(2*M_PI));
@@ -80,7 +82,7 @@ void doRecognizeImages(indk::NeuralNet *NN, int start, int end, std::array<std::
             auto recognized = std::distance(patterns.begin(), r) == b;
             // Uncomment to print the response of output neurons to the input data (response - values [0, 1], 0 - minimum response, 1 - maximum response)
             // std::cout << "Difference for outputs:" << std::endl;
-            // for (int i = 0; i < patterns.size(); i++) std::cout << (i+1) << ". " << patterns[i] << std::endl;
+            // for (int i = 0; i < patterns.size(); i++) std::cout << "[" << (b+1) << "/" << (e+1) << "] " << (i+1) << ". " << patterns[i] << std::endl;
 
             std::tuple<std::string, bool, uint64_t, float> result = {name, recognized, T, S};
             results[b*TEST_ELEMENTS+e] = result;
@@ -127,7 +129,7 @@ int main() {
     doLog("Loading images", 0, 0);
 
     // teaching the neural network
-    // only 10 images in the training dataset
+    // only 15 images in the training dataset
     auto T = getTimestampMS();
     NN -> doLearn(input, true, {}, 0);
     T = getTimestampMS() - T;
@@ -136,21 +138,21 @@ int main() {
     auto S = (IMAGE_SIZE*TEACH_COUNT*24.f/1024/1024)*1000 / T;
     doLog("Teaching neural network", T, S);
 
-    // recognizing all the 100 images in 3 instances in parallel
-    // 30 images in the first instance, 30 in the second and 40 in the third
+    // recognizing all the 150 images in 3 instances in parallel
+    // 50 images for each instance
     std::array<std::tuple<std::string, bool, uint64_t, float>, TEST_COUNT*TEST_ELEMENTS> results = {};
     T = getTimestampMS();
 
     std::thread worker1([NN, &results]() {
-        doRecognizeImages(NN, 1, 3, results, 0);
+        doRecognizeImages(NN, 1, 5, results, 0);
     });
 
     std::thread worker2([NN, &results]() {
-        doRecognizeImages(NN, 4, 6, results, 1);
+        doRecognizeImages(NN, 6, 10, results, 1);
     });
 
     std::thread worker3([NN, &results]() {
-        doRecognizeImages(NN, 7, 10, results, 2);
+        doRecognizeImages(NN, 11, 15, results, 2);
     });
 
     worker1.join();
