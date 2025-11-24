@@ -98,7 +98,7 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
 //                    std::cout << "[" << o.second->name << "] " << source->name <<
 //                                 " t " << source->t << " <= " << o.second->t << " l " << o.second->latency << std::endl;
 
-                    if ((o.second->t < o.second->latency && source->t <= o.second->t) || (o.second->t >= o.second->latency && source->t <= o.second->t-o.second->latency)) {
+                    if (source->t <= o.second->t-o.second->latency) {
                         bool latency = false;
                         for (int k = 0; k < e.synapse_count; k++) {
                             if (e.synapses[k].tl > o.second->t) {
@@ -138,8 +138,7 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
                     if (source) {
 //                        std::cout << "[" << o.second->name << "] " << source->name << " " << o.second->latency <<
 //                                  " t " << o.second->t << std::endl;
-                        if (o.second->latency > o.second->t) value = 0;
-                        else value = input[o.second->t-o.second->latency];
+                        value = input[o.second->t-o.second->latency];
                     } else value = e.synapses[k].tl > o.second->t ? 0 : input[o.second->t-e.synapses[k].tl];
 
                     float gamma = indk::Math::getGammaFunctionValue(e.synapses[k].gamma,
