@@ -30,17 +30,20 @@ namespace indk {
 
                     cl_float16 *PairsInfo;
                     cl_float8 *ReceptorsInfo;
-                    cl_float4 *NeuronsInfo;
+                    cl_float3 *NeuronsInfo;
                     cl_float2 *Inputs;
                     cl_float *Outputs;
+                    cl_int *Times;
 #endif
                 uint64_t pair_pool_size;
                 uint64_t receptor_pool_size;
                 uint64_t neuron_pool_size;
                 uint64_t input_pool_size;
-                uint64_t t;
+                uint64_t batch_size;
+
                 std::vector<indk::Neuron*> objects;
                 std::vector<std::string> outputs;
+                std::vector<std::vector<float>> output_sequence;
                 bool learning_mode;
             } ModelData;
 

@@ -30,9 +30,10 @@ void* indk::Translators::CL::doTranslate(const std::vector<indk::Neuron*>& neuro
 #ifdef INDK_OPENCL_SUPPORT
     model -> PairsInfo = new cl_float16[model->pair_pool_size];
     model -> ReceptorsInfo = new cl_float8[model->receptor_pool_size];
-    model -> NeuronsInfo = new cl_float4[model->neuron_pool_size];
+    model -> NeuronsInfo = new cl_float3[model->neuron_pool_size];
     model -> Inputs = new cl_float2[model->input_pool_size];
     model -> Outputs = new cl_float[model->neuron_pool_size];
+    model -> Times = new cl_int[model->neuron_pool_size];
     memset(model->Outputs, 0, sizeof(cl_float)*model->neuron_pool_size);
 
     indk::Position *rpos, *spos;
@@ -75,22 +76,6 @@ void* indk::Translators::CL::doTranslate(const std::vector<indk::Neuron*>& neuro
                     };
                     px++;
                 }
-
-                if (!i) {
-                    auto found = std::find_if(neurons.begin(), neurons.end(), [elist, j](indk::Neuron *n){ return n->getName()==elist[j]; });
-                    if (found != neurons.end()) {
-                        auto nei = std::distance(neurons.begin(), found);
-                        model -> Inputs[ex] = {
-                            static_cast<cl_float>(2),
-                            static_cast<cl_float>(nei),
-                        };
-                    } else {
-                        model -> Inputs[ex] = {
-                            static_cast<cl_float>(0),
-                            static_cast<cl_float>(0),
-                        };
-                    }
-                }
                 ex++;
             }
             model -> ReceptorsInfo[rx] = {
@@ -106,8 +91,7 @@ void* indk::Translators::CL::doTranslate(const std::vector<indk::Neuron*>& neuro
         model -> NeuronsInfo[ni] = {
             static_cast<cl_float>(rxstart),
             static_cast<cl_float>(rx),
-            static_cast<cl_float>(exstart),
-            static_cast<cl_float>(n->getLatency()),
+            static_cast<cl_float>(exstart)
         };
     }
 #endif
@@ -116,6 +100,8 @@ void* indk::Translators::CL::doTranslate(const std::vector<indk::Neuron*>& neuro
 }
 
 void indk::Translators::CL::doReset(indk::Translators::CL::ModelData *model) {
+    memset(model->Outputs, 0, sizeof(cl_float)*model->neuron_pool_size);
+
 //    for (const auto &o: model->objects) {
 //        auto neuron = o.second;
 //        neuron -> t = 0;

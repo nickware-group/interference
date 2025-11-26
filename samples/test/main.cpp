@@ -118,7 +118,7 @@ int main() {
     auto rbackends = doCheckAvailableBackends();
 
     constexpr unsigned STRUCTURE_COUNT                      = 2;
-    constexpr float SUPERSTRUCTURE_TEST_REFERENCE_OUTPUT    = 0.0291;
+    constexpr float SUPERSTRUCTURE_TEST_REFERENCE_OUTPUT    = 0.0294;
     constexpr float BENCHMARK_TEST_REFERENCE_OUTPUT         = 2.7622;
     const unsigned TOTAL_TEST_COUNT                         = STRUCTURE_COUNT*rbackends;
 
@@ -151,7 +151,7 @@ int main() {
     count += doTests("Superstructure test", SUPERSTRUCTURE_TEST_REFERENCE_OUTPUT);
 
     std::cout << "=== BENCHMARK ===" << std::endl;
-    doLoadModel("structures/structure_bench.json", 5000);
+    doLoadModel("structures/structure_bench.json", 10000);
     count += doTests("Benchmark", BENCHMARK_TEST_REFERENCE_OUTPUT);
 
     std::cout << "Tests passed: [" << count << "/" << TOTAL_TEST_COUNT << "]" << std::endl;

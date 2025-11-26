@@ -71,7 +71,7 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
     if (dcontext->ready) return dcontext;
 
     KERNEL(kernel_code_pairs,
-           __kernel void indk_kernel_pairs(__global float16 *pairs, __global float2 *inputs, __global float *outputs, __global float4 *neurons) {
+           __kernel void indk_kernel_pairs(__global float16 *pairs, __global float2 *inputs, __global float *outputs) {
                    int id = get_global_id(0);
                    // pairs.s0 - receptor x
                    // pairs.s1 - receptor y
@@ -92,11 +92,7 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
                    // check if we need to compute this pair by flag
                    int run = inputs[(int)pairs[id].s5].s0;
                    if (run) {
-                       float in;
-                       int latency = neurons[(int)pairs[id].s9].s3;
-                       if (latency > 0) in = 0;
-                       else if (run == 2) in = outputs[(int)pairs[id].s9];
-                       else in = inputs[(int)pairs[id].s5].s1;
+                       float in = inputs[(int)pairs[id].s5].s1;
 
                        // vector length
                        float d = 0;
@@ -173,7 +169,7 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
     );
 
     KERNEL(kernel_code_neurons,
-           __kernel void indk_kernel_neurons(__global float4 *neurons,  __global float8 *receptors, __global float2 *inputs, __global float *outputs) {
+           __kernel void indk_kernel_neurons(__global float4 *neurons,  __global float8 *receptors, __global float2 *inputs, __global float *outputs, __global int *times) {
                    int id = get_global_id(0);
                    // neurons.s0 - left receptors range edge           (const)
                    // neurons.s1 - right receptors range edge          (const)
@@ -182,20 +178,18 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
 
                    int run = inputs[(int)neurons[id].s2].s0;
                    if (run) {
-                       if (neurons[id].s3 > 0) {
-                           neurons[id].s3 = neurons[id].s3 - 1;
-                           outputs[id] = 0;
-                       } else {
-                           float p = 0;
-                           int rcount = neurons[id].s1 - neurons[id].s0;
+                       float p = 0;
+                       int rcount = neurons[id].s1 - neurons[id].s0;
 
-                           for (int i = neurons[id].s0; i < neurons[id].s1; i++) {
-                                p += receptors[i].s6;
-                           }
-                           p /= (float)rcount;
-
-                           outputs[id] = p;
+                       for (int i = neurons[id].s0; i < neurons[id].s1; i++) {
+                            p += receptors[i].s6;
                        }
+                       p /= (float)rcount;
+
+                       outputs[id] = p;
+                       times[id]++;
+                   } else {
+                       outputs[id] = -1;
                    };
            }
     );
@@ -242,14 +236,14 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
 
     cl::Buffer pairs_buffer(Context, CL_MEM_READ_WRITE, sizeof(cl_float16)*model->pair_pool_size);
     cl::Buffer receptors_buffer(Context, CL_MEM_READ_WRITE, sizeof(cl_float8)*model->receptor_pool_size);
-    cl::Buffer neurons_buffer(Context, CL_MEM_READ_WRITE, sizeof(cl_float4)*model->neuron_pool_size);
+    cl::Buffer neurons_buffer(Context, CL_MEM_READ_WRITE, sizeof(cl_float3)*model->neuron_pool_size);
     cl::Buffer inputs_buffer(Context, CL_MEM_READ_WRITE, sizeof(cl_float2)*model->input_pool_size);
     cl::Buffer outputs_buffer(Context, CL_MEM_READ_WRITE, sizeof(cl_float)*model->neuron_pool_size);
+    cl::Buffer times_buffer(Context, CL_MEM_READ_WRITE, sizeof(cl_int)*model->neuron_pool_size);
 
     dcontext->pairs.setArg(0, pairs_buffer);
     dcontext->pairs.setArg(1, inputs_buffer);
     dcontext->pairs.setArg(2, outputs_buffer);
-    dcontext->pairs.setArg(3, neurons_buffer);
 
     dcontext->receptors.setArg(0, receptors_buffer);
     dcontext->receptors.setArg(1, pairs_buffer);
@@ -259,35 +253,103 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
     dcontext->neurons.setArg(1, receptors_buffer);
     dcontext->neurons.setArg(2, inputs_buffer);
     dcontext->neurons.setArg(3, outputs_buffer);
+    dcontext->neurons.setArg(4, times_buffer);
 
     auto queue = cl::CommandQueue(Context, dcontext->device);
     queue.enqueueWriteBuffer(pairs_buffer, CL_TRUE, 0, sizeof(cl_float16)*model->pair_pool_size, model->PairsInfo);
     queue.enqueueWriteBuffer(receptors_buffer, CL_TRUE, 0, sizeof(cl_float8)*model->receptor_pool_size, model->ReceptorsInfo);
-    queue.enqueueWriteBuffer(neurons_buffer, CL_TRUE, 0, sizeof(cl_float4)*model->neuron_pool_size, model->NeuronsInfo);
+    queue.enqueueWriteBuffer(neurons_buffer, CL_TRUE, 0, sizeof(cl_float3)*model->neuron_pool_size, model->NeuronsInfo);
     queue.enqueueWriteBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size,  model->Outputs);
 
-    model->t = 0;
+    memset(model->Times, 0, sizeof(cl_int)*model->neuron_pool_size);
 
-    std::vector<uint64_t> incache;
-    for (const auto &o: model->objects) {
-        auto n = (indk::Neuron*)o;
+    model -> batch_size = x[0].size();
+
+    bool done = false;
+
+    std::vector<std::pair<uint64_t, bool>> incache;
+    uint64_t i = 0;
+    for (const auto &n: model->objects) {
         auto elist = n -> getEntries();
 
         for (const auto &e: elist) {
-            auto found = std::find(inputs.begin(), inputs.end(), e);
-            if (found != inputs.end()) {
-                auto index = std::distance(inputs.begin(), found);
-                incache.push_back(index);
+            auto ifound = std::find(inputs.begin(), inputs.end(), e);
+            if (ifound != inputs.end()) {
+                auto index = std::distance(inputs.begin(), ifound);
+                incache.emplace_back(index, false);
+            } else {
+                auto nfound = std::find_if(model->objects.begin(), model->objects.end(), [e](indk::Neuron *n) { return n->getName()==e; });
+                if (nfound != model->objects.end()) {
+                    auto index = std::distance(model->objects.begin(), nfound);
+                    incache.emplace_back(index, true);
+                }
             }
         }
+        model -> output_sequence.emplace_back();
+
+        while (model->Times[i] < n->getLatency()) {
+            model->Times[i]++;
+            model -> output_sequence.back().emplace_back(0);
+        }
+
+        i++;
     }
 
-    while (model->t < x[0].size()) {
-        for (uint64_t xi = 0; xi < incache.size(); xi++) {
-            model->Inputs[xi] = {
-                static_cast<cl_float>(1),
-                static_cast<cl_float>(x[incache[xi]][model->t]),
-            };
+    queue.enqueueWriteBuffer(times_buffer, CL_TRUE, 0, sizeof(cl_int)*model->neuron_pool_size,  model->Times);
+
+    while (!done) {
+        done = true;
+
+        uint64_t xi = 0, xistart;
+        i = 0;
+        for (const auto &n: model->objects) {
+            auto elist = n -> getEntries();
+            bool ready = true;
+
+            if (model->Times[i] == model->batch_size) {
+                ready = false;
+            } else {
+                xistart = xi;
+                for (const auto &e: elist) {
+                    if (std::get<1>(incache[xi])) {
+                        auto source = std::get<0>(incache[xi]);
+                        auto st = model->Times[source];
+                        if (st <= model->Times[i]-n->getLatency()) {
+                            ready = false;
+                            break;
+                        }
+                    }
+                    xi++;
+                }
+                xi = xistart;
+            }
+
+            for (const auto &e: elist) {
+                if (ready) {
+                    if (!std::get<1>(incache[xi])) {
+                        model->Inputs[xi] = {
+                                static_cast<cl_float>(1),
+                                static_cast<cl_float>(x[std::get<0>(incache[xi])][model->Times[i]]),
+                        };
+                    } else {
+                        auto source = std::get<0>(incache[xi]);
+                        if (model->Times[i]-n->getLatency() < 0) std::cout << model->Times[i]-n->getLatency() << " err" << std::endl;
+                        model->Inputs[xi] = {
+                                static_cast<cl_float>(1),
+                                static_cast<cl_float>(model->output_sequence[source][model->Times[i]-n->getLatency()]),
+                        };
+                    }
+                } else {
+                    model->Inputs[xi] = {
+                        static_cast<cl_float>(0),
+                        static_cast<cl_float>(0),
+                    };
+                }
+
+//                std::cout << n->getName() << " " << e << " " << model->Inputs[xi].s0 << " " << model->Inputs[xi].s1 << std::endl;
+                xi++;
+            }
+            i++;
         }
 
         queue.enqueueWriteBuffer(inputs_buffer, CL_TRUE, 0, sizeof(cl_float2)*model->input_pool_size, model->Inputs);
@@ -299,10 +361,24 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
         queue.enqueueNDRangeKernel(dcontext->neurons, cl::NullRange, cl::NDRange(model->neuron_pool_size), cl::NullRange);
         queue.finish();
 
-        model -> t++;
+        queue.enqueueReadBuffer(times_buffer, CL_TRUE, 0, sizeof(cl_int)*model->neuron_pool_size, model->Times);
+
+        for (i = 0; i < model->neuron_pool_size; i++) {
+            if (model->Times[i] != model->batch_size) {
+                done = false;
+                break;
+            }
+//            std::cout << "[" << model->t << "] " << model->objects[i]->getName() << " " << model->Times[i] << std::endl;
+        }
+
+        queue.enqueueReadBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size, model->Outputs);
+        for (i = 0; i < model->neuron_pool_size; i++) {
+//            std::cout << "[" << model->Times[i] << "] " << model->objects[i]->getName() << " " << model->Outputs[i] << std::endl;
+            if (model->Outputs[i] >= 0) model -> output_sequence[i].emplace_back(model->Outputs[i]);
+        }
     }
 
-    queue.enqueueReadBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size, model->Outputs);
+//    queue.enqueueReadBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size, model->Outputs);
     queue.enqueueReadBuffer(pairs_buffer, CL_TRUE, 0, sizeof(cl_float16)*model->pair_pool_size, model->PairsInfo);
     queue.enqueueReadBuffer(receptors_buffer, CL_TRUE, 0, sizeof(cl_float8)*model->receptor_pool_size, model->ReceptorsInfo);
 #endif
@@ -336,9 +412,8 @@ std::vector<indk::OutputValue> indk::ComputeBackends::OpenCL::getOutputValues(vo
         auto found = std::find_if(model->objects.begin(), model->objects.end(), [o](indk::Neuron *n){ return n->getName() == o; });
         if (found != model->objects.end()) {
             auto index = std::distance(model->objects.begin(), found);
-            auto value = model->t == 0 ? 0 : model->Outputs[index];
-//            std::cout << o << " " << model->Outputs[index] << std::endl;
-            indk::OutputValue output = {.value=value, .source=o, .time=model->t};
+            auto value = model->output_sequence[index][model->batch_size-1];
+            indk::OutputValue output = {.value=value, .source=o, .time=model->batch_size};
             outputs.emplace_back(output);
         }
     }
