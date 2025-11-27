@@ -201,20 +201,18 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
 
     auto pairs = cl::Program(Context, {kernel_code_pairs.c_str(),kernel_code_pairs.length()+1});
     if ((status = pairs.build({dcontext->device})) != CL_SUCCESS) {
-        std::cerr << "Error building: status " << status << " " << pairs.getBuildInfo<CL_PROGRAM_BUILD_LOG>(dcontext->device) << std::endl;
+        throw indk::Error(indk::Error::EX_BACKEND_NOSIGNAL_ERROR, "status "+std::to_string(status)+", log: "+pairs.getBuildInfo<CL_PROGRAM_BUILD_LOG>(dcontext->device));
 
     }
 
     auto receptors = cl::Program(Context, {kernel_code_receptors.c_str(),kernel_code_receptors.length()+1});
     if ((status = receptors.build({dcontext->device})) != CL_SUCCESS) {
-        std::cerr << "Error building: status " << status << " " << receptors.getBuildInfo<CL_PROGRAM_BUILD_LOG>(dcontext->device) << std::endl;
-
+        throw indk::Error(indk::Error::EX_BACKEND_NOSIGNAL_ERROR, "status "+std::to_string(status)+", log: "+receptors.getBuildInfo<CL_PROGRAM_BUILD_LOG>(dcontext->device));
     }
 
     auto neurons = cl::Program(Context, {kernel_code_neurons.c_str(),kernel_code_neurons.length()+1});
     if ((status = neurons.build({dcontext->device})) != CL_SUCCESS) {
-        std::cerr << "Error building: status " << status << " " << neurons.getBuildInfo<CL_PROGRAM_BUILD_LOG>(dcontext->device) << std::endl;
-
+        throw indk::Error(indk::Error::EX_BACKEND_NOSIGNAL_ERROR, "status "+std::to_string(status)+", log: "+neurons.getBuildInfo<CL_PROGRAM_BUILD_LOG>(dcontext->device));
     }
 
     dcontext->pairs = cl::Kernel(pairs, "indk_kernel_pairs");
@@ -348,8 +346,6 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
                         static_cast<cl_float>(0),
                     };
                 }
-
-//                std::cout << n->getName() << " " << e << " " << model->Inputs[xi].s0 << " " << model->Inputs[xi].s1 << std::endl;
                 xi++;
             }
             i++;
@@ -371,17 +367,14 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
                 done = false;
                 break;
             }
-//            std::cout << "[" << model->t << "] " << model->objects[i]->getName() << " " << model->Times[i] << std::endl;
         }
 
         queue.enqueueReadBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size, model->Outputs);
         for (i = 0; i < model->neuron_pool_size; i++) {
-//            std::cout << "[" << model->Times[i] << "] " << model->objects[i]->getName() << " " << model->Outputs[i] << std::endl;
             if (model->Outputs[i] >= 0) model -> output_sequence[i].emplace_back(model->Outputs[i]);
         }
     }
 
-//    queue.enqueueReadBuffer(outputs_buffer, CL_TRUE, 0, sizeof(cl_float)*model->neuron_pool_size, model->Outputs);
     queue.enqueueReadBuffer(pairs_buffer, CL_TRUE, 0, sizeof(cl_float16)*model->pair_pool_size, model->PairsInfo);
     queue.enqueueReadBuffer(receptors_buffer, CL_TRUE, 0, sizeof(cl_float8)*model->receptor_pool_size, model->ReceptorsInfo);
 #endif

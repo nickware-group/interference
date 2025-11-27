@@ -39,11 +39,8 @@ void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<st
 
     uint64_t csize = x[0].size();
 
-//    std::cout << csize << std::endl;
-
     if (!csize) {
-        std::cout << "err no signal" << std::endl;
-        return;
+        throw indk::Error(indk::Error::EX_BACKEND_NOSIGNAL_ERROR);
     }
 
     // linking necessary neural network inputs to neurons
@@ -57,8 +54,7 @@ void indk::ComputeBackends::NativeCPUMultithread::doCompute(const std::vector<st
         }
         if (i && csize != x[i].size()) {
             // signals consistency is broken
-            std::cout << "signals cons err" << std::endl;
-            return;
+            throw indk::Error(indk::Error::EX_BACKEND_CONSISTENCY_ERROR, "compute size (signal length) "+std::to_string(csize)+", signal size "+std::to_string(x[i].size()));
         }
     }
 

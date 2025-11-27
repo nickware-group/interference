@@ -11,6 +11,7 @@
 #include <indk/backends/native.h>
 #include <indk/translators/cpu.h>
 #include <indk/math.h>
+#include "indk/error.h"
 
 indk::ComputeBackends::NativeCPU::NativeCPU() {
     BackendName = "Native CPU";
@@ -29,11 +30,8 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
     uint64_t csize = x[0].size();
     uint64_t done = 0;
 
-//    std::cout << csize << std::endl;
-
     if (!csize) {
-        std::cout << "err no signal" << std::endl;
-        return;
+        throw indk::Error(indk::Error::EX_BACKEND_NOSIGNAL_ERROR);
     }
 
     // linking necessary neural network inputs to neurons
@@ -47,8 +45,7 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
         }
         if (i && csize != x[i].size()) {
             // signals consistency is broken
-            std::cout << "signals cons err" << std::endl;
-            return;
+            throw indk::Error(indk::Error::EX_BACKEND_CONSISTENCY_ERROR, "compute size (signal length) "+std::to_string(csize)+", signal size "+std::to_string(x[i].size()));
         }
     }
 
@@ -83,8 +80,6 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
                 o.second->output[o.second->t] = 0;
                 o.second->t++;
                 processed = true;
-//                std::cout << "[" << o.second->name << "]" << " latency worked t " << o.second->t << std::endl;
-
                 continue;
             }
 
@@ -95,8 +90,6 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
 
                 if (o.second->entries[j].entry_type) {
                     auto source = ((indk::Translators::CPU::NeuronParams*)o.second->entries[j].input);
-//                    std::cout << "[" << o.second->name << "] " << source->name <<
-//                                 " t " << source->t << " <= " << o.second->t << " l " << o.second->latency << std::endl;
 
                     if (source->t <= o.second->t-o.second->latency) {
                         bool latency = false;
@@ -115,7 +108,6 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
 
             // go next if not ready
             if (!ready) {
-//                std::cout << "[" << o.second->name << "] " << "not ready" << std::endl;
                 continue;
             }
 
@@ -136,8 +128,6 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
                 for (int k = 0; k < e.synapse_count; k++) {
                     float value;
                     if (source) {
-//                        std::cout << "[" << o.second->name << "] " << source->name << " " << o.second->latency <<
-//                                  " t " << o.second->t << std::endl;
                         value = input[o.second->t-o.second->latency];
                     } else value = e.synapses[k].tl > o.second->t ? 0 : input[o.second->t-e.synapses[k].tl];
 
@@ -150,8 +140,6 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
                     e.synapses[k].l_d_gamma = e.synapses[k].d_gamma;
                     e.synapses[k].d_gamma = gamma - e.synapses[k].gamma;
                     e.synapses[k].gamma = gamma;
-
-//                    std::cout << "[input value/gamma] " << value << " " << e.synapses[k].gamma << std::endl;
                 }
             }
 
@@ -174,7 +162,6 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
                                                                    indk::Math::getFiVectorLength(fivalues.second),
                                                                    d,
                                                                    o.second->dimension_count);
-//                            std::cout << d << " " << r.position[0] << " " << r.position[1] << " " << e.synapses[k].position[0] << " " << e.synapses[k].position[1] << " "  << o.second->position_buffer[0] << " " << o.second->position_buffer[1] << std::endl;
                         }
                         fisum += fivalues.first;
                     }
@@ -189,11 +176,9 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
                                                                o.second->dimension_count);
                 r.rs = indk::Math::getRcValue(r.k3, r.rs, r.fi, r.d_fi);
 
-//                std::cout << "[fi/d_fi/rs/p/pos0/pos1] "  << r.fi << " " << r.d_fi << " " << r.rs << " " << p << " " << o.second->position_buffer[0] << " " << o.second->position_buffer[1] << std::endl;
             }
 
             p /= (float)o.second -> receptor_count;
-//            std::cout << p << std::endl;
 
             o.second->output[o.second->t] = p;
             o.second->t++;
@@ -201,15 +186,11 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
             if (o.second->t == csize) done++;
 
             processed = true;
-
-//            std::cout << "[" << o.second->name << "] " << "[compute done] t " << o.second->t << " / " << csize << std::endl;
         }
 
         if (!processed) {
-            std::cout << "[processing error] no signal passing" << std::endl;
-            break;
+            throw indk::Error(indk::Error::EX_BACKEND_NATIVE_CPU_PROCESSING_ERROR, "objects done "+std::to_string(done)+", total objects "+std::to_string(model->objects.size())+", batch size"+std::to_string(model->batch_size));
         }
-//        std::cout << std::endl;
     }
 
     if (!model->learning_mode) {

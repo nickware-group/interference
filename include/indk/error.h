@@ -57,6 +57,14 @@ namespace indk {
             EX_INSTANCE_RUN_INPUT_ERROR,
             /// OpenCL device not found
             EX_BACKEND_CL_DEVICE_NOT_FOUND,
+            /// OpenCL kernel build error
+            EX_BACKEND_CL_KERNEL_BUILD_ERROR,
+            /// Native CPU backend signal processing error
+            EX_BACKEND_NATIVE_CPU_PROCESSING_ERROR,
+            /// Signal consistency error
+            EX_BACKEND_CONSISTENCY_ERROR,
+            /// No signal error
+            EX_BACKEND_NOSIGNAL_ERROR
         } Exceptions;
 
         Error();

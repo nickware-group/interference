@@ -79,6 +79,18 @@ const char* indk::Error::what() const noexcept {
         case EX_BACKEND_CL_DEVICE_NOT_FOUND:
             Msg = std::string("EX_BACKEND_CL_DEVICE_NOT_FOUND ~ OpenCL device not found");
             break;
+        case EX_BACKEND_CL_KERNEL_BUILD_ERROR:
+            Msg = std::string("EX_BACKEND_CL_KERNEL_BUILD_ERROR ~ OpenCL kernel build error");
+            break;
+        case EX_BACKEND_NATIVE_CPU_PROCESSING_ERROR:
+            Msg = std::string("EX_BACKEND_NATIVE_CPU_PROCESSING_ERROR ~ No signal passing. Computing fell into endless deadloop");
+            break;
+        case EX_BACKEND_CONSISTENCY_ERROR:
+            Msg = std::string("EX_BACKEND_CONSISTENCY_ERROR ~ The length of the signals is not the same");
+            break;
+        case EX_BACKEND_NOSIGNAL_ERROR:
+            Msg = std::string("EX_BACKEND_NOSIGNAL_ERROR ~ No signal");
+            break;
         default:
             Msg = std::string("No exception");
     }
