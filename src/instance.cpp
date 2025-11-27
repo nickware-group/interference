@@ -10,7 +10,6 @@
 #include <indk/instance.h>
 #include <indk/types.h>
 #include <indk/neuron.h>
-#include <algorithm>
 #include <indk/math.h>
 
 void indk::ComputeInstanceManager::doCreateInstance(int backend) {

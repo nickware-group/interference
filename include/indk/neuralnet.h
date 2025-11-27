@@ -14,12 +14,11 @@
 #include <algorithm>
 #include <tuple>
 #include <functional>
-#include <unordered_map>
+#include <queue>
 #include <indk/neuron.h>
 #include <indk/system.h>
 #include <indk/interlink.h>
 #include <indk/instance.h>
-#include <queue>
 
 namespace indk {
     typedef enum {
