@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:
-// Purpose:
-// Author:      Nickolay Babbysh
+// Name:        backend.cpp
+// Purpose:     Compute Backend abstract class
+// Author:      Nickolay Babich
 // Created:     05.11.2025
 // Copyright:   (c) NickWare Group
-// Licence:
+// Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////
 
 #include <indk/backend.h>

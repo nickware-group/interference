@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:
-// Purpose:
-// Author:      Nickolay Babbysh
+// Name:        indk/backends/native_multithred.h
+// Purpose:     Native CPU with multithreading support compute backend class header
+// Author:      Nickolay Babich
 // Created:     04.11.2025
 // Copyright:   (c) NickWare Group
-// Licence:
+// Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef INTERFERENCE_BACKENDS_NATIVE_MULTITHREAD_H

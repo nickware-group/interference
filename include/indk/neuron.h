@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        indk/neuron.h
 // Purpose:     Neuron classes header
-// Author:      Nickolay Babbysh
+// Author:      Nickolay Babich
 // Created:     29.04.2019
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence

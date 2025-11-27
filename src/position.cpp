@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        position.cpp
 // Purpose:     Multidimensional position class
-// Author:      Nickolay Babbysh
+// Author:      Nickolay Babich
 // Created:     07.05.2019
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence

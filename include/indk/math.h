@@ -1,11 +1,12 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:
-// Purpose:
-// Author: Nickolay Babbysh
-// Created: 17.10.22
-// Copyright: (c) NickWare Group
-// Licence: MIT licence
+// Name:        indk/math.h
+// Purpose:     Basic mathematical methods header
+// Author:      Nickolay Babich
+// Created:     17.10.2022
+// Copyright:   (c) NickWare Group
+// Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////
+
 #ifndef INTERFERENCE_MATH_H
 #define INTERFERENCE_MATH_H
 

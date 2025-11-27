@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        indk/error.h
 // Purpose:     Exception system class header
-// Author:      Nickolay Babbysh
+// Author:      Nickolay Babich
 // Created:     07.05.2019
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence

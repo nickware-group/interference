@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:
-// Purpose:
-// Author:      Nickolay Babbysh
+// Name:        backends/opencl.cpp
+// Purpose:     OpenCL compute backend class
+// Author:      Nickolay Babich
 // Created:     04.11.2025
 // Copyright:   (c) NickWare Group
-// Licence:
+// Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////
 
 #include <cstring>

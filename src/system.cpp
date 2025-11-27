@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:
-// Purpose:
-// Author: Nickolay Babbysh
-// Created: 18.10.22
-// Copyright: (c) NickWare Group
-// Licence: MIT licence
+// Name:        system.cpp
+// Purpose:     General-purpose auxiliary methods
+// Author:      Nickolay Babich
+// Created:     18.10.2022
+// Copyright:   (c) NickWare Group
+// Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////
 
 #include <indk/system.h>

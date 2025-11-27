@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        indk/neuralnet.h
 // Purpose:     Neural net classes header
-// Author:      Nickolay Babbysh
+// Author:      Nickolay Babich
 // Created:     12.05.2019
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence

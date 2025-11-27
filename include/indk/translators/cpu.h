@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:
-// Purpose:
-// Author:      Nickolay Babbysh
+// Name:        indk/translators/cpu.h
+// Purpose:     CPU translator class header
+// Author:      Nickolay Babich
 // Created:     04.11.2025
 // Copyright:   (c) NickWare Group
-// Licence:
+// Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef INTERFERENCE_TRANSLATOR_CPU_H

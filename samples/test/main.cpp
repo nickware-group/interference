@@ -1,8 +1,8 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:
-// Purpose:
-// Author:      Nickolay Babbysh
-// Created:     30.01.23
+// Name:        main.cpp
+// Purpose:     Test sample main
+// Author:      Nickolay Babich
+// Created:     30.01.2023
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////

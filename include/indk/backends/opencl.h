@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:
-// Purpose:
-// Author:      Nickolay Babbysh
+// Name:        indk/backends/opencl.h
+// Purpose:     OpenCL compute backend class header
+// Author:      Nickolay Babich
 // Created:     04.11.2025
 // Copyright:   (c) NickWare Group
-// Licence:
+// Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef INTERFERENCE_BACKENDS_OPENCL_H

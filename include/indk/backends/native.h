@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:
-// Purpose:
-// Author:      Nickolay Babbysh
+// Name:        indk/backends/native.h
+// Purpose:     Native CPU compute backend class header
+// Author:      Nickolay Babich
 // Created:     04.11.2025
 // Copyright:   (c) NickWare Group
-// Licence:
+// Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef INTERFERENCE_BACKENDS_NATIVE_H

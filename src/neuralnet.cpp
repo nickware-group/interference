@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        neuralnet/neuralnet.cpp
 // Purpose:     Neural net main class
-// Author:      Nickolay Babbysh
+// Author:      Nickolay Babich
 // Created:     12.05.2019
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence

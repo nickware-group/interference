@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:
-// Purpose:
-// Author:      Nickolay Babbysh
+// Name:        indk/backend.h
+// Purpose:     Compute Backend abstract class header
+// Author:      Nickolay Babich
 // Created:     05.11.2025
 // Copyright:   (c) NickWare Group
-// Licence:
+// Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef INTERFERENCE_BACKEND_H

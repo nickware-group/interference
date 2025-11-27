@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:
-// Purpose:
-// Author:      Nickolay Babbysh
+// Name:        indk/system.h
+// Purpose:     General-purpose auxiliary methods header
+// Author:      Nickolay Babich
 // Created:     18.10.22
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence

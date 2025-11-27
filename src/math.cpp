@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:
-// Purpose:
-// Author:      Nickolay Babbysh
+// Name:        math.cpp
+// Purpose:     Basic mathematical methods
+// Author:      Nickolay Babich
 // Created:     07.11.2025
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence

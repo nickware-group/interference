@@ -1,8 +1,8 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:
-// Purpose:
-// Author:      Nickolay Babbysh
-// Created:     16.03.23
+// Name:        main.cpp
+// Purpose:     Multimodal sample main
+// Author:      Nickolay Babich
+// Created:     16.03.2023
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////

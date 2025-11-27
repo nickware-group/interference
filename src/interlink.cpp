@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        interlink.cpp
 // Purpose:     Interlink service class
-// Author:      Nickolay Babbysh
+// Author:      Nickolay Babich
 // Created:     19.07.2023
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence

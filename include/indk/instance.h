@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        instance.cpp
-// Purpose:     Compute Instance Manager class
-// Author:      Nickolay Babbysh
+// Name:        indk/instance.h
+// Purpose:     Compute Instance Manager class header
+// Author:      Nickolay Babich
 // Created:     21.10.2025
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence
