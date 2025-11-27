@@ -70,129 +70,132 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
 
     if (dcontext->ready) return dcontext;
 
-    KERNEL(kernel_code_pairs,
-           __kernel void indk_kernel_pairs(__global float16 *pairs, __global float2 *inputs, __global float *outputs) {
-                   int id = get_global_id(0);
-                   // pairs.s0 - receptor x
-                   // pairs.s1 - receptor y
-                   // pairs.s2 - synapse x              (const)
-                   // pairs.s3 - synapse y              (const)
+    KERNEL(kernel_code_pairs, __kernel void indk_kernel_pairs(__global float16 *pairs,
+                                                              __global float2 *inputs,
+                                                              __global float *outputs) {
+        int id = get_global_id(0);
+        // pairs.s0 - receptor x
+        // pairs.s1 - receptor y
+        // pairs.s2 - synapse x              (const)
+        // pairs.s3 - synapse y              (const)
 
-                   // pairs.s4 - synapse gamma value
-                   // pairs.s5 - input index            (const)
+        // pairs.s4 - synapse gamma value
+        // pairs.s5 - input index            (const)
 
-                   // pairs.s6 - lambda                 (const)
-                   // pairs.s7 - k1                     (const)
-                   // pairs.s8 - k2                     (const)
+        // pairs.s6 - lambda                 (const)
+        // pairs.s7 - k1                     (const)
+        // pairs.s8 - k2                     (const)
 
-                   // pairs.s9 - reserved
-                   // pairs.sA - reserved
-                   // pairs.sB - reserved
+        // pairs.s9 - reserved
+        // pairs.sA - reserved
+        // pairs.sB - reserved
 
-                   // check if we need to compute this pair by flag
-                   int run = inputs[(int)pairs[id].s5].s0;
-                   if (run) {
-                       float in = inputs[(int)pairs[id].s5].s1;
+        // check if we need to compute this pair by flag
+        int run = inputs[(int)pairs[id].s5].s0;
+        if (run) {
+            float in = inputs[(int)pairs[id].s5].s1;
 
-                       // vector length
-                       float d = 0;
-                       d += (pairs[id].s0-pairs[id].s2)*(pairs[id].s0-pairs[id].s2);
-                       d += (pairs[id].s1-pairs[id].s3)*(pairs[id].s1-pairs[id].s3);
-                       d = sqrt(d);
+            // vector length
+            float d = 0;
+            d += (pairs[id].s0-pairs[id].s2)*(pairs[id].s0-pairs[id].s2);
+            d += (pairs[id].s1-pairs[id].s3)*(pairs[id].s1-pairs[id].s3);
+            d = sqrt(d);
 
-                       float ngamma = pairs[id].s4 + (pairs[id].s7*in-pairs[id].s4/pairs[id].s8);
+            float ngamma = pairs[id].s4 + (pairs[id].s7*in-pairs[id].s4/pairs[id].s8);
 
-                       float e = pairs[id].s6 * exp(-pairs[id].s6*d);
-                       float fi = ngamma * e;
-                       float dfi = (ngamma-pairs[id].s4) * e;
-                       float nx = 0, ny = 0;
-                       if (dfi > 0 && d > 0) {
-                           float nposd = sqrt(dfi) / d;
-                           nx = (pairs[id].s0-pairs[id].s2) * nposd;
-                           ny = (pairs[id].s1-pairs[id].s3) * nposd;
-                       }
+            float e = pairs[id].s6 * exp(-pairs[id].s6*d);
+            float fi = ngamma * e;
+            float dfi = (ngamma-pairs[id].s4) * e;
+            float nx = 0, ny = 0;
 
-                       // update gamma value
-                       pairs[id].s4 = ngamma;
+            if (dfi > 0 && d > 0) {
+                float nposd = sqrt(dfi) / d;
+                nx = (pairs[id].s0-pairs[id].s2) * nposd;
+                ny = (pairs[id].s1-pairs[id].s3) * nposd;
+            }
 
-                       pairs[id].s9 = nx;
-                       pairs[id].sA = ny;
-                       pairs[id].sB = fi;
-                   };
-           }
-    );
+            // update gamma value
+            pairs[id].s4 = ngamma;
 
-    KERNEL(kernel_code_receptors,
-           __kernel void indk_kernel_receptors(__global float8 *receptors,  __global float16 *pairs, __global float2 *inputs) {
-                   int id = get_global_id(0);
-                   // receptors.s0 - left pairs range edge           (const)
-                   // receptors.s1 - right pairs range edge          (const)
-                   // receptors.s2 - input index                     (const)
+            pairs[id].s9 = nx;
+            pairs[id].sA = ny;
+            pairs[id].sB = fi;
+        };
+    });
 
-                   // receptors.s3 - receptor sensitivity
-                   // receptors.s4 - neurotransmitter level value
+    KERNEL(kernel_code_receptors, __kernel void indk_kernel_receptors(__global float8 *receptors,
+                                                                      __global float16 *pairs,
+                                                                      __global float2 *inputs) {
+        int id = get_global_id(0);
+        // receptors.s0 - left pairs range edge           (const)
+        // receptors.s1 - right pairs range edge          (const)
+        // receptors.s2 - input index                     (const)
 
-                   // receptors.s5 - k3                              (const)
+        // receptors.s3 - receptor sensitivity
+        // receptors.s4 - neurotransmitter level value
 
-                   // receptors.s6 - reserved
+        // receptors.s5 - k3                              (const)
 
-                   int run = inputs[(int)receptors[id].s2].s0;
-                   if (run) {
-                       float drx = 0, dry = 0, fisum = 0;
+        // receptors.s6 - reserved
 
-                       for (int i = receptors[id].s0; i < receptors[id].s1; i++) {
-                           drx += pairs[i].s9;
-                           dry += pairs[i].sA;
-                           fisum += pairs[i].sB;
-                       }
+        int run = inputs[(int)receptors[id].s2].s0;
+        if (run) {
+            float drx = 0, dry = 0, fisum = 0;
 
-                       for (int i = receptors[id].s0; i < receptors[id].s1; i++) {
-                           pairs[i].s0 += drx;
-                           pairs[i].s1 += dry;
-                       }
+            for (int i = receptors[id].s0; i < receptors[id].s1; i++) {
+                drx += pairs[i].s9;
+                dry += pairs[i].sA;
+                fisum += pairs[i].sB;
+            }
 
-                       float dfisum = fisum - receptors[id].s4;
-                       receptors[id].s4 = fisum;
+            for (int i = receptors[id].s0; i < receptors[id].s1; i++) {
+                pairs[i].s0 += drx;
+                pairs[i].s1 += dry;
+            }
 
-                       float d = drx*drx + dry*dry;
-                       d = sqrt(d);
+            float dfisum = fisum - receptors[id].s4;
+            receptors[id].s4 = fisum;
 
-                       float p = 0;
-                       if (d > 0 && fisum > receptors[id].s3) p = d;
+            float d = drx*drx + dry*dry;
+            d = sqrt(d);
 
-                       if (dfisum > 0 && fisum >= receptors[id].s3) receptors[id].s3 += dfisum;
-                       else receptors[id].s3 = receptors[id].s3 / (receptors[id].s5*receptors[id].s3+1);
+            float p = 0;
+            if (d > 0 && fisum > receptors[id].s3) p = d;
 
-                       receptors[id].s6 = p;
-                   };
-           }
-    );
+            if (dfisum > 0 && fisum >= receptors[id].s3) receptors[id].s3 += dfisum;
+            else receptors[id].s3 = receptors[id].s3 / (receptors[id].s5*receptors[id].s3+1);
 
-    KERNEL(kernel_code_neurons,
-           __kernel void indk_kernel_neurons(__global float4 *neurons,  __global float8 *receptors, __global float2 *inputs, __global float *outputs, __global int *times) {
-                   int id = get_global_id(0);
-                   // neurons.s0 - left receptors range edge           (const)
-                   // neurons.s1 - right receptors range edge          (const)
-                   // neurons.s2 - input index                         (const)
-                   // neurons.s3 - latency
+            receptors[id].s6 = p;
+        };
+    });
 
-                   int run = inputs[(int)neurons[id].s2].s0;
-                   if (run) {
-                       float p = 0;
-                       int rcount = neurons[id].s1 - neurons[id].s0;
+    KERNEL(kernel_code_neurons, __kernel void indk_kernel_neurons(__global float4 *neurons,
+                                                                  __global float8 *receptors,
+                                                                  __global float2 *inputs,
+                                                                  __global float *outputs,
+                                                                  __global int *times) {
+        int id = get_global_id(0);
+        // neurons.s0 - left receptors range edge           (const)
+        // neurons.s1 - right receptors range edge          (const)
+        // neurons.s2 - input index                         (const)
+        // neurons.s3 - latency
 
-                       for (int i = neurons[id].s0; i < neurons[id].s1; i++) {
-                            p += receptors[i].s6;
-                       }
-                       p /= (float)rcount;
+        int run = inputs[(int)neurons[id].s2].s0;
+        if (run) {
+            float p = 0;
+            int rcount = neurons[id].s1 - neurons[id].s0;
 
-                       outputs[id] = p;
-                       times[id]++;
-                   } else {
-                       outputs[id] = -1;
-                   };
-           }
-    );
+            for (int i = neurons[id].s0; i < neurons[id].s1; i++) {
+                p += receptors[i].s6;
+            }
+            p /= (float)rcount;
+
+            outputs[id] = p;
+            times[id]++;
+        } else {
+           outputs[id] = -1;
+        };
+    });
 
     int status;
 
