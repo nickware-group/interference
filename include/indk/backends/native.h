@@ -16,7 +16,7 @@
 
 namespace indk {
     namespace ComputeBackends {
-        class NativeCPU  : public indk::ComputeBackend {
+        class NativeCPU : public indk::ComputeBackend {
         public:
             NativeCPU();
             void* doTranslate(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync) override;

@@ -391,9 +391,8 @@ void indk::ComputeBackends::OpenCL::doReset(void *model) {
     indk::Translators::CL::doReset((indk::Translators::CL::ModelData*)model);
 }
 
-void indk::ComputeBackends::OpenCL::doClear(void *_model) {
-    auto model = (indk::Translators::CL::ModelData*)_model;
-    delete model; // TODO: correct deleting
+void indk::ComputeBackends::OpenCL::doClear(void *model) {
+    indk::Translators::CL::doClear((indk::Translators::CL::ModelData*)model);
 }
 
 void indk::ComputeBackends::OpenCL::setMode(void *_model, bool learning) {

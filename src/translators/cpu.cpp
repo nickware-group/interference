@@ -140,6 +140,30 @@ void indk::Translators::CPU::doReset(indk::Translators::CPU::ModelData *model) {
     }
 }
 
+void indk::Translators::CPU::doClear(indk::Translators::CPU::ModelData *model) {
+    for (const auto &o: model->objects) {
+        auto neuron = o.second;
+
+        for (int i = 0; i < neuron->receptor_count; i++) {
+            auto r = neuron -> receptors[i];
+            delete [] r.position;
+            delete [] r.position_default;
+        }
+        delete [] neuron->receptors;
+
+        for (int j = 0; j < neuron->entry_count; j++) {
+            auto e = neuron -> entries[j];
+            for (unsigned int k = 0; k < e.synapse_count; k++) {
+                delete [] e.synapses[k].position;
+            }
+            delete [] e.synapses;
+        }
+        delete [] neuron->entries;
+    }
+
+    delete model;
+}
+
 std::vector<indk::OutputValue> indk::Translators::CPU::getOutputValues(indk::Translators::CPU::ModelData *model) {
     std::vector<indk::OutputValue> outputs;
     outputs.reserve(model->outputs.size());

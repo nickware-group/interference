@@ -254,9 +254,8 @@ void indk::ComputeBackends::NativeCPU::doReset(void *model) {
     indk::Translators::CPU::doReset((indk::Translators::CPU::ModelData*)model);
 }
 
-void indk::ComputeBackends::NativeCPU::doClear(void *_model) {
-    auto model = (indk::Translators::CPU::ModelData*)_model;
-    delete model; // TODO: correct deleting
+void indk::ComputeBackends::NativeCPU::doClear(void *model) {
+    indk::Translators::CPU::doClear((indk::Translators::CPU::ModelData*)model);
 }
 
 void indk::ComputeBackends::NativeCPU::setMode(void *_model, bool learning) {

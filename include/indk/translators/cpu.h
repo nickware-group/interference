@@ -72,6 +72,7 @@ namespace indk {
 
             static void* doTranslate(const std::vector<indk::Neuron*> &neurons, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync);
             static void doReset(ModelData *model);
+            static void doClear(ModelData *model);
 
             static std::vector<indk::OutputValue> getOutputValues(ModelData *model);
             static std::map<std::string, std::vector<indk::Position>> getReceptorPositions(ModelData *model);

@@ -295,9 +295,8 @@ void indk::ComputeBackends::NativeCPUMultithread::doReset(void *model) {
     indk::Translators::CPU::doReset((indk::Translators::CPU::ModelData*)model);
 }
 
-void indk::ComputeBackends::NativeCPUMultithread::doClear(void *_model) {
-    auto model = (indk::Translators::CPU::ModelData*)_model;
-    delete model; // TODO: correct deleting
+void indk::ComputeBackends::NativeCPUMultithread::doClear(void *model) {
+    indk::Translators::CPU::doClear((indk::Translators::CPU::ModelData*)model);
 }
 
 void indk::ComputeBackends::NativeCPUMultithread::setMode(void *_model, bool learning) {

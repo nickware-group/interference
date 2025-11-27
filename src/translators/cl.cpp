@@ -103,8 +103,20 @@ void indk::Translators::CL::doReset(indk::Translators::CL::ModelData *model) {
                 static_cast<cl_float>(rx),
                 static_cast<cl_float>(exstart)
         };
+
+        model -> output_sequence.clear();
     }
 #endif
+}
+
+void indk::Translators::CL::doClear(indk::Translators::CL::ModelData *model) {
+    delete [] model->PairsInfo;
+    delete [] model->ReceptorsInfo;
+    delete [] model->NeuronsInfo;
+    delete [] model->Inputs;
+    delete [] model->Outputs;
+    delete [] model->Times;
+    delete model;
 }
 
 std::string indk::Translators::CL::getTranslatorName() {
