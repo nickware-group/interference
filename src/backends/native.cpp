@@ -11,7 +11,7 @@
 #include <indk/backends/native.h>
 #include <indk/translators/cpu.h>
 #include <indk/math.h>
-#include "indk/error.h"
+#include <indk/error.h>
 
 indk::ComputeBackends::NativeCPU::NativeCPU() {
     BackendName = "Native CPU";

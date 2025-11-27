@@ -14,7 +14,7 @@ set(TARGET_SOURCE
         src/error.cpp                           include/indk/error.h
         src/system.cpp                          include/indk/system.h
         src/position.cpp                        include/indk/position.h
-        src/math.cpp include/indk/math.h
+        src/math.cpp                            include/indk/math.h
         src/interlink.cpp                       include/indk/interlink.h
         src/profiler.cpp                        include/indk/profiler.h
 
