@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        neuron/entry.cpp
 // Purpose:     Neuron entry class
-// Author:      Nickolay Babbysh
+// Author:      Nickolay Babich
 // Created:     29.04.2019
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence
@@ -9,6 +9,7 @@
 
 #include <indk/neuron.h>
 #include <indk/system.h>
+#include <indk/math.h>
 
 indk::Neuron::Entry::Entry() {
     t = 0;
@@ -36,7 +37,7 @@ bool indk::Neuron::Entry::doCheckState(int64_t tn) const {
 }
 
 void indk::Neuron::Entry::doAddSynapse(indk::Position *SPos, unsigned int Xm, float k1, int64_t Tl, int NT) {
-	auto *S = new Synapse(SPos, k1, indk::Computer::getLambdaValue(Xm), Tl, NT);
+	auto *S = new Synapse(SPos, k1, indk::Math::getLambdaValue(Xm), Tl, NT);
     Synapses.push_back(S);
 }
 

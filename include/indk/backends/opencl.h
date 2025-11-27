@@ -1,57 +1,69 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:
-// Purpose:
-// Author:      Nickolay Babbysh
-// Created:     06.04.23
+// Name:        indk/backends/opencl.h
+// Purpose:     OpenCL compute backend class header
+// Author:      Nickolay Babich
+// Created:     04.11.2025
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////
-#ifndef INTERFERENCE_OPENCL_H
-#define INTERFERENCE_OPENCL_H
 
-#include <indk/computer.h>
-#include <thread>
-#include <condition_variable>
-#include <atomic>
+#ifndef INTERFERENCE_BACKENDS_OPENCL_H
+#define INTERFERENCE_BACKENDS_OPENCL_H
 
-#ifdef INDK_OPENCL_SUPPORT
-    #include <CL/cl.hpp>
-#endif
+#include <indk/backend.h>
+#include <indk/position.h>
+#include <indk/translators/cl.h>
 
 namespace indk {
-    class ComputeBackendOpenCL : public Computer {
-    private:
+    namespace ComputeBackends {
+        class OpenCL : public indk::ComputeBackend {
+        public:
+            typedef struct device_context {
 #ifdef INDK_OPENCL_SUPPORT
-        cl::Context Context;
-        cl::Kernel KernelPairs;
-        cl::Kernel KernelReceptors;
-        cl::Kernel KernelNeurons;
-        cl::CommandQueue Queue;
-
-        cl_float16 *PairsInfo;
-        cl_float8 *ReceptorsInfo;
-        cl_float3 *NeuronsInfo;
-        cl_float2 *Inputs;
-        cl_float *Outputs;
-
-        cl::Buffer PairsBuffer;
-        cl::Buffer ReceptorsBuffer;
-        cl::Buffer NeuronsBuffer;
-        cl::Buffer InputsBuffer;
-        cl::Buffer OutputsBuffer;
+                cl::Device device;
+                cl::Kernel pairs;
+                cl::Kernel receptors;
+                cl::Kernel neurons;
 #endif
-        uint64_t PairPoolSize;
-        uint64_t ReceptorPoolSize;
-        uint64_t NeuronPoolSize;
-        uint64_t InputPoolSize;
-        std::vector<void*> Objects;
-    public:
-        ComputeBackendOpenCL();
-        void doRegisterHost(const std::vector<void*>&) override;
-        void doUnregisterHost() override;
-        void doWaitTarget() override;
-        void doProcess(void*) override;
-    };
+                bool ready;
+                std::string platform_name;
+                std::string device_name;
+                unsigned int compute_units;
+                unsigned int workgroup_size;
+            } DeviceContext;
+
+            typedef struct cl_device_info {
+                std::string platform_name;
+                std::string device_name;
+                unsigned int compute_units;
+                unsigned int workgroup_size;
+            } DeviceInfo;
+        private:
+            std::map<std::string, indk::ComputeBackends::OpenCL::DeviceContext*> DeviceList;
+            std::string CurrentDeviceName;
+#ifdef INDK_OPENCL_SUPPORT
+            cl::Context Context;
+#endif
+        public:
+            typedef struct Parameters : public indk::ComputeBackend::Parameters {
+                std::string device_name;
+            } Parameters;
+
+            OpenCL();
+            indk::ComputeBackends::OpenCL::DeviceContext* doInitCurrentDevice();
+            void* doTranslate(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync) override;
+            void doCompute(const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, void *_instance) override;
+            void doReset(void*) override;
+            void doClear(void*) override;
+            void setMode(void *model, bool learning) override;
+            void setParameters(indk::ComputeBackend::Parameters*) override;
+            std::vector<indk::OutputValue> getOutputValues(void *_model) override;
+            std::map<std::string, std::vector<indk::Position>> getReceptorPositions(void *_model) override;
+            std::vector<DeviceInfo> getDeviceInfoList();
+            static std::vector<DeviceInfo> getDevicesInfo();
+            ~OpenCL();
+        };
+    }
 }
 
-#endif //INTERFERENCE_OPENCL_H
+#endif //INTERFERENCE_BACKENDS_OPENCL_H

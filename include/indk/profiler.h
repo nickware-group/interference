@@ -1,8 +1,8 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:
-// Purpose:
-// Author:      Nickolay Babbysh
-// Created:     23.08.23
+// Name:        indk/profiler.h
+// Purpose:     Profiler class header
+// Author:      Nickolay Babich
+// Created:     23.08.2023
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////

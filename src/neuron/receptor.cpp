@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        neuron/receptor.cpp
 // Purpose:     Neuron receptor class
-// Author:      Nickolay Babbysh
+// Author:      Nickolay Babich
 // Created:     29.04.2019
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence
@@ -104,7 +104,7 @@ void indk::Neuron::Receptor::doSavePos() {
 }
 
 void indk::Neuron::Receptor::doUpdateSensitivityValue() {
-    Rs = indk::Computer::getRcValue(k3, Rs, Fi, dFi);
+//    Rs = indk::Computer::getRcValue(k3, Rs, Fi, dFi);
 }
 
 void indk::Neuron::Receptor::doUpdatePos(indk::Position *_RPos) {
@@ -118,11 +118,7 @@ void indk::Neuron::Receptor::doUpdatePos(indk::Position *_RPos) {
 }
 
 void indk::Neuron::Receptor::setPos(indk::Position *_RPos) {
-    if (Locked) {
-        PhantomPos -> setPosition(_RPos);
-    } else {
-        ReferencePos[Scope] -> setPosition(_RPos);
-    }
+    ReferencePos[Scope] -> setPosition(_RPos);
 }
 
 void indk::Neuron::Receptor::setRs(float _Rs) {

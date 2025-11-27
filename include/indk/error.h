@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        indk/error.h
 // Purpose:     Exception system class header
-// Author:      Nickolay Babbysh
+// Author:      Nickolay Babich
 // Created:     07.05.2019
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence
@@ -44,16 +44,36 @@ namespace indk {
             /// Not equal coordinates ranges.
             EX_POSITION_RANGES,
             /// Not equal space dimensions of positions.
-            EX_POSITION_DIMENSIONS
+            EX_POSITION_DIMENSIONS,
+            /// Compute Instance out of range (selected instance > total instances)
+            EX_INSTANCE_OUT_OF_RANGE,
+            /// Compute Instance is not ready
+            EX_INSTANCE_BUSY,
+            /// Compute Instance model data is null
+            EX_INSTANCE_MODEL_DATA_ERROR,
+            /// No neurons for translation
+            EX_INSTANCE_TRANSLATION_NO_NEURONS,
+            /// The number of received signals does not match the number of inputs
+            EX_INSTANCE_RUN_INPUT_ERROR,
+            /// OpenCL device not found
+            EX_BACKEND_CL_DEVICE_NOT_FOUND,
+            /// OpenCL kernel build error
+            EX_BACKEND_CL_KERNEL_BUILD_ERROR,
+            /// Native CPU backend signal processing error
+            EX_BACKEND_NATIVE_CPU_PROCESSING_ERROR,
+            /// Signal consistency error
+            EX_BACKEND_CONSISTENCY_ERROR,
+            /// No signal error
+            EX_BACKEND_NOSIGNAL_ERROR
         } Exceptions;
 
         Error();
         explicit Error(ExceptionType);
-        explicit Error(ExceptionType, std::vector<float>);
+        explicit Error(ExceptionType, std::string);
         const char* what() const noexcept override;
     private:
         ExceptionType ET;
-        std::vector<float> ED;
+        std::string ED;
     };
 }
 

@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        indk/interlink.h
 // Purpose:     Interlink service class header
-// Author:      Nickolay Babbysh
+// Author:      Nickolay Babich
 // Created:     19.07.2023
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence

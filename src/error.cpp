@@ -1,13 +1,15 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        error.cpp
 // Purpose:     Exception system class
-// Author:      Nickolay Babbysh
+// Author:      Nickolay Babich
 // Created:     07.05.2019
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////
 
 #include <indk/error.h>
+
+#include <utility>
 
 indk::Error::Error() {
     ET = 0;
@@ -17,14 +19,14 @@ indk::Error::Error(ExceptionType _ET) {
     ET = _ET;
 }
 
-indk::Error::Error(ExceptionType _ET, std::vector<float> _ED) {
+indk::Error::Error(ExceptionType _ET, std::string _ED) {
     ET = _ET;
 	ED = std::move(_ED);
 }
 
 const char* indk::Error::what() const noexcept {
     std::string Msg;
-    char *B;
+
     switch (ET) {
         case EX_NEURALNET_NEURONS:
             Msg = std::string("EX_NEURALNET_NEURONS ~ Out of neuron list");
@@ -51,7 +53,7 @@ const char* indk::Error::what() const noexcept {
             Msg = std::string("EX_NEURON_RECEPTORS ~ Out of receptor list");
             break;
         case EX_POSITION_OUT_RANGES:
-			Msg = std::string("EX_POSITION_OUT_RANGES ~ Coordinates out of range ("+std::to_string(ED[0])+" < 0 || "+std::to_string(ED[0])+" > "+std::to_string(ED[1])+")");
+			Msg = std::string("EX_POSITION_OUT_RANGES ~ Coordinates out of range");
             break;
         case EX_POSITION_RANGES:
             Msg = std::string("EX_POSITION_RANGES ~ Not equal coordinates ranges");
@@ -59,10 +61,43 @@ const char* indk::Error::what() const noexcept {
         case EX_POSITION_DIMENSIONS:
             Msg = std::string("EX_POSITION_DIMENSIONS ~ Not equal space dimensions of positions");
             break;
+        case EX_INSTANCE_OUT_OF_RANGE:
+            Msg = std::string("EX_INSTANCE_OUT_OF_RANGE ~ Compute Instance out of range (selected instance > total instances)");
+            break;
+        case EX_INSTANCE_BUSY:
+            Msg = std::string("EX_INSTANCE_BUSY ~ This Compute Instance is busy");
+            break;
+        case EX_INSTANCE_MODEL_DATA_ERROR:
+            Msg = std::string("EX_INSTANCE_MODEL_DATA_ERROR ~ Compute Instance model data is null");
+            break;
+        case EX_INSTANCE_TRANSLATION_NO_NEURONS:
+            Msg = std::string("EX_INSTANCE_TRANSLATION_NO_NEURONS ~ No neurons for translation (selected instance > total instances)");
+            break;
+        case EX_INSTANCE_RUN_INPUT_ERROR:
+            Msg = std::string("EX_INSTANCE_RUN_INPUT_ERROR ~ The number of received signals does not match the number of inputs");
+            break;
+        case EX_BACKEND_CL_DEVICE_NOT_FOUND:
+            Msg = std::string("EX_BACKEND_CL_DEVICE_NOT_FOUND ~ OpenCL device not found");
+            break;
+        case EX_BACKEND_CL_KERNEL_BUILD_ERROR:
+            Msg = std::string("EX_BACKEND_CL_KERNEL_BUILD_ERROR ~ OpenCL kernel build error");
+            break;
+        case EX_BACKEND_NATIVE_CPU_PROCESSING_ERROR:
+            Msg = std::string("EX_BACKEND_NATIVE_CPU_PROCESSING_ERROR ~ No signal passing. Computing fell into endless deadloop");
+            break;
+        case EX_BACKEND_CONSISTENCY_ERROR:
+            Msg = std::string("EX_BACKEND_CONSISTENCY_ERROR ~ The length of the signals is not the same");
+            break;
+        case EX_BACKEND_NOSIGNAL_ERROR:
+            Msg = std::string("EX_BACKEND_NOSIGNAL_ERROR ~ No signal");
+            break;
         default:
             Msg = std::string("No exception");
     }
-    auto *S = new char[Msg.size()];
+
+    if (!ED.empty()) Msg += " ("+ED+")";
+
+    auto S = new char[Msg.size()+1];
     sprintf(S, "%s", Msg.c_str());
     return S;
 }

@@ -1,8 +1,8 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:
-// Purpose:
-// Author:      Nickolay Babbysh
-// Created:     23.08.23
+// Name:        profiler.cpp
+// Purpose:     Profiler class
+// Author:      Nickolay Babich
+// Created:     23.08.2023
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////

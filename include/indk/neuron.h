@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        indk/neuron.h
 // Purpose:     Neuron classes header
-// Author:      Nickolay Babbysh
+// Author:      Nickolay Babich
 // Created:     29.04.2019
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence
@@ -16,6 +16,7 @@
 #include <map>
 #include <iostream>
 #include <indk/position.h>
+#include "types.h"
 
 namespace indk {
     typedef enum {
@@ -33,29 +34,15 @@ namespace indk {
         std::vector<std::pair<std::string, indk::Neuron::Entry*>> Entries;
         std::vector<std::string> Links;
         std::vector<indk::Neuron::Receptor*> Receptors;
-        std::atomic<int64_t> t;
-        int64_t Tlo;
+
+        uint64_t Latency;
         unsigned int Xm, DimensionsCount;
-        float *OutputSignal;
-        int64_t OutputSignalSize;
-        int64_t OutputSignalPointer;
-        int NID, ProcessingMode, OutputMode;
+
+        int ProcessingMode, OutputMode;
         bool Learned;
         std::vector<float> OutputsPredefined;
         std::string Name;
     public:
-        /**
-         * Neuron states.
-         */
-        typedef enum {
-            /// Neuron not processed (initial state).
-            NotProcessed,
-            /// Neuron is processing now.
-            Pending,
-            /// Processing of neuron is done.
-            Computed,
-        } States;
-
         /**
          * Neuron recognition processing modes.
          */
@@ -80,61 +67,56 @@ namespace indk {
             OutputModePredefined
         } OutputModes;
 
-        typedef std::tuple<float, int> PatternDefinition;
-
         Neuron();
         Neuron(const indk::Neuron&);
-        Neuron(unsigned int, unsigned int, int64_t, const std::vector<std::string>& InputSignals);
+        Neuron(unsigned int, unsigned int, uint64_t, const std::vector<std::string>& InputSignals);
         void doCreateNewSynapse(const std::string&, std::vector<float>, float, int64_t, int);
         void doCreateNewSynapseCluster(const std::vector<float>& PosVector, unsigned R, float k1, int64_t Tl, int NT);
         void doCreateNewReceptor(std::vector<float>);
         void doCreateNewReceptorCluster(const std::vector<float>& PosVector, unsigned R, unsigned C);
-        bool doSignalSendEntry(const std::string&, float, int64_t);
-        std::pair<int64_t, float> doSignalReceive(int64_t tT = -1);
-        void doFinalizeInput(float);
+
         void doPrepare();
-        void doFinalize();
         void doCreateNewScope(float output = 0);
         void doChangeScope(uint64_t);
         void doReset();
-        indk::Neuron::PatternDefinition doComparePattern(int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin) const;
+        indk::PatternDefinition doComparePattern(const std::vector<indk::Position>& positions, int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin) const;
+
         void doLinkOutput(const std::string&);
+
         void doClearOutputLinks();
         void doClearEntries();
+
         void doAddEntryName(const std::string&);
         void doCopyEntry(const std::string&, const std::string&);
         void doReplaceEntryName(const std::string&, const std::string&);
-        void doReserveSignalBuffer(int64_t);
-        void setTime(int64_t);
         void setEntries(const std::vector<std::string>& inputs);
+
         void setLambda(float);
         void setk1(float);
         void setk2(float);
         void setk3(float);
-        void setNID(int);
+
         void setProcessingMode(int);
         void setOutputMode(int);
         void setName(const std::string&);
         void setLearned(bool LearnedFlag);
         bool isLearned() const;
+
         std::vector<std::string> getLinkOutput() const;
         std::vector<std::string> getEntries() const;
         indk::Neuron::Entry*  getEntry(int64_t) const;
         indk::Neuron::Receptor* getReceptor(int64_t) const;
-        std::vector<std::string> getWaitingEntries();
         int64_t getEntriesCount() const;
         unsigned int getSynapsesCount() const;
         int64_t getReceptorsCount() const;
-        int64_t getTime() const;
         unsigned int getXm() const;
         unsigned int getDimensionsCount() const;
-        int64_t getTlo() const;
-        int getNID() const;
-        std::string getName();
-        int64_t getSignalBufferSize() const;
-        int getState(int64_t) const;
+        uint64_t getLatency() const;
         int getProcessingMode() const;
         int getOutputMode() const;
+
+        std::string getName();
+
         ~Neuron();
     };
 

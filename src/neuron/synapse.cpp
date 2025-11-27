@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        neuron/synaps.cpp
 // Purpose:     Neuron synaps class
-// Author:      Nickolay Babbysh
+// Author:      Nickolay Babich
 // Created:     29.04.2019
 // Copyright:   (c) NickWare Group
 // Licence:     MIT licence
@@ -9,6 +9,7 @@
 
 #include <indk/neuron.h>
 #include <indk/system.h>
+#include <indk/math.h>
 
 indk::Neuron::Synapse::Synapse() {
     SPos = new indk::Position();
@@ -54,7 +55,7 @@ indk::Neuron::Synapse::Synapse(indk::Position *_SPos, float _k1, float _Lambda, 
 }
 
 void indk::Neuron::Synapse::doIn(float X) {
-    float nGamma = indk::Computer::getGammaFunctionValue(Gamma, k1, k2, X);
+    float nGamma = indk::Math::getGammaFunctionValue(Gamma, k1, k2, X);
     lGamma = Gamma;
     ldGamma = dGamma;
     dGamma = nGamma - Gamma;
