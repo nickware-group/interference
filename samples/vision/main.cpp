@@ -102,10 +102,10 @@ int main() {
 
     // setting additional parameters
     NN -> setStateSyncEnabled();
-//    NN -> doInterlinkInit(4408, 1);
 
     std::cout << "Running Interlink Web..." << std::endl;
     NN -> doInterlinkWebInit("web/ui/", 8044);
+    std::cout << "Now you can open http://localhost:8044 in your browser" << std::endl;
 
     std::cout << "Press ENTER to continue" << std::endl;
     getchar();
@@ -190,6 +190,7 @@ int main() {
     std::cout << "Recognition accuracy: " << rtotal/float(TEST_COUNT*TEST_ELEMENTS) << " (" << rtotal << "/" << TEST_COUNT*TEST_ELEMENTS << ")" << std::endl;
     std::cout << "Recognition time: " << ttotal << " ms" << std::endl;
     std::cout << "Recognition speed: " << stotal << " mbit/s (" << 1000/(ttotal/float(TEST_COUNT*TEST_ELEMENTS))  << " FPS)" << std::endl;
+
     std::cout << "Press ENTER to exit" << std::endl;
     getchar();
 
