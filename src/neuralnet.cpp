@@ -18,18 +18,18 @@ typedef nlohmann::json json;
 
 indk::NeuralNet::NeuralNet() {
     StateSyncEnabled = false;
-    InterlinkService = nullptr;
+    InterlinkService = new indk::Interlink();
 }
 
 indk::NeuralNet::NeuralNet(const std::string &path) {
     StateSyncEnabled = false;
-    InterlinkService = nullptr;
+    InterlinkService = new indk::Interlink();
     std::ifstream filestream(path);
     setStructure(filestream);
 }
 
 void indk::NeuralNet::doInterlinkInit(int port, int timeout) {
-    InterlinkService = new indk::Interlink(port, timeout);
+    InterlinkService -> doInitInput(port, timeout);
 
     indk::Profiler::doAttachCallback(this, indk::Profiler::EventFlags::EventTick, [this](indk::NeuralNet *nn) {
         auto neurons = getNeurons();
@@ -48,6 +48,10 @@ void indk::NeuralNet::doInterlinkInit(int port, int timeout) {
     if (InterlinkService->isInterlinked()) {
         if (!InterlinkService->getStructure().empty()) setStructure(InterlinkService->getStructure());
     }
+}
+
+void indk::NeuralNet::doInterlinkWebInit(const std::string& path, int port) {
+    InterlinkService -> doInitWebServer(path, port);
 }
 
 void indk::NeuralNet::doInterlinkSyncStructure() {
