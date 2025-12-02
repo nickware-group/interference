@@ -1,0 +1,25 @@
+/* User light theme style */
+
+:root {
+    --windowheader-bg-color: #ecf0f8;
+    --panel-toolbar-bg-color: #dddddd;
+    --toolpanel-border-color: #f1f1f1;
+    --toolbutton-bg-color: #cfdffb;
+    --toolbutton-bg-hover-color: #dae4f1;
+    --detailslist-bg-color: #e7e7e7;
+    --detailslist-border-bg-color: #d3d3d3;
+    --creationpanel-bg-color: #dcd1ff;
+    --creationpanel-bg-hover-color: #c7bde7;
+    --creationpanel-selected-bg-color: #b2a9d1;
+    --neuronmodel-bg-color: #dfe9f1;
+    --interlinkpanel-inactive-bg-color: #dcd1ff;
+    --interlinkpanel-inactive-bg-hover-color: #c7bde7;
+    --interlinkpanel-active-bg-color: #fba6d0;
+    --interlinkpanel-active-bg-hover-color: #f791c4;
+    --interlinkpanel-linked-bg-color: #92e7b4;
+    --interlinkpanel-linked-bg-hover-color: #7bd19e;
+    --dashboardpanel-bg-color: #c0d2f1;
+    --dashboard-bg-two-color: #2b80ff7a;
+    --dashboard-bg-three-color: #ffffff;
+    --mainsettings-bg-color: #fbfbfb;
+}
