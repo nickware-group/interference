@@ -13,6 +13,7 @@
 #include <string>
 #include <thread>
 #include <atomic>
+#include <mutex>
 
 namespace indk {
     /**
@@ -28,8 +29,13 @@ namespace indk {
         std::string InputPort, OutputPort;
         std::thread DataThread;
         std::thread WebThread;
+        bool StructureUpdated;
+        bool DataUpdated;
         std::atomic<bool> Interlinked;
         std::string Structure;
+        std::string Data;
+        std::mutex StructureLock;
+        std::mutex DataLock;
 
         void doInitOutput();
 

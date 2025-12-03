@@ -20,12 +20,34 @@ indk::Interlink::Interlink() {
     Input = nullptr;
     Output = nullptr;
     Interlinked.store(false);
+    StructureUpdated = false;
+    DataUpdated = false;
 }
 
 void indk::Interlink::doInitWebServer(const std::string& path, int port) {
     WebThread = std::thread([this, port, path]() {
         FacefullBridgeWeb bridge(path, port);
 
+        bridge.doEventAttach("load_structure", [this](const std::string& data, FacefullBridgeWeb::WebResponser &response) {
+            std::lock_guard<std::mutex> guard(StructureLock);
+            doEventResponse(Structure);
+        });
+
+        bridge.doEventAttach("update_structure", [this](const std::string& data, FacefullBridgeWeb::WebResponser &response) {
+            std::lock_guard<std::mutex> guard(StructureLock);
+            if (!StructureUpdated) return;
+            doEventResponse(Structure);
+            StructureUpdated = false;
+        });
+
+        bridge.doEventAttach("update_data", [this](const std::string& data, FacefullBridgeWeb::WebResponser &response) {
+            std::lock_guard<std::mutex> guard(DataLock);
+            if (!DataUpdated) return;
+            doEventResponse(Data);
+            DataUpdated = false;
+        });
+
+        Interlinked.store(true);
         bridge.doRunServer();
     });
 }
@@ -112,11 +134,17 @@ void indk::Interlink::doSend(const std::string& command, const std::string& data
 }
 
 void indk::Interlink::doUpdateStructure(const std::string &data) {
-    doSend("io_app_update_structure", data);
+//    doSend("io_app_update_structure", data);
+    std::lock_guard<std::mutex> guard(StructureLock);
+    Structure = data;
+    StructureUpdated = true;
 }
 
 void indk::Interlink::doUpdateModelData(const std::string &data) {
-    doSend("io_app_update_model_data", data);
+//    doSend("io_app_update_model_data", data);
+    std::lock_guard<std::mutex> guard(DataLock);
+    Data = data;
+    DataUpdated = true;
 }
 
 void indk::Interlink::doUpdateMetrics(const std::string &data) {

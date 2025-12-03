@@ -55,13 +55,13 @@ function doRefreshProjectStats(name = "") {
     }
 
     let ssize = doLevelSize(getStructureSize(0));
-    if (name !== "") document.getElementById("PS-PN").innerHTML = name;
-    document.getElementById("PS-SS").innerHTML = ssize.size+" "+ssize.type;
-    document.getElementById("PS-E").innerHTML = Object.keys(ne_list).length;
-    document.getElementById("PS-EN").innerHTML = FManager.getFrame(0).getData().entry_list.length.toString();
-    document.getElementById("PS-O").innerHTML = onodes.length;
-    document.getElementById("PS-N").innerHTML =  Object.keys(FManager.getFrame(0).getData().neuron_list).length.toString();
-    document.getElementById("PS-L").innerHTML = edges.length;
+    // if (name !== "") document.getElementById("PS-PN").innerHTML = name;
+    // document.getElementById("PS-SS").innerHTML = ssize.size+" "+ssize.type;
+    // document.getElementById("PS-E").innerHTML = Object.keys(ne_list).length;
+    // document.getElementById("PS-EN").innerHTML = FManager.getFrame(0).getData().entry_list.length.toString();
+    // document.getElementById("PS-O").innerHTML = onodes.length;
+    // document.getElementById("PS-N").innerHTML =  Object.keys(FManager.getFrame(0).getData().neuron_list).length.toString();
+    // document.getElementById("PS-L").innerHTML = edges.length;
 }
 
 function doRefreshInterlinkStats() {
@@ -150,7 +150,7 @@ function doCheckProjectChanges() {
 
 function setProjectChanged() {
     ProjectChanged = true;
-    facefull.doEventSend("setProjectChanged");
+    // facefull.doEventSend("setProjectChanged");
     // console.trace("setProjectChanged");
 }
 

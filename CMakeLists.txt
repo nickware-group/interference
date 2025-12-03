@@ -97,6 +97,9 @@ endif()
 install(TARGETS ${PROJECT_NAME}_static ARCHIVE DESTINATION ${CMAKE_SOURCE_DIR}/dist/lib NAMELINK_COMPONENT)
 install(DIRECTORY include DESTINATION ${CMAKE_SOURCE_DIR}/dist)
 
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/interlink-web DESTINATION ${CMAKE_SOURCE_DIR}/dist/etc/)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/deps/facefull-bridge/deps/facefull/dist/ DESTINATION ${CMAKE_SOURCE_DIR}/dist/etc/interlink-web/ui/src/facefull)
+
 add_subdirectory(samples/test)
 add_subdirectory(samples/vision)
 add_subdirectory(samples/multimodal)

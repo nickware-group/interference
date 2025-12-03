@@ -52,15 +52,17 @@ void indk::NeuralNet::doInterlinkInit(int port, int timeout) {
 
 void indk::NeuralNet::doInterlinkWebInit(const std::string& path, int port) {
     InterlinkService -> doInitWebServer(path, port);
-}
-
-void indk::NeuralNet::doInterlinkSyncStructure() {
-    if (!InterlinkService || InterlinkService && !InterlinkService->isInterlinked()) return;
     InterlinkService -> doUpdateStructure(getStructure());
 }
 
+void indk::NeuralNet::doInterlinkSyncStructure(const std::string &data) {
+    if (!InterlinkService->isInterlinked()) return;
+    if (data.empty()) InterlinkService -> doUpdateStructure(getStructure());
+    else InterlinkService -> doUpdateStructure(data);
+}
+
 void indk::NeuralNet::doInterlinkSyncData() {
-    if (!InterlinkService || InterlinkService && !InterlinkService->isInterlinked()) return;
+    if (!InterlinkService->isInterlinked()) return;
     json j, jm;
     uint64_t in = 0;
 
@@ -105,6 +107,7 @@ void indk::NeuralNet::doInterlinkSyncData() {
     }
 
     InterlinkDataBuffer.clear();
+
     InterlinkService -> doUpdateModelData(j.dump());
     InterlinkService -> doUpdateMetrics(jm.dump());
 }
@@ -299,6 +302,7 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vecto
     }
 
     auto output = InstanceManager.getOutputValues(instance);
+    doInterlinkSyncData();
 
     return output;
 }
@@ -434,6 +438,9 @@ indk::Neuron* indk::NeuralNet::doReplicateNeuron(const std::string& from, const 
     } else {
 //        nnew ->  doClearEntries();
     }
+
+    doInterlinkSyncStructure();
+
     return nnew;
 }
 
@@ -571,6 +578,8 @@ void indk::NeuralNet::doReplicateEnsemble(const std::string& From, const std::st
         }
         std::cout << std::endl;
     }
+
+    doInterlinkSyncStructure();
 }
 
 void indk::NeuralNet::doClearCache() {
@@ -581,10 +590,10 @@ void indk::NeuralNet::doClearCache() {
  * Load neural network structure.
  * @param Stream Input stream of file that contains neural network structure in JSON format.
  */
-void indk::NeuralNet::setStructure(std::ifstream &Stream) {
+std::string indk::NeuralNet::setStructure(std::ifstream &Stream) {
     if (!Stream.is_open()) {
         if (indk::System::getVerbosityLevel() > 0) std::cerr << "Error opening file" << std::endl;
-        return;
+        return "";
     }
     std::string jstr;
     while (!Stream.eof()) {
@@ -593,6 +602,8 @@ void indk::NeuralNet::setStructure(std::ifstream &Stream) {
         jstr.append(rstr);
     }
     setStructure(jstr);
+
+    return jstr;
 }
 
 /** \example samples/test/structure.json
@@ -808,9 +819,7 @@ void indk::NeuralNet::setStructure(const std::string &Str) {
             }
         }
 
-        if (InterlinkService && InterlinkService->isInterlinked()) {
-            InterlinkService -> setStructure(Str);
-        }
+        doInterlinkSyncStructure(Str);
     } catch (std::exception &e) {
         if (indk::System::getVerbosityLevel() > 0) std::cerr << "Error parsing structure: " << e.what() << std::endl;
     }

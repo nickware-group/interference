@@ -129,7 +129,7 @@ function doClearParameterList(viewer = 0) {
 }
 
 function doCreateParameterList(name, type = "neuron", viewer = -1) {
-    console.log("creating param list for", name, type)
+    console.log("creating param list for", name, type, viewer)
     if (viewer === -1) viewer = FManager.getCurrentFrameID();
     facefull.Lists["PL"+(viewer+1)].doClear();
 
@@ -272,42 +272,43 @@ function doAddPanelParameter(name, label, value, level = 0, arrow = 0, info = {}
     if (arrow === 0) {
         facefull.Lists["PL"+(viewer+1)].doAdd([label, {element: eedit}], level);
     } else {
-        if (catlabels.includes(label) || ellabels.includes(label)) {
-            let ebuttonwrapper = document.createElement("div");
-            ebuttonwrapper.classList.add("DetailsListButtonWrapper");
-
-            let ebutton = document.createElement("div");
-            ebutton.classList.add("HeaderButton");
-
-            if (catlabels.includes(label)) {
-                ebutton.classList.add("Plus");
-                ebutton.classList.add("PopupMenuTarget");
-
-                if (label === "Synapses") {
-                    ebutton.setAttribute("data-popupmenu", "SCPM");
-                    ebutton.setAttribute("data-popupmenu-pos", "bottom-left");
-                } else if (label === "Receptors") {
-                    ebutton.setAttribute("data-popupmenu", "RCPM");
-                    ebutton.setAttribute("data-popupmenu-pos", "bottom-left");
-                }
-                new PopupMenu(ebutton);
-            } else if (ellabels.includes(label)) {
-                ebutton.classList.add("Minus");
-
-                ebutton.addEventListener("click", function() {
-                    AlertShow("Delete item", "Do you what to delete "+label.toLowerCase()+"?", "warning", "YESNO", [function() {
-                        if (label === "Synapse" || label === "Synapse cluster") {
-                            doDeleteSynapse(info.id);
-                        } else if (label === "Receptor" || label === "Receptor cluster") {
-                            doDeleteReceptor(info.id);
-                        }
-                    }, function(){}]);
-                });
-            }
-            ebuttonwrapper.appendChild(ebutton);
-
-            facefull.Lists["PL"+(viewer+1)].doAdd([label, {element: ebuttonwrapper}], level, {action: "arrow"});
-        } else {
+        // if (catlabels.includes(label) || ellabels.includes(label)) {
+        //     let ebuttonwrapper = document.createElement("div");
+        //     ebuttonwrapper.classList.add("DetailsListButtonWrapper");
+        //
+        //     let ebutton = document.createElement("div");
+        //     ebutton.classList.add("HeaderButton");
+        //
+        //     if (catlabels.includes(label)) {
+        //         ebutton.classList.add("Plus");
+        //         ebutton.classList.add("PopupMenuTarget");
+        //
+        //         if (label === "Synapses") {
+        //             ebutton.setAttribute("data-popupmenu", "SCPM");
+        //             ebutton.setAttribute("data-popupmenu-pos", "bottom-left");
+        //         } else if (label === "Receptors") {
+        //             ebutton.setAttribute("data-popupmenu", "RCPM");
+        //             ebutton.setAttribute("data-popupmenu-pos", "bottom-left");
+        //         }
+        //         new PopupMenu(ebutton);
+        //     } else if (ellabels.includes(label)) {
+        //         ebutton.classList.add("Minus");
+        //
+        //         ebutton.addEventListener("click", function() {
+        //             AlertShow("Delete item", "Do you what to delete "+label.toLowerCase()+"?", "warning", "YESNO", [function() {
+        //                 if (label === "Synapse" || label === "Synapse cluster") {
+        //                     doDeleteSynapse(info.id);
+        //                 } else if (label === "Receptor" || label === "Receptor cluster") {
+        //                     doDeleteReceptor(info.id);
+        //                 }
+        //             }, function(){}]);
+        //         });
+        //     }
+        //     ebuttonwrapper.appendChild(ebutton);
+        //
+        //     facefull.Lists["PL"+(viewer+1)].doAdd([label, {element: ebuttonwrapper}], level, {action: "arrow"});
+        // } else
+        {
             facefull.Lists["PL"+(viewer+1)].doAdd([label, {element: eedit}], level, {action: "arrow"});
         }
 

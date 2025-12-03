@@ -104,7 +104,7 @@ int main() {
     NN -> setStateSyncEnabled();
 
     std::cout << "Running Interlink Web..." << std::endl;
-    NN -> doInterlinkWebInit("web/ui/", 8044);
+    NN -> doInterlinkWebInit("interlink-web/ui/", 8044);
     std::cout << "Now you can open http://localhost:8044 in your browser" << std::endl;
 
     std::cout << "Press ENTER to continue" << std::endl;

@@ -4,7 +4,7 @@ let FManager = null;
 function FrameManager() {
     this.frames = [];
     this.current_frame = 0;
-    this.interlink_frame = 2;
+    this.interlink_frame = 0;
 
     this.doInit = function() {
         this.frames.push(new DefaultFrame(1));
@@ -40,6 +40,7 @@ function FrameManager() {
 function DefaultFrame(id) {
     this.id = id;
     this.viewer = null;
+    this.string_data = "";
     this.data = {
         entry_list: [],
         neuron_list: {},
@@ -77,6 +78,11 @@ function DefaultFrame(id) {
         this.data.neuron_list = {};
         this.data.output_list = [];
         this.data.network_info = {name: "", desc: "", version: ""};
+        this.string_data = "";
+    }
+
+    this.doUpdateString = function(str) {
+        this.string_data = str;
     }
 
     this.doImportViewer = function(data) {
@@ -238,6 +244,10 @@ function DefaultFrame(id) {
         if (this.selected_elements.length > 0)
             return this.selected_elements[this.selected_elements.length-1];
         return "";
+    }
+
+    this.getString = function() {
+        return this.string_data;
     }
 
     this.doInit();

@@ -59,7 +59,7 @@ namespace indk {
         explicit NeuralNet(const std::string &path);
         void doInterlinkInit(int port = 4408, int timeout = 5);
         void doInterlinkWebInit(const std::string& path, int port = 8044);
-        void doInterlinkSyncStructure();
+        void doInterlinkSyncStructure(const std::string &data = "");
         void doInterlinkSyncData();
         std::vector<float> doComparePatterns(int CompareFlag = indk::PatternCompareFlags::CompareDefault,
                                              int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin,
@@ -99,7 +99,7 @@ namespace indk {
 
         std::vector<indk::OutputValue> doSignalProcess(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs, bool mode, int instance = 0);
 
-        void setStructure(std::ifstream&);
+        std::string setStructure(std::ifstream&);
         void setStructure(const std::string &Str);
         void setLearned(bool);
         void setStateSyncEnabled(bool enabled = true);

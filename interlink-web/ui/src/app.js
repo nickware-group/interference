@@ -1,8 +1,12 @@
 
 facefullCreate(true);
 
-window.addEventListener('load', function () {
+window.addEventListener('load', function() {
     App();
+
+    if (!facefull.isNative()) {
+        doInitService();
+    }
 });
 
 function doLevelSize(size) {
@@ -126,7 +130,7 @@ function App() {
         // facefull.doEventSend("doLoadMetrics", CurrentSelectedNeuron+"|"+id+"|"+range[0]+"|"+range[1]);
     };
 
-    doInitHotkeys();
+    // doInitHotkeys();
 
     // facefull.Tabs["VMT"].onTabChanged = function(num) {
     //     MouseLinkFrom = "";
@@ -141,11 +145,11 @@ function App() {
 
     // facefull.Tabs["VMT"].doSelectTab(0);
 
-    facefull.ItemPickers["CPIP"].onSelect = function(id) {
-        doChangeMouseMode(id);
-    }
+    // facefull.ItemPickers["CPIP"].onSelect = function(id) {
+    //     doChangeMouseMode(id);
+    // }
 
-    let init_viewers = [0, 2];
+    let init_viewers = [0];
     for (let v in init_viewers) {
         facefull.Lists["EL"+(init_viewers[v]+1)].onSelect = function(id) {
             let name = facefull.Lists["EL"+(init_viewers[v]+1)].elist.children[id].children[0].innerHTML;
@@ -257,7 +261,8 @@ function App() {
 
     console.log("done app", performance.now());
     facefull.doEventSend("doWindowReady");
-    doCreateParameterList("", "background", FManager.getInterlinkFrameID());
+
+    // doCreateParameterList("", "background", FManager.getInterlinkFrameID());
     // AlertShowCustom("AL");
 }
 
