@@ -392,8 +392,8 @@ function doInitViewerAttributes(cy, startpoint = "", predefined = false, id = -1
                         break;
                 }
 
-                // if (FManager.getCurrentFrameID() === FManager.getInterlinkFrameID())
-                //     doInitMetricsShowRanges(node.id());
+                if (FManager.getCurrentFrameID() === FManager.getInterlinkFrameID())
+                    doInitMetricsShowRanges(node.id());
             } catch (e) {
                 console.log(e);
             }

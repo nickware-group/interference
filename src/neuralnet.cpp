@@ -41,9 +41,9 @@ void indk::NeuralNet::doInterlinkInit(int port, int timeout) {
         }
     });
 
-    indk::Profiler::doAttachCallback(this, indk::Profiler::EventFlags::EventProcessed, [this](indk::NeuralNet *nn) {
-        doInterlinkSyncData();
-    });
+    // indk::Profiler::doAttachCallback(this, indk::Profiler::EventFlags::EventProcessed, [this](indk::NeuralNet *nn) {
+    //     doInterlinkSyncData();
+    // });
 
     if (InterlinkService->isInterlinked()) {
         if (!InterlinkService->getStructure().empty()) setStructure(InterlinkService->getStructure());
@@ -61,12 +61,20 @@ void indk::NeuralNet::doInterlinkSyncStructure(const std::string &data) {
     else InterlinkService -> doUpdateStructure(data);
 }
 
-void indk::NeuralNet::doInterlinkSyncData() {
+void indk::NeuralNet::doInterlinkSyncData(int mode, int instance) {
     if (!InterlinkService->isInterlinked()) return;
+
+    std::map<std::string, std::vector<indk::Position>> ppositions;
+    if (!mode) {
+        ppositions = InstanceManager.getReceptorPositions(instance);
+    }
+
     json j, jm;
     uint64_t in = 0;
 
     for (const auto &n: Neurons) {
+        auto ppos = ppositions.find(n.first);
+
         json jn, jnm;
 
         jn["name"] = n.second->getName();
@@ -95,8 +103,10 @@ void indk::NeuralNet::doInterlinkSyncData() {
                 jr["scopes"].push_back(js);
             }
 
-            for (int p = 0; p < n.second->getDimensionsCount(); p++) {
-                jr["phantom"].push_back(r->getPosf()->getPositionValue(p));
+            if (ppos != ppositions.end()) {
+                for (int p = 0; p < n.second->getDimensionsCount(); p++) {
+                    jr["phantom"].push_back(ppos->second[i].getPositionValue(p));
+                }
             }
 
             jn["receptors"].push_back(jr);
@@ -302,7 +312,8 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vecto
     }
 
     auto output = InstanceManager.getOutputValues(instance);
-    doInterlinkSyncData();
+
+    doInterlinkSyncData(mode, instance);
 
     return output;
 }

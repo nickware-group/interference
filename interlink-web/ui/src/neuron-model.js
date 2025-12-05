@@ -93,6 +93,7 @@ function getChartOptions(size = 0) {
                     let innerHtml = '<div style=\"'+style+'\">';
 
                     bodyLines.forEach(function(body, i) {
+                        if (body[i] === undefined) return;
                         let data = "x: "+Math.floor(body[i].x*1000)/1000+ ", y: "+Math.floor(body[i].y*1000)/1000;
                         innerHtml += '<div>'+body[i].type+'</div>';
                         innerHtml += '<div>'+data+'</div>';

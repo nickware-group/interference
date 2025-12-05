@@ -125,7 +125,8 @@ function App() {
     doSwitchRightPanel(0, 0);
 
     facefull.Lists["NMDL"].onSelect = function(id) {
-        doInitMetricsShowRanges();
+
+        // doInitMetricsShowRanges();
         // let range = NeuronMetricsRanges[facefull.Comboboxes["MRCB"].getState()];
         // facefull.doEventSend("doLoadMetrics", CurrentSelectedNeuron+"|"+id+"|"+range[0]+"|"+range[1]);
     };

@@ -220,8 +220,8 @@ function doCreateParameterList(name, type = "neuron", viewer = -1) {
             // }
             doAddPanelParameter(name, "Scopes", "", 2, 1, {type: "receptor", id: i});
             let current_data_scope = facefull.Lists["NMDL"].getState();
-            if (!current_data_scope) current_data_scope = 0;
-            console.log("add parameter data scope", current_data_scope)
+            if (current_data_scope < 0) current_data_scope = 0;
+            console.log("add parameter data scope", current_data_scope);
 
             if (FManager.getCurrentFrameID() === FManager.getInterlinkFrameID() && info.receptors[i].data_scopes[current_data_scope]) {
                 for (let j = 0; info.receptors[i].data_scopes[current_data_scope].scopes && j < info.receptors[i].data_scopes[current_data_scope].scopes.length; j++) {

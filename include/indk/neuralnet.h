@@ -60,7 +60,7 @@ namespace indk {
         void doInterlinkInit(int port = 4408, int timeout = 5);
         void doInterlinkWebInit(const std::string& path, int port = 8044);
         void doInterlinkSyncStructure(const std::string &data = "");
-        void doInterlinkSyncData();
+        void doInterlinkSyncData(int mode, int instance);
         std::vector<float> doComparePatterns(int CompareFlag = indk::PatternCompareFlags::CompareDefault,
                                              int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin,
                                              int instance = 0);

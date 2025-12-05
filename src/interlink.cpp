@@ -43,7 +43,15 @@ void indk::Interlink::doInitWebServer(const std::string& path, int port) {
         bridge.doEventAttach("update_data", [this](const std::string& data, FacefullBridgeWeb::WebResponser &response) {
             std::lock_guard<std::mutex> guard(DataLock);
             if (!DataUpdated) return;
-            doEventResponse(Data);
+
+            json j;
+            for (const auto& db: DataBatches) {
+                j.push_back(db);
+            }
+
+            doEventResponse(j.dump());
+
+            DataBatches.clear();
             DataUpdated = false;
         });
 
@@ -143,7 +151,7 @@ void indk::Interlink::doUpdateStructure(const std::string &data) {
 void indk::Interlink::doUpdateModelData(const std::string &data) {
 //    doSend("io_app_update_model_data", data);
     std::lock_guard<std::mutex> guard(DataLock);
-    Data = data;
+    DataBatches.push_back(data);
     DataUpdated = true;
 }
 
@@ -160,7 +168,7 @@ std::string indk::Interlink::getStructure() {
     return Structure;
 }
 
-bool indk::Interlink::isInterlinked() {
+bool indk::Interlink::isInterlinked() const {
     return Interlinked.load();
 }
 

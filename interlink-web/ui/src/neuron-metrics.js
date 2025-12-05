@@ -93,7 +93,11 @@ function doInitMetricsShowRanges(element = "") {
     if (current_selected === "") current_selected = FManager.getInterlinkFrame().getLastSelectedElement();
     if (current_selected === "") return;
 
-    let size = NeuronMetricsTotals[current_selected][facefull.Lists["NMDL"].getState()];
+    let size = 0;
+
+    if (facefull.Lists["NMDL"].getState() >= 0)
+        size = NeuronMetricsTotals[current_selected][facefull.Lists["NMDL"].getState()];
+
     console.log("metrics size", size)
     facefull.Comboboxes["MRCB"].doClear();
     NeuronMetricsRanges = [];

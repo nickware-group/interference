@@ -14,6 +14,7 @@
 #include <thread>
 #include <atomic>
 #include <mutex>
+#include <vector>
 
 namespace indk {
     /**
@@ -33,7 +34,7 @@ namespace indk {
         bool DataUpdated;
         std::atomic<bool> Interlinked;
         std::string Structure;
-        std::string Data;
+        std::vector<std::string> DataBatches;
         std::mutex StructureLock;
         std::mutex DataLock;
 
@@ -49,7 +50,7 @@ namespace indk {
         void doUpdateMetrics(const std::string&);
         void setStructure(const std::string&);
         std::string getStructure();
-        bool isInterlinked();
+        bool isInterlinked() const;
         ~Interlink();
     };
 }
