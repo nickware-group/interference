@@ -133,10 +133,16 @@ function doCreateParameterList(name, type = "neuron", viewer = -1) {
     if (viewer === -1) viewer = FManager.getCurrentFrameID();
     facefull.Lists["PL"+(viewer+1)].doClear();
 
+    let hid = facefull.Lists["NMDL"].getState();
+    let h = FManager.getCurrentFrame().getHistoryListItem(hid);
+    console.log(h);
+
     if (type === "background") {
-        doAddPanelParameter(name, "Structure name", FManager.getFrame(viewer).getData().network_info.name, 0, 0, {type: type}, viewer);
-        doAddPanelParameter(name, "Structure description", FManager.getFrame(viewer).getData().network_info.desc, 0, 0, {type: type}, viewer);
-        doAddPanelParameter(name, "Structure version", FManager.getFrame(viewer).getData().network_info.version, 0, 0, {type: type}, viewer);
+        doAddPanelParameter(name, "Structure name", FManager.getFrame(viewer).getData(h.structure_id).network_info.name, 0, 0, {type: type}, viewer);
+        doAddPanelParameter(name, "Structure description", FManager.getFrame(viewer).getData(h.structure_id).network_info.desc, 0, 0, {type: type}, viewer);
+        doAddPanelParameter(name, "Structure version", FManager.getFrame(viewer).getData(h.structure_id).network_info.version, 0, 0, {type: type}, viewer);
+        doAddPanelParameter(name, "Parameter count", FManager.getFrame(viewer).getData(h.structure_id).network_info.parameter_count, 0, 0, {type: type}, viewer);
+        doAddPanelParameter(name, "Model size", FManager.getFrame(viewer).getData(h.structure_id).network_info.model_size+" B", 0, 0, {type: type}, viewer);
         doClearNeuronModel(viewer);
         facefull.Scrollboxes['DLSB'+(viewer+1)].doUpdateScrollbar();
         return;
@@ -160,8 +166,14 @@ function doCreateParameterList(name, type = "neuron", viewer = -1) {
     let rpos = [];
     let rposf = [];
 
-    let info = FManager.getFrame(viewer).getData().neuron_list[name];
-    console.log(info);
+    // console.log("timeline data", FManager.getFrame(viewer).getData().timeline_data);
+
+    let info = FManager.getFrame(viewer).getData(h.structure_id).neuron_list[name];
+    let data = null;
+    if (h.data_id >= 0 && FManager.getFrame(viewer).getData(h.structure_id).timeline_data && FManager.getFrame(viewer).getData(h.structure_id).timeline_data.length > h.data_id)
+        data = FManager.getFrame(viewer).getData(h.structure_id).timeline_data[h.data_id].neurons[name];
+    // console.log("parameter list", info, data);
+
     doAddPanelParameter(name, "Ensemble", info.ensemble);
     doAddPanelParameter(name, "Latency", info.latency!==undefined?info.latency:0);
     doAddPanelParameter(name, "Neuron size", info.size);
@@ -219,22 +231,19 @@ function doCreateParameterList(name, type = "neuron", viewer = -1) {
             //     doAddPanelParameter(name, (p>3?"a"+(p-3):position_letters[p]), info.synapses[i].position[p], 3, 0);
             // }
             doAddPanelParameter(name, "Scopes", "", 2, 1, {type: "receptor", id: i});
-            let current_data_scope = facefull.Lists["NMDL"].getState();
-            if (current_data_scope < 0) current_data_scope = 0;
-            console.log("add parameter data scope", current_data_scope);
 
-            if (FManager.getCurrentFrameID() === FManager.getInterlinkFrameID() && info.receptors[i].data_scopes[current_data_scope]) {
-                for (let j = 0; info.receptors[i].data_scopes[current_data_scope].scopes && j < info.receptors[i].data_scopes[current_data_scope].scopes.length; j++) {
-                    doAddPanelParameter(name, "Scope "+j+" position", info.receptors[i].data_scopes[current_data_scope].scopes[j], 3, 0, {type: "scope", id: i.toString()+"-"+j.toString()});
-                    rpos.push({x: info.receptors[i].data_scopes[current_data_scope].scopes[j][0],
-                        y: info.receptors[i].data_scopes[current_data_scope].scopes[j][1],
+            if (FManager.getCurrentFrameID() === FManager.getInterlinkFrameID() && data) {
+                for (let j = 0; j < data.receptors[i].scopes.length; j++) {
+                    doAddPanelParameter(name, "Scope "+j+" position", data.receptors[i].scopes[j], 3, 0, {type: "scope", id: i.toString()+"-"+j.toString()});
+                    rpos.push({x: data.receptors[i].scopes[j][0],
+                        y: data.receptors[i].scopes[j][1],
                         r: 2,
                         type: "Reference receptor "+(i+1)+" (scope "+j+")"});
                 }
-                if (info.receptors[i].data_scopes[current_data_scope].phantom) {
-                    doAddPanelParameter(name, "Phantom position", info.receptors[i].data_scopes[current_data_scope].phantom, 2, 1, {type: "phantom", id: i});
-                    rposf.push({x: info.receptors[i].data_scopes[current_data_scope].phantom[0],
-                        y: info.receptors[i].data_scopes[current_data_scope].phantom[1],
+                if (data.receptors[i].phantom) {
+                    doAddPanelParameter(name, "Phantom position", data.receptors[i].phantom, 2, 1, {type: "phantom", id: i});
+                    rposf.push({x: data.receptors[i].phantom[0],
+                        y: data.receptors[i].phantom[1],
                         r: 4,
                         type: "Phantom receptor "+(i+1)});
                 }

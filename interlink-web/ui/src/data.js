@@ -9,56 +9,55 @@ const ENTRY_POS_Y_SHIFT = 100;
 let ElementsForCopy = [];
 let SourceForCopy = 0;
 let PastePos = {x: 0, y: 0};
-// let ActionHistory = [];
 
 facefull.doEventHandlerAttach("doProcessData", function(str) {
     if (str === "") return;
 
     doProcessData(0, str, false);
-    doRefreshProjectStats();
-    setProjectChanged();
 });
 
 facefull.doEventHandlerAttach("doProcessInterlinkData", function(str) {
     doProcessData(FManager.getInterlinkFrameID(), str, false);
-    doRefreshInterlinkStats();
 });
 
 facefull.doEventHandlerAttach("doUpdateStructure", function(str) {
     doProcessData(FManager.getInterlinkFrameID(), str, false);
-    doRefreshInterlinkStats();
 });
 
 facefull.doEventHandlerAttach("doUpdateData", function(str) {
     if (str === "") return;
     try {
         let data_batches = JSON.parse(str);
+        setInterlinkConnectionStatus(true);
 
         for (let d in data_batches) {
             let data = JSON.parse(data_batches[d]);
 
+            FManager.getInterlinkFrame().getData().timeline_data.push(data);
+
             for (let n in data.neurons) {
-                let name = data.neurons[n].name;
+                let neuron = data.neurons[n];
+                let name = neuron.name;
                 doHighlightNode(name);
 
                 // console.log("update data for", name);
                 // console.log(FManager.getInterlinkFrame().getData().neuron_list[name].receptors)
                 // console.log(data.neurons[n].receptors)
 
-                if (data.neurons[n].receptors)
-                    for (let i = 0; i < data.neurons[n].receptors.length && i < FManager.getInterlinkFrame().getData().neuron_list[name].receptors.length; i++) {
-                        FManager.getInterlinkFrame().getData().neuron_list[name].receptors[i].data_scopes.push({
-                            scopes: data.neurons[n].receptors[i].scopes,
-                            phantom: data.neurons[n].receptors[i].phantom
-                        })
-                    }
+                // if (data.neurons[n].receptors)
+                //     for (let i = 0; i < data.neurons[n].receptors.length && i < FManager.getInterlinkFrame().getData().neuron_list[name].receptors.length; i++) {
+                //         FManager.getInterlinkFrame().getData().neuron_list[name].receptors[i].data_scopes.push({
+                //             scopes: data.neurons[n].receptors[i].scopes,
+                //             phantom: data.neurons[n].receptors[i].phantom
+                //         })
+                //     }
 
                 let current = FManager.getInterlinkFrame().getLastSelectedElement();
 
                 // console.log("update data for current", current)
 
                 if (current === name) {
-                    console.log(data);
+                    console.log("current neuron data", neuron);
 
                     let spos = [];
                     let rpos0 = [];
@@ -85,37 +84,35 @@ facefull.doEventHandlerAttach("doUpdateData", function(str) {
 
                     if (current_data_scope < 0) current_data_scope = 0;
 
-                    for (let i = 0; i < local_neuron_data.receptors.length; i++) {
-                        let local_data_scope = current_data_scope;
-                        if (local_data_scope >= local_neuron_data.receptors[i].data_scopes.length) {
-                            local_data_scope = local_neuron_data.receptors[i].data_scopes.length-1;
-                            console.log("scope l", local_data_scope)
-                        }
+                    for (let i = 0; i < neuron.receptors.length; i++) {
+                        // let local_data_scope = current_data_scope;
+                        // if (local_data_scope >= local_neuron_data.receptors[i].data_scopes.length) {
+                        //     local_data_scope = local_neuron_data.receptors[i].data_scopes.length-1;
+                        // }
 
-                        console.log("scopes", local_neuron_data.receptors[i].data_scopes.length, local_data_scope)
-
-                        for (let j = 0; j < local_neuron_data.receptors[i].data_scopes[local_data_scope].scopes.length; j++) {
-                            if (ScopesEditList[i*local_neuron_data.receptors.length+j])
-                                ScopesEditList[i*local_neuron_data.receptors.length+j].element.value = local_neuron_data.receptors[i].data_scopes[local_data_scope].scopes[j];
-                            rpos.push({x: local_neuron_data.receptors[i].data_scopes[local_data_scope].scopes[j][0],
-                                y: local_neuron_data.receptors[i].data_scopes[local_data_scope].scopes[j][1],
+                        for (let j = 0; j < neuron.receptors[i].scopes.length; j++) {
+                            if (ScopesEditList[i*neuron.receptors.length+j])
+                                ScopesEditList[i*neuron.receptors.length+j].element.value = neuron.receptors[i].scopes[j];
+                            rpos.push({x: neuron.receptors[i].scopes[j][0],
+                                y: neuron.receptors[i].scopes[j][1],
                                 r: 2,
                                 type: "Reference receptor "+(i+1)+" (scope "+j+")"});
                         }
-                        console.log("Phantom receptor "+(i+1));
-                        if (PhantomEditList[i])
-                            PhantomEditList[i].element.value = local_neuron_data.receptors[i].data_scopes[local_data_scope].phantom;
-                        rposf.push({x: local_neuron_data.receptors[i].data_scopes[local_data_scope].phantom[0],
-                            y: local_neuron_data.receptors[i].data_scopes[local_data_scope].phantom[1],
-                            r: 4,
-                            type: "Phantom receptor "+(i+1)});
+                        if (neuron.receptors[i].phantom !== undefined) {
+                            if (PhantomEditList[i])
+                                PhantomEditList[i].element.value = neuron.receptors[i].phantom;
+                            rposf.push({x: neuron.receptors[i].phantom[0],
+                                y: neuron.receptors[i].phantom[1],
+                                r: 4,
+                                type: "Phantom receptor "+(i+1)});
+                        }
                     }
 
                     doShowNeuronModel(FManager.getInterlinkFrame().getData().neuron_list[name].size, spos, rpos0, rpos, rposf, FManager.getInterlinkFrameID());
                     // doShowMetrics(facefull.Comboboxes["MRCB"].setState(facefull.Comboboxes["MRCB"].getState()));
                 }
             }
-            facefull.Lists["NMDL"].doAdd(["Data"+d]);
+            FManager.getInterlinkFrame().doAddModelHistoryToList("Data update");
         }
     } catch (e) {
         console.log(e);
@@ -131,20 +128,17 @@ facefull.doEventHandlerAttach("doAddMetricsToList", function(str) {
     doAddMetricsToList(str);
 });
 
-facefull.doEventHandlerAttach("onExportData", function(str) {
-    AlertShow("Export successful", "Neural network structure exported successfully.", "info");
-
-});
-
 function doProcessData(viewer, str, full_update = true) {
     if (FManager.getFrame(viewer).getString() === str) return;
-    AlertShow("Loading", "Loading neural network structure...", "info", "");
+    setInterlinkConnectionStatus(true);
+
     try {
         let elements = [];
         let enpos = 0;
 
         let data = JSON.parse(str);
-        let ne_list = {};
+
+        FManager.getFrame(viewer).doCreateModel();
 
         console.log("done", performance.now(), data);
         FManager.getFrame(viewer).doClearLists();
@@ -162,7 +156,6 @@ function doProcessData(viewer, str, full_update = true) {
 
             enpos += ENTRY_POS_Y_SHIFT;
             FManager.getFrame(viewer).getData().entry_list.push(data.entries[i]);
-            facefull.Lists["IL"+(viewer+1)].doAdd([data.entries[i]]);
         }
 
         let ensemble = "";
@@ -185,11 +178,8 @@ function doProcessData(viewer, str, full_update = true) {
             if (data.neurons[i].ensemble === undefined) {
                 data.neurons[i].ensemble = "";
             }
-            let ensemble = data.neurons[i].ensemble;
-            if (!ne_list[ensemble]) ne_list[ensemble] = [];
-            ne_list[ensemble].push(data.neurons[i].name);
 
-            console.log(data.neurons[i].ensemble)
+            // console.log(data.neurons[i].ensemble)
 
             for (let j = 0; data.neurons[i].input_signals && j < data.neurons[i].input_signals.length; j++) {
                 let found1 = data.entries.find((value) => data.neurons[i].input_signals[j] === value);
@@ -200,15 +190,6 @@ function doProcessData(viewer, str, full_update = true) {
                         data: { id: data.neurons[i].input_signals[j]+"-"+data.neurons[i].name, source: data.neurons[i].input_signals[j], target: data.neurons[i].name },
                     });
                 }
-            }
-        }
-
-        for (let e in ne_list) {
-            let en_name = e;
-            if (en_name === "") en_name = "No ensemble";
-            facefull.Lists["EL"+(viewer+1)].doAdd([en_name], 0, {action: "arrow"});
-            for (let n in ne_list[e]) {
-                facefull.Lists["EL"+(viewer+1)].doAdd([ne_list[e][n]], 1);
             }
         }
 
@@ -225,72 +206,73 @@ function doProcessData(viewer, str, full_update = true) {
                 data: { id: "o"+i, source: data.output_signals[i], target: "O"+(i+1) }
             });
             FManager.getFrame(viewer).getData().output_list.push({id: "O"+(i+1), link: data.output_signals[i]});
-            facefull.Lists["OL"+(viewer+1)].doAdd(["Output "+(i+1)]);
         }
 
         FManager.getFrame(viewer).getData().network_info.name = data.name;
         FManager.getFrame(viewer).getData().network_info.desc = data.desc;
         FManager.getFrame(viewer).getData().network_info.version = data.version;
+        FManager.getFrame(viewer).getData().network_info.parameter_count = data.parameter_count;
+        FManager.getFrame(viewer).getData().network_info.model_size = data.model_size;
 
-        facefull.Scrollboxes["ELSB"+(viewer+1)].doUpdateScrollbar();
-        facefull.Scrollboxes["ILSB"+(viewer+1)].doUpdateScrollbar();
-        facefull.Scrollboxes["OLSB"+(viewer+1)].doUpdateScrollbar();
+        setInterlinkConnectionName(data.name);
 
         console.log("done", performance.now());
-        console.log("process", viewer,FManager.getFrame(viewer));
 
         //if (full_update) FManager.getFrame(viewer).doInitViewer(elements, FManager.getFrame(viewer).getData().entry_list[0]);
         //else
         FManager.getFrame(viewer).doUpdateViewer(elements);
+        FManager.getFrame(viewer).getData().viewer_elements = FManager.getFrame(viewer).getViewer().cs.json();
+        FManager.getFrame(viewer).doRedrawLists();
+        FManager.getFrame(viewer).doAddModelHistoryToList("Structure update");
+
         doCreateParameterList("", "background", viewer);
     } catch (e) {
         console.log(e);
     }
-    AlertHideCustom("AE");
 }
-
-function doRefreshNeuronList(viewer) {
-    facefull.Lists["EL"+(viewer+1)].doClear();
-
-    let ne_list = {};
-    for (let n in FManager.getFrame(viewer).getData().neuron_list) {
-        let ensemble = FManager.getFrame(viewer).getData().neuron_list[n].ensemble;
-        if (!ne_list[ensemble]) ne_list[ensemble] = [];
-        ne_list[ensemble].push(FManager.getFrame(viewer).getData().neuron_list[n].name);
-    }
-
-    for (let e in ne_list) {
-        let en_name = e;
-        if (en_name === "") en_name = "No ensemble";
-        facefull.Lists["EL"+(viewer+1)].doAdd([en_name], 0, {action: "arrow"});
-        for (let n in ne_list[e]) {
-            facefull.Lists["EL"+(viewer+1)].doAdd([ne_list[e][n]], 1);
-        }
-    }
-
-    facefull.Scrollboxes["ELSB"+(viewer+1)].doUpdateScrollbar();
-    console.log("refreshed neuron list")
-    doRefreshProjectStats();
-}
-
-function doRefreshEntryList(viewer) {
-    facefull.Lists["IL"+(viewer+1)].doClear();
-    for (let e in FManager.getFrame(viewer).getData().entry_list) {
-        facefull.Lists["IL"+(viewer+1)].doAdd([FManager.getFrame(viewer).getData().entry_list[e]]);
-    }
-    facefull.Scrollboxes["ILSB"+(viewer+1)].doUpdateScrollbar();
-    doRefreshProjectStats();
-}
-
-function doRefreshOutputList(viewer) {
-    facefull.Lists["OL"+(viewer+1)].doClear();
-    let nodes = FManager.getFrame(viewer).getViewer().cs.filter('node[weight = 2]');
-    for (let i = 0; i < nodes.length; i++) {
-        facefull.Lists["OL"+(viewer+1)].doAdd(["Output "+(i+1)]);
-    }
-    facefull.Scrollboxes["OLSB"+(viewer+1)].doUpdateScrollbar();
-    doRefreshProjectStats();
-}
+//
+// function doRefreshNeuronList(viewer) {
+//     facefull.Lists["EL"+(viewer+1)].doClear();
+//
+//     let ne_list = {};
+//     for (let n in FManager.getFrame(viewer).getData().neuron_list) {
+//         let ensemble = FManager.getFrame(viewer).getData().neuron_list[n].ensemble;
+//         if (!ne_list[ensemble]) ne_list[ensemble] = [];
+//         ne_list[ensemble].push(FManager.getFrame(viewer).getData().neuron_list[n].name);
+//     }
+//
+//     for (let e in ne_list) {
+//         let en_name = e;
+//         if (en_name === "") en_name = "No ensemble";
+//         facefull.Lists["EL"+(viewer+1)].doAdd([en_name], 0, {action: "arrow"});
+//         for (let n in ne_list[e]) {
+//             facefull.Lists["EL"+(viewer+1)].doAdd([ne_list[e][n]], 1);
+//         }
+//     }
+//
+//     facefull.Scrollboxes["ELSB"+(viewer+1)].doUpdateScrollbar();
+//     console.log("refreshed neuron list")
+//     doRefreshProjectStats();
+// }
+//
+// function doRefreshEntryList(viewer) {
+//     facefull.Lists["IL"+(viewer+1)].doClear();
+//     for (let e in FManager.getFrame(viewer).getData().entry_list) {
+//         facefull.Lists["IL"+(viewer+1)].doAdd([FManager.getFrame(viewer).getData().entry_list[e]]);
+//     }
+//     facefull.Scrollboxes["ILSB"+(viewer+1)].doUpdateScrollbar();
+//     doRefreshProjectStats();
+// }
+//
+// function doRefreshOutputList(viewer) {
+//     facefull.Lists["OL"+(viewer+1)].doClear();
+//     let nodes = FManager.getFrame(viewer).getViewer().cs.filter('node[weight = 2]');
+//     for (let i = 0; i < nodes.length; i++) {
+//         facefull.Lists["OL"+(viewer+1)].doAdd(["Output "+(i+1)]);
+//     }
+//     facefull.Scrollboxes["OLSB"+(viewer+1)].doUpdateScrollbar();
+//     doRefreshProjectStats();
+// }
 
 function doRefreshData(viewer, data) {
     console.log("refresh data", data, viewer);
@@ -306,10 +288,6 @@ function doRefreshData(viewer, data) {
     FManager.getFrame(viewer).doImportViewer(data.viewer);
 
     doCreateParameterList("", "background", viewer);
-
-    doRefreshEntryList(viewer);
-    doRefreshNeuronList(viewer);
-    doRefreshOutputList(viewer);
 }
 
 function doDeleteSynapse(id) {

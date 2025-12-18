@@ -41,18 +41,15 @@ function DefaultFrame(id) {
     this.id = id;
     this.viewer = null;
     this.string_data = "";
-    this.data = {
-        entry_list: [],
-        neuron_list: {},
-        output_list: [],
-        network_info: {name: "", desc: "", version: ""}
-    };
+    this.model_life_history = [];
+    this.model_lifetime_list = [];
     this.neuron_model = null;
     this.leftpaneltop_state = -1;
     this.leftpaneltop_count = 3;
     this.leftpanelbottom_state = -1;
     this.rightpanel_state = -1;
     this.selected_elements = [];
+    this.last_structure_id = -1;
 
     this.doInit = function() {
         console.log("frame init");
@@ -60,10 +57,6 @@ function DefaultFrame(id) {
         document.getElementById("ILP"+this.id).classList.add("Hidden");
         document.getElementById("OLP"+this.id).classList.add("Hidden");
         document.getElementById("DRP"+this.id).classList.add("Hidden");
-        this.data.entry_list = [];
-        this.data.neuron_list = {};
-        this.data.output_list = [];
-        this.data.network_info = {name: "", desc: "", version: ""};
         this.doInitViewer();
     }
 
@@ -74,11 +67,26 @@ function DefaultFrame(id) {
         facefull.Scrollboxes["ELSB"+this.id].doUpdateScrollbar();
         facefull.Scrollboxes["ILSB"+this.id].doUpdateScrollbar();
         facefull.Scrollboxes["OLSB"+this.id].doUpdateScrollbar();
-        this.data.entry_list = [];
-        this.data.neuron_list = {};
-        this.data.output_list = [];
-        this.data.network_info = {name: "", desc: "", version: ""};
         this.string_data = "";
+    }
+
+    this.doCreateModel = function() {
+        this.model_life_history.push({
+            entry_list: [],
+            neuron_list: {},
+            output_list: [],
+            timeline_data: [],
+            viewer_elements: [],
+            network_info: {name: "", desc: "", version: "", parameter_count: "", model_size: ""}
+        });
+    }
+
+    this.doAddModelHistoryToList = function(str) {
+        let id = this.model_life_history.length - 1;
+        this.model_lifetime_list.push({structure_id: id, data_id: this.model_life_history[id].timeline_data.length-1, name: str});
+
+        facefull.Lists["NMDL"].doAdd(["["+this.model_lifetime_list.length+"] "+str]);
+        facefull.Scrollboxes["NMSB"].doUpdateScrollbar();
     }
 
     this.doUpdateString = function(str) {
@@ -86,6 +94,9 @@ function DefaultFrame(id) {
     }
 
     this.doImportViewer = function(data) {
+        const pan = {...this.viewer.cs.pan()};
+        const zoom = this.viewer.cs.zoom();
+
         // let name = "CS" + this.id;
         // let cs = cytoscape({
         //     container: document.getElementById(name),
@@ -105,8 +116,11 @@ function DefaultFrame(id) {
 
         this.doUpdateViewer();
         this.viewer.cs.json(data);
-        facefull.ItemPickers["DCP"].doSelect(facefull.ItemPickers["DCP"].getState());
-        // doInitViewerAttributes(this.viewer.cs, "", true);
+
+        this.viewer.cs.pan(pan);
+        this.viewer.cs.zoom(zoom);
+
+        doApplyGrid(this.viewer.cs);
     }
 
     this.doInitViewer = function(elements = [], startpoint = "") {
@@ -116,7 +130,7 @@ function DefaultFrame(id) {
 
             boxSelectionEnabled: true,
             wheelSensitivity: 0.1,
-            motionBlur: true,
+            motionBlur: false,
             zoom: 0.9,
             // autounselectify: true,
             pan: { x: document.getElementById(name).offsetWidth/2, y: 0 },
@@ -148,8 +162,24 @@ function DefaultFrame(id) {
         this.viewer.cs.remove("node");
         this.viewer.cs.add(elements);
         this.viewer.cs.layout(KlayLayoutOptions).run();
-        let nodes = this.viewer.cs.filter('node');
-        console.log("align", nodes)
+        // let nodes = this.viewer.cs.filter('node');
+        // console.log(nodes)
+
+        // for (let e in elements) {
+        //     let name = elements[e].data.id;
+        //     this.viewer.cs.nodes('node[id="'+name+'"]').align("top", "left")
+        // }
+
+        // this.viewer.cs.layout({
+        //     name: 'grid',
+        //     rows: 2,
+        //     cols: 2
+        // }).run();
+
+        // this.viewer.cs.fit();
+
+        // doApplyGrid(this.viewer.cs);
+
         // nodes.select()
         //cy.emit('tap node', nodes);
     }
@@ -173,6 +203,56 @@ function DefaultFrame(id) {
     this.doClearNeuronModel = function(e) {
         if (this.neuron_model) this.neuron_model.destroy();
         e.innerHTML = "";
+    }
+
+    this.doManageViewport = function(hid) {
+        let h = this.getHistoryListItem(hid);
+
+        if (h.structure_id !== this.last_structure_id) {
+            this.doImportViewer(this.getData(h.structure_id).viewer_elements);
+            this.doRedrawLists(h.structure_id);
+
+            this.selected_elements = [];
+            this.last_structure_id = hid;
+        }
+
+        let e = this.getLastSelectedElement();
+        if (e !== "") doCreateParameterList(e);
+        else doCreateParameterList("", "background");
+    }
+
+    this.doRedrawLists = function(id = -1) {
+        this.doClearLists();
+        let ne_list = {};
+
+        let current_data = this.getData(id);
+
+        for (let e in current_data.entry_list) {
+            facefull.Lists["IL"+this.id].doAdd([current_data.entry_list[e]]);
+        }
+
+        for (let n in current_data.neuron_list) {
+            let ensemble = current_data.neuron_list[n].ensemble;
+            if (!ne_list[ensemble]) ne_list[ensemble] = [];
+            ne_list[ensemble].push(current_data.neuron_list[n].name);
+        }
+
+        for (let e in ne_list) {
+            let en_name = e;
+            if (en_name === "") en_name = "No ensemble";
+            facefull.Lists["EL"+this.id].doAdd([en_name], 0, {action: "arrow"});
+            for (let n in ne_list[e]) {
+                facefull.Lists["EL"+this.id].doAdd([ne_list[e][n]], 1);
+            }
+        }
+
+        for (let o in current_data.output_list) {
+            facefull.Lists["OL"+this.id].doAdd(["Output "+(parseInt(o)+1)]);
+        }
+
+        facefull.Scrollboxes["ELSB"+this.id].doUpdateScrollbar();
+        facefull.Scrollboxes["ILSB"+this.id].doUpdateScrollbar();
+        facefull.Scrollboxes["OLSB"+this.id].doUpdateScrollbar();
     }
 
     this.doAddSelectedElement = function(name) {
@@ -220,8 +300,14 @@ function DefaultFrame(id) {
         return this.viewer;
     }
 
-    this.getData = function() {
-        return this.data;
+    this.getData = function(id = -1) {
+        if (id === -1) return this.model_life_history[this.model_life_history.length-1];
+        return this.model_life_history[id];
+    }
+
+    this.getHistoryListItem = function(id) {
+        if (id === -1) return this.model_lifetime_list[this.model_lifetime_list.length-1];
+        return this.model_lifetime_list[id];
     }
 
     this.getLeftPanelTopState = function() {

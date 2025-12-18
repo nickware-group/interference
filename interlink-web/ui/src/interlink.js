@@ -78,3 +78,20 @@ function doOpenInterlinkSettings() {
     let eisl = document.getElementById("ISL");
     facefull.Scrollboxes["STSB"].setScrollPosition(eisl.offsetTop);
 }
+
+function setInterlinkConnectionName(name) {
+    document.getElementById("ICN").innerHTML = name;
+    document.getElementById("ICH").innerHTML = window.location.hostname;
+}
+
+function setInterlinkConnectionStatus(connected) {
+    if (connected === !document.getElementById("IC").classList.contains("Disconnected")) return;
+
+    if (connected) {
+        document.getElementById("IC").classList.remove("Disconnected");
+        document.getElementById("IC").setAttribute("data-tooltip-text", "Interlink Web connection (connected)");
+    } else {
+        document.getElementById("IC").classList.add("Disconnected");
+        document.getElementById("IC").setAttribute("data-tooltip-text", "Interlink Web connection (disconnected)");
+    }
+}

@@ -36,7 +36,7 @@ function App() {
     // facefull.Locales.doAttachLocaleFile("German", ["../locale/locale-de.css"]);
 
     facefull.Themes.setDefaultThemeName("Dark theme");
-    facefull.Themes.doAttachThemeFile("Light theme", ["../themes/theme-light.css", "../themes/style-light.css"]);
+    facefull.Themes.doAttachThemeFile("Light theme", ["src/facefull/theme-light.min.css", "themes/style-light.css"]);
     // facefull.ItemPickers["DCP"].onSelect = function(id) {
     //     console.log("selected theme", id);
     //     facefull.Themes.doApplyTheme(id);
@@ -53,6 +53,7 @@ function App() {
     //
     //     doClearBackground();
     // }
+    doLoadSettings();
 
     facefull.Viewports.doAddDeviceDefinition("dashboard-min", 900);
     facefull.Viewports.doAddDeviceDefinition("mobile", 500);
@@ -92,7 +93,6 @@ function App() {
     facefull.Viewports.doProcessRules();
     window.addEventListener("resize", function() {
         //facefull.Viewports.doProcessRules();
-        console.log("resize frame", FManager.getCurrentFrameID()+1);
         try {
             document.getElementById("CS"+(FManager.getCurrentFrameID()+1)).children[0].style.width = "auto";
             document.getElementById("CS"+(FManager.getCurrentFrameID()+1)).children[0].style.height = "auto";
@@ -125,7 +125,7 @@ function App() {
     doSwitchRightPanel(0, 0);
 
     facefull.Lists["NMDL"].onSelect = function(id) {
-
+        FManager.getCurrentFrame().doManageViewport(id);
         // doInitMetricsShowRanges();
         // let range = NeuronMetricsRanges[facefull.Comboboxes["MRCB"].getState()];
         // facefull.doEventSend("doLoadMetrics", CurrentSelectedNeuron+"|"+id+"|"+range[0]+"|"+range[1]);
@@ -149,6 +149,12 @@ function App() {
     // facefull.ItemPickers["CPIP"].onSelect = function(id) {
     //     doChangeMouseMode(id);
     // }
+
+    MouseLinkFrom = "";
+    NeuronForCopy = "";
+    doClearBackground();
+    FManager.doSwitchCurrentFrame(0);
+    document.getElementById("P0").style.zIndex = 0;
 
     let init_viewers = [0];
     for (let v in init_viewers) {
@@ -184,7 +190,6 @@ function App() {
                 let cs_width = FManager.getFrame(init_viewers[v]).getViewer().cs.width();
                 let cs_height = FManager.getFrame(init_viewers[v]).getViewer().cs.height();
                 let current_pan = FManager.getFrame(init_viewers[v]).getViewer().cs.pan();
-                console.log("d click", position, cs_width, cs_height);
                 let px= current_pan.x - position.x + cs_width/2
                 let py= current_pan.y - position.y + cs_height/2
                 FManager.getFrame(init_viewers[v]).getViewer().cs.pan({ x: px, y: py });

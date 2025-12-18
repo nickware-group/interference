@@ -1,27 +1,30 @@
 
 :root {
     --main-component-bg-color: #242424;
-    --windowheader-bg-color: #191c2e;
-    --panel-toolbar-bg-color: #2c3740;
-    --toolpanel-border-color: #1e2938;
-    --toolbutton-bg-color: #0E2231;
+    --windowheader-bg-color: #2b2c33;
+    --panel-toolbar-bg-color: #323335;
+    --toolpanel-border-color: #252525;
+    --toolbutton-bg-color: #595959;
     --toolbutton-bg-hover-color: #5B6777;
-    --detailslist-bg-color: #21272E;
-    --detailslist-border-bg-color: #10212d;
+    --detailslist-bg-color: #2D2F31;
+    --detailslist-border-bg-color: #212121;
     --creationpanel-bg-color: #aaa;
     --creationpanel-bg-hover-color: #939393;
     --creationpanel-selected-bg-color: #6e6e6e;
-    --neuronmodel-bg-color: #26283fa6;
+    --neuronmodel-bg-color: #272835a6;
     --interlinkpanel-inactive-bg-color: #9276f6;
     --interlinkpanel-inactive-bg-hover-color: #7a61d3;
-    --interlinkpanel-active-bg-color: #c53e80;
-    --interlinkpanel-active-bg-hover-color: #862b58;
-    --interlinkpanel-linked-bg-color: #3ec574;
-    --interlinkpanel-linked-bg-hover-color: #2a8850;
+    --interlinkpanel-disconnected-bg-color: #c53e80;
+    --interlinkpanel-disconnected-bg-hover-color: #862b58;
     --dashboardpanel-bg-color: #52409D;
     --dashboard-bg-two-color: #2b80ff7a;
     --dashboard-bg-three-color: #1b3147;
     --mainsettings-bg-color: #0f151d;
+    --interlinkpanel-host-font-color: #cbcbcb;
+    --page-bg-color: #1E1F22;
+    --scrollbox-bg-color: #2B2D30;
+    --scrollbar-bg-color: #1a1c20b8;
+    --toolbar-bg-color: #2B2D30;
 }
 
 #CS1, #CS3 {
@@ -56,10 +59,11 @@
     flex-direction: column;
     align-items: center;
     flex-shrink: 0;
+    background-color: var(--toolbar-bg-color);
 }
 
 .ToolPanel.Left {
-    border-right: 2px solid var(--toolpanel-border-color);
+    border-right: 1px solid var(--toolpanel-border-color);
 }
 
 .ToolButton {
@@ -93,7 +97,7 @@
 }
 
 .ToolPanel.Right {
-    border-left: 2px solid var(--toolpanel-border-color);
+    border-left: 1px solid var(--toolpanel-border-color);
 }
 
 .ToolPanel.Right > .ToolButton:nth-child(1):before {
@@ -138,7 +142,7 @@
 
 .DetailsList {
     width: 340px;
-    border-left: 2px solid var(--toolpanel-border-color);
+    border-left: 1px solid var(--toolpanel-border-color);
     flex-shrink: 0 !important;
     margin-right: 0;
     display: flex;
@@ -226,87 +230,54 @@
     content: '\F055E';
 }
 
-.HeaderButtonsBlock.InterlinkPanel {
+.InterlinkPanel {
     background-color: var(--interlinkpanel-inactive-bg-color);
-    width: auto;
+    width: 40%;
+    max-width: 600px;
+    min-width: 300px;
     border-radius: 6px;
-    height: auto;
-    top: auto;
-    margin-right: 20px;
+    text-align: center;
+    padding: 5px 0;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.HeaderButtonsBlock.InterlinkPanel > div {
-    width: 30px;
-    height: 30px;
+.InterlinkPanel #ICN {
+    font-size: 13px;
+    margin: 0 5px;
 }
 
-.HeaderButtonsBlock.InterlinkPanel.Active {
-    background-color: var(--interlinkpanel-active-bg-color);
+.InterlinkPanel #ICH {
+    font-size: 13px;
+    margin: 0 5px;
+    color: var(--interlinkpanel-host-font-color);;
 }
 
-.HeaderButtonsBlock.InterlinkPanel.Connected {
-    background-color: var(--interlinkpanel-linked-bg-color);
+.HeaderButtonsBlock {
+    margin-left: 8px;
+    margin-right: 8px;
 }
 
-.HeaderButtonsBlock.InterlinkPanel > div:hover {
+.InterlinkPanel.Disconnected {
+    background-color: var(--interlinkpanel-disconnected-bg-color);
+}
+
+.InterlinkPanel:hover {
     background-color: var(--interlinkpanel-inactive-bg-hover-color);
 }
 
-.HeaderButtonsBlock.InterlinkPanel.Active > div:hover {
-    background-color: var(--interlinkpanel-active-bg-hover-color);
+.InterlinkPanel.Disconnected:hover {
+    background-color: var(--interlinkpanel-disconnected-bg-hover-color);
 }
 
-.HeaderButtonsBlock.InterlinkPanel.Connected > div:hover {
-    background-color: var(--interlinkpanel-linked-bg-hover-color);
+.HeaderButtonsBlock > .ThemeSwitch.DarkMode:before {
+    content: '\F0594';
 }
 
-.HeaderButtonsBlock.InterlinkPanel > .HeaderButton:nth-child(1):before {
-    content: '\F0F1B';
-}
-
-.HeaderButtonsBlock.InterlinkPanel.Active > .HeaderButton:nth-child(1):before {
-    content: '\F04DB';
-}
-
-.HeaderButtonsBlock.InterlinkPanel > .HeaderButton:nth-child(2):before {
-    content: '\F1591';
-}
-
-.HeaderButtonsBlock.InterlinkPanel > .HeaderButton:nth-child(3):before {
-    content: '\F0045';
-}
-
-.HeaderButtonsBlock.InterlinkPanel > .HeaderButton:nth-child(4):before {
-    content: '\F005D';
-}
-
-.HeaderButtonsBlock.InterlinkPanel > .HeaderButton:nth-child(5):before {
-    content: '\F01D9';
-}
-
-.HeaderButtonsBlock.InterlinkPanel > .HeaderButton:nth-child(6) {
-    width: 60px;
-    font-size: 17px;
-}
-
-.HeaderButtonsBlock.InterlinkPanel > .HeaderButton:nth-child(6).Infinity:before {
-    content: '\F06E4';
-}
-
-.HeaderButtonsBlock.InterlinkPanel.Restart {
-    animation: interlink-restart 1.0s ease-in forwards;
-}
-
-@keyframes interlink-restart {
-    0% {
-        background-color: #c53e80;
-    }
-    50% {
-         background-color: #939393;
-    }
-    100% {
-         background-color: #c53e80;
-    }
+.HeaderButtonsBlock > .ThemeSwitch.LightMode:before {
+    content: '\F05A8';
 }
 
 .ElementList .List {
@@ -507,7 +478,7 @@
 }
 
 .PanelBox {
-    border-right: 2px solid var(--toolpanel-border-color);
+    border-right: 1px solid var(--toolpanel-border-color);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -515,7 +486,7 @@
 
 .BottomList {
     height: 300px;
-    border-top: 2px solid var(--toolpanel-border-color);
+    border-top: 1px solid var(--toolpanel-border-color);
     flex-shrink: 0 !important;
 }
 

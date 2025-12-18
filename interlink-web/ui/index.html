@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>Interference Architect</title>
+        <title>Interference Interlink Web</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
         <script src="src/facefull/facefull.min.js" charset="utf-8"></script>
@@ -19,7 +19,6 @@
         <script src="src/frames.js" charset="utf-8"></script>
         <script src="src/viewer.js" charset="utf-8"></script>
         <script src="src/data.js" charset="utf-8"></script>
-        <script src="src/project.js" charset="utf-8"></script>
         <script src="src/panels.js" charset="utf-8"></script>
         <script src="src/neuron-model.js" charset="utf-8"></script>
         <script src="src/neuron-metrics.js" charset="utf-8"></script>
@@ -35,17 +34,13 @@
     <body>
         <div id="W" class="Window">
             <div id="WH" class="WindowHeader" onselectstart="return false">
-                <div class="ToolPanel">
-                    <div class="HeaderButton MenuButton TooltipTarget PopupMenuTarget" data-popupmenu="MPM" data-popupmenu-pos="bottom-left" data-tooltip-text="Menu" data-tooltip-width="90" data-tooltip-pos="right"></div>
-                </div>
                 <div class="Toolbar">
-                    <div id="IP" class="HeaderButtonsBlock InterlinkPanel">
-                        <div class="HeaderButton TooltipTarget" onclick="doStartInterlinkStructure()" data-tooltip-text="Run project structure via Interlink" data-tooltip-width="90" data-tooltip-pos="bottom"></div>
-                        <div class="HeaderButton TooltipTarget Hidden" onclick="doRestartInterlink()" data-tooltip-text="Rerun project structure" data-tooltip-width="90" data-tooltip-pos="bottom"></div>
-                        <div class="HeaderButton TooltipTarget" onclick="doStartStopInterlink()" data-tooltip-text="Run Interlink and load remote structure" data-tooltip-width="90" data-tooltip-pos="bottom"></div>
-                        <div class="HeaderButton TooltipTarget Hidden" onclick="doShowTestMessage()" data-tooltip-text="TestButton3" data-tooltip-width="90" data-tooltip-pos="bottom"></div>
-                        <div class="HeaderButton TooltipTarget" onclick="doOpenInterlinkSettings()" data-tooltip-text="Interlink settings" data-tooltip-width="90" data-tooltip-pos="bottom"></div>
-                        <div class="HeaderButton TooltipTarget Hidden" data-tooltip-text="Ping" data-tooltip-width="90" data-tooltip-pos="bottom"></div>
+                    <div id="IP1" class="HeaderButtonsBlock"></div>
+                    <div id="IC" class="InterlinkPanel TooltipTarget" onclick="" data-tooltip-text="Interlink Web connection (connected)" data-tooltip-width="150" data-tooltip-pos="bottom">
+                        <div id="ICH"></div> / <div id="ICN"></div>
+                    </div>
+                    <div id="IP2" class="HeaderButtonsBlock">
+                        <div id="TS" class="HeaderButton TooltipTarget ThemeSwitch DarkMode" onclick="doSwitchTheme()" data-tooltip-text="Switch dark mode / light mode" data-tooltip-width="80" data-tooltip-pos="left"></div>
                     </div>
                 </div>
             </div>
@@ -90,7 +85,7 @@
                                     </div>
                                 </div>
                                 <div id="DLP1" class="Box ElementList BottomList">
-                                    <div class="PanelToolbar DataScopes"><div>Data scopes</div><div class="HeaderButton ToolButton TooltipTarget" onclick="doDeleteAllMetrics()" data-tooltip-text="Delete all data scopes" data-tooltip-width="90" data-tooltip-pos="right"></div></div>
+                                    <div class="PanelToolbar DataScopes"><div>Model lifetime</div><div class="HeaderButton ToolButton TooltipTarget" onclick="doDeleteAllMetrics()" data-tooltip-text="Delete all data scopes" data-tooltip-width="90" data-tooltip-pos="right"></div></div>
                                     <div class="Box Scrolling" data-scrollboxname="NMSB">
                                         <div class="Scrolldata" style="padding: 0 !important;">
                                             <ul class="List Selectable DataSourceList" data-listname="NMDL"></ul>
@@ -100,18 +95,6 @@
                             </div>
                             <div id="MB1" class="MainBlock">
                                 <div id="CS1" class="ViewerBox"></div>
-                                <div class="ItemMetricsPanel">
-                                    <div class="PanelToolbar">Element output data</div>
-                                    <div class="PanelToolbar">
-                                        <div class="Combobox MetricRange Rounded" data-comboboxname="MRCB">
-                                            <div class="ComboboxHeader"><div>No data</div></div>
-                                            <ul></ul>
-                                        </div>
-                                    </div>
-                                    <div class="MetricsChart">
-                                        <canvas id="IMC"></canvas>
-                                    </div>
-                                </div>
                             </div>
                             <div id="DRP1" class="DetailsList">
                                 <div class="PanelToolbar">Element details</div>

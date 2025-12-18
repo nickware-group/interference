@@ -26,7 +26,7 @@ let KlayLayoutOptions = {
         // Following descriptions taken from http://layout.rtsys.informatik.uni-kiel.de:9444/Providedlayout.html?algorithm=de.cau.cs.kieler.klay.layered
         addUnnecessaryBendpoints: false, // Adds bend points even if an edge does not change direction.
         aspectRatio: 1.6, // The aimed aspect ratio of the drawing, that is the quotient of width by height
-        borderSpacing: 50, // Minimal amount of space to be left to the border
+        borderSpacing: 60, // Minimal amount of space to be left to the border
         compactComponents: true, // Tries to further compact components (disconnected sub-graphs).
         crossingMinimization: 'LAYER_SWEEP', // Strategy for crossing minimization.
         /* LAYER_SWEEP The layer sweep algorithm iterates multiple times over the layers, trying to find node orderings that minimize the number of crossings. The algorithm uses randomization to increase the odds of finding a good result. To improve its results, consider increasing the Thoroughness option, which influences the number of iterations done. The Randomization seed also influences results.
@@ -63,7 +63,7 @@ let KlayLayoutOptions = {
         randomizationSeed: 0, // Seed used for pseudo-random number generators to control the layout algorithm; 0 means a new seed is generated
         routeSelfLoopInside: false, // Whether a self-loop is routed around or inside its node.
         separateConnectedComponents: true, // Whether each connected component should be processed separately
-        spacing: 50, // Overall setting for the minimal amount of space to be left between objects
+        spacing: 60, // Overall setting for the minimal amount of space to be left between objects
         thoroughness: 7 // How much effort should be spent to produce a nice layout..
     },
     priority: function( edge ){ return null; }, // Edges with a non-nil value are skipped when greedy edge cycle breaking is enabled
@@ -120,12 +120,12 @@ function doApplyStylesheet(object) {
 
 function getCSStyleColor(item) {
     let theme = facefull.Themes.getCurrentThemeID();
-    console.log("getting viewer style", theme, item)
+    // console.log("getting viewer style", theme, item)
     switch (theme) {
         case 0:
             switch (item) {
-                case "bg": return "#283140";
-                case "grid": return "#3f4c60";
+                case "bg": return "#1E1F22";
+                case "grid": return "#2c2c2c";
                 case "node": return "#fff";
                 case "edge": return "#fff";
                 case "label": return "#f3f3f3";
@@ -134,110 +134,14 @@ function getCSStyleColor(item) {
         case 1:
             switch (item) {
                 case "bg": return "#f9f9f9";
-                case "grid": return "#c7c7c7";
-                case "node": return "#434e60";
-                case "edge": return "#434e60";
+                case "grid": return "#eaeaea";
+                case "node": return "#464646";
+                case "edge": return "#464646";
                 case "label": return "#5d5d5d";
             }
             break;
     }
 }
-
-let MainContextMenuOptions = {
-    // Customize event to bring up the context menu
-    // Possible options https://js.cytoscape.org/#events/user-input-device-events
-    evtType: 'cxttap',
-    // List of initial menu items
-    // A menu item must have either onClickFunction or submenu or both
-    menuItems: [
-        {
-            id: 'remove', // ID of menu item
-            content: 'remove', // Display content of menu item
-            tooltipText: 'remove', // Tooltip text for menu item
-            //image: {src : "remove.svg", width : 12, height : 12, x : 6, y : 4}, // menu icon
-            // Filters the elements to have this menu item on cxttap
-            // If the selector is not truthy no elements will have this menu item on cxttap
-            selector: 'node, edge',
-            onClickFunction: function () { // The function to be executed on click
-              console.log('remove element');
-            },
-            disabled: false, // Whether the item will be created as disabled
-            show: false, // Whether the item will be shown or not
-            hasTrailingDivider: true, // Whether the item will have a trailing divider
-            coreAsWell: false, // Whether core instance have this item on cxttap
-            submenu: [] // Shows the listed menuItems as a submenu for this item. An item must have either submenu or onClickFunction or both.
-        },
-        {
-            id: 'copy',
-            content: 'Copy',
-            selector: 'node',
-            onClickFunction: function () {
-                doCheckNeuronForCopy(FManager.getCurrentFrame().selected_elements);
-            },
-            disabled: false
-        },
-        {
-            id: 'duplicate',
-            content: 'Duplicate',
-            selector: 'node',
-            onClickFunction: function () {
-                doCheckNeuronForCopy(FManager.getCurrentFrame().selected_elements);
-                doPasteElement();
-            },
-            disabled: false
-        },
-        {
-            id: 'delete',
-            content: 'Delete',
-            selector: 'node',
-            onClickFunction: function () {
-                doRemoveElement(FManager.getCurrentFrame().selected_elements);
-            },
-            disabled: false
-        },
-        {
-            id: 'delete-link',
-            content: 'Delete link',
-            selector: 'edge',
-            onClickFunction: function () {
-                let link = FManager.getCurrentFrame().getLastSelectedElement().split("-");
-                doDeleteLink(link[0], link[1]);
-            },
-            disabled: false
-        },
-        {
-            id: 'paste',
-            content: 'Paste',
-            selector: '',
-            onClickFunction: function () {
-                doPasteElement();
-            },
-            disabled: false,
-            coreAsWell: true
-        },
-        // {
-        // id: 'add-node',
-        // content: 'add node',
-        // tooltipText: 'add node',
-        // image: {src : "add.svg", width : 12, height : 12, x : 6, y : 4},
-        // selector: 'node',
-        // coreAsWell: true,
-        // onClickFunction: function () {
-        //   console.log('add node');
-        // }
-        // }
-    ],
-    // css classes that menu items will have
-    menuItemClasses: [
-        // add class names to this list
-    ],
-    // css classes that context menu will have
-    contextMenuClasses: [
-        // add class names to this list
-    ],
-    // Indicates that the menu item has a submenu. If not provided default one will be used
-    // submenuIndicator: { src: 'assets/submenu-indicator-default.svg', width: 12, height: 12 }
-};
 
 let InterlinkContextMenuOptions = {
     // Customize event to bring up the context menu
@@ -271,15 +175,17 @@ let InterlinkContextMenuOptions = {
 function doApplyGrid(object) {
     object.gridGuide({
         panGrid: true,
-        gridSpacing: 50,
+        gridSpacing: 60,
         gridColor: getCSStyleColor("grid"),
-        guidelinesStyle: {
-            strokeStyle: "black",
-            horizontalDistColor: "#ff0000",
-            verticalDistColor: "green",
-            initPosAlignmentColor: "#0000ff",
-        }
+        snapToGridOnRelease: false,
+        snapToGridCenter: false,
     });
+
+    // object.snapToGrid({
+    //     gridSpacing: 50,
+    //     strokeStyle: getCSStyleColor("grid"),
+    // });
+    // object.snapToGrid('snapOn');
 }
 
 function doInitViewerAttributes(cy, startpoint = "", predefined = false, id = -1) {
@@ -299,19 +205,13 @@ function doInitViewerAttributes(cy, startpoint = "", predefined = false, id = -1
         }
 
         setTimeout(function() {
-            if (id === 1) {
-                try {
-                    cy.contextMenus(MainContextMenuOptions);
-                } catch (e) {
-                    console.log("Error initializing viewer context menus", e);
-                }
-            } else if (id === 3) {
-                try {
-                    cy.contextMenus(InterlinkContextMenuOptions);
-                } catch (e) {
-                    console.log("Error initializing viewer context menus", e);
-                }
-            }
+            // if (id === 1) {
+            //     try {
+            //         cy.contextMenus(InterlinkContextMenuOptions);
+            //     } catch (e) {
+            //         console.log("Error initializing viewer context menus", e);
+            //     }
+            // }
 
             doApplyGrid(cy);
 

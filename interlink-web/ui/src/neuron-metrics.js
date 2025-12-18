@@ -95,8 +95,8 @@ function doInitMetricsShowRanges(element = "") {
 
     let size = 0;
 
-    if (facefull.Lists["NMDL"].getState() >= 0)
-        size = NeuronMetricsTotals[current_selected][facefull.Lists["NMDL"].getState()];
+    // if (facefull.Lists["NMDL"].getState() >= 0)
+    //     size = NeuronMetricsTotals[current_selected][facefull.Lists["NMDL"].getState()];
 
     console.log("metrics size", size)
     facefull.Comboboxes["MRCB"].doClear();
@@ -128,7 +128,7 @@ function doInitMetricsShowRanges(element = "") {
         if (element === "") doCreateParameterList(FManager.getInterlinkFrame().getLastSelectedElement());
     };
 
-    facefull.Comboboxes["MRCB"].setState(0);
+    // facefull.Comboboxes["MRCB"].setState(0);
 
     console.log(NeuronMetricsRanges);
 }
