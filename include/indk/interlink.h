@@ -13,6 +13,8 @@
 #include <string>
 #include <thread>
 #include <atomic>
+#include <mutex>
+#include <vector>
 
 namespace indk {
     /**
@@ -21,27 +23,34 @@ namespace indk {
     class Interlink {
     private:
 //        void *LinkedObject;
+        void *WebServer;
         void *Input;
         void *Output;
         std::string Host;
         std::string InputPort, OutputPort;
-        std::thread Thread;
+        std::thread DataThread;
+        std::thread WebThread;
+        bool StructureUpdated;
+        bool DataUpdated;
         std::atomic<bool> Interlinked;
         std::string Structure;
+        std::vector<std::string> DataBatches;
+        std::mutex StructureLock;
+        std::mutex DataLock;
 
-        void doInitInput(int, int);
         void doInitOutput();
 
         void doSend(const std::string&, const std::string&);
     public:
         Interlink();
-        Interlink(int, int timeout);
-        void doUpdateStructure(const std::string&);
+        void doInitWebServer(const std::string& path, int port);
+        void doInitInput(int port, int timeout);
+        void doUpdateStructure(const std::string&, uint64_t pcount, uint64_t msize);
         void doUpdateModelData(const std::string&);
         void doUpdateMetrics(const std::string&);
         void setStructure(const std::string&);
         std::string getStructure();
-        bool isInterlinked();
+        bool isInterlinked() const;
         ~Interlink();
     };
 }

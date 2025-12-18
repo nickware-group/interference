@@ -18,18 +18,18 @@ typedef nlohmann::json json;
 
 indk::NeuralNet::NeuralNet() {
     StateSyncEnabled = false;
-    InterlinkService = nullptr;
+    InterlinkService = new indk::Interlink();
 }
 
 indk::NeuralNet::NeuralNet(const std::string &path) {
     StateSyncEnabled = false;
-    InterlinkService = nullptr;
+    InterlinkService = new indk::Interlink();
     std::ifstream filestream(path);
     setStructure(filestream);
 }
 
 void indk::NeuralNet::doInterlinkInit(int port, int timeout) {
-    InterlinkService = new indk::Interlink(port, timeout);
+    InterlinkService -> doInitInput(port, timeout);
 
     indk::Profiler::doAttachCallback(this, indk::Profiler::EventFlags::EventTick, [this](indk::NeuralNet *nn) {
         auto neurons = getNeurons();
@@ -41,26 +41,42 @@ void indk::NeuralNet::doInterlinkInit(int port, int timeout) {
         }
     });
 
-    indk::Profiler::doAttachCallback(this, indk::Profiler::EventFlags::EventProcessed, [this](indk::NeuralNet *nn) {
-        doInterlinkSyncData();
-    });
+    // indk::Profiler::doAttachCallback(this, indk::Profiler::EventFlags::EventProcessed, [this](indk::NeuralNet *nn) {
+    //     doInterlinkSyncData();
+    // });
 
     if (InterlinkService->isInterlinked()) {
         if (!InterlinkService->getStructure().empty()) setStructure(InterlinkService->getStructure());
     }
 }
 
-void indk::NeuralNet::doInterlinkSyncStructure() {
-    if (!InterlinkService || InterlinkService && !InterlinkService->isInterlinked()) return;
-    InterlinkService -> doUpdateStructure(getStructure());
+void indk::NeuralNet::doInterlinkWebInit(const std::string& path, int port) {
+    InterlinkService -> doInitWebServer(path, port);
+    InterlinkService -> doUpdateStructure(getStructure(), getTotalParameterCount(), getModelSize());
 }
 
-void indk::NeuralNet::doInterlinkSyncData() {
-    if (!InterlinkService || InterlinkService && !InterlinkService->isInterlinked()) return;
+void indk::NeuralNet::doInterlinkSyncStructure(const std::string &data) {
+    if (!InterlinkService->isInterlinked()) return;
+    if (data.empty()) InterlinkService -> doUpdateStructure(getStructure(), getTotalParameterCount(), getModelSize());
+    else InterlinkService -> doUpdateStructure(data, getTotalParameterCount(), getModelSize());
+}
+
+void indk::NeuralNet::doInterlinkSyncData(int mode, int instance) {
+    if (!InterlinkService->isInterlinked()) return;
+
+    std::map<std::string, std::vector<indk::Position>> ppositions;
+    if (!mode) {
+        ppositions = InstanceManager.getReceptorPositions(instance);
+    }
+
     json j, jm;
     uint64_t in = 0;
 
+    j["neurons"] = json::parse("{}");
+
     for (const auto &n: Neurons) {
+        auto ppos = ppositions.find(n.first);
+
         json jn, jnm;
 
         jn["name"] = n.second->getName();
@@ -89,18 +105,21 @@ void indk::NeuralNet::doInterlinkSyncData() {
                 jr["scopes"].push_back(js);
             }
 
-            for (int p = 0; p < n.second->getDimensionsCount(); p++) {
-                jr["phantom"].push_back(r->getPosf()->getPositionValue(p));
+            if (ppos != ppositions.end()) {
+                for (int p = 0; p < n.second->getDimensionsCount(); p++) {
+                    jr["phantom"].push_back(ppos->second[i].getPositionValue(p));
+                }
             }
 
             jn["receptors"].push_back(jr);
         }
 
-        j["neurons"].push_back(jn);
+        j["neurons"][n.second->getName()] = jn;
         in++;
     }
 
     InterlinkDataBuffer.clear();
+
     InterlinkService -> doUpdateModelData(j.dump());
     InterlinkService -> doUpdateMetrics(jm.dump());
 }
@@ -296,6 +315,8 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vecto
 
     auto output = InstanceManager.getOutputValues(instance);
 
+    doInterlinkSyncData(mode, instance);
+
     return output;
 }
 
@@ -305,9 +326,6 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vecto
  * @return Output signals.
  */
 std::vector<indk::OutputValue> indk::NeuralNet::doLearn(const std::vector<std::vector<float>>& Xx, bool prepare, const std::vector<std::string>& inputs, int instance) {
-    if (InterlinkService && InterlinkService->isInterlinked()) {
-        InterlinkService -> doUpdateStructure(getStructure());
-    }
     if (prepare) doReset(instance);
     return doSignalProcess(Xx, inputs, true, instance);
 }
@@ -430,6 +448,9 @@ indk::Neuron* indk::NeuralNet::doReplicateNeuron(const std::string& from, const 
     } else {
 //        nnew ->  doClearEntries();
     }
+
+    doInterlinkSyncStructure();
+
     return nnew;
 }
 
@@ -567,6 +588,8 @@ void indk::NeuralNet::doReplicateEnsemble(const std::string& From, const std::st
         }
         std::cout << std::endl;
     }
+
+    doInterlinkSyncStructure();
 }
 
 void indk::NeuralNet::doClearCache() {
@@ -577,10 +600,10 @@ void indk::NeuralNet::doClearCache() {
  * Load neural network structure.
  * @param Stream Input stream of file that contains neural network structure in JSON format.
  */
-void indk::NeuralNet::setStructure(std::ifstream &Stream) {
+std::string indk::NeuralNet::setStructure(std::ifstream &Stream) {
     if (!Stream.is_open()) {
         if (indk::System::getVerbosityLevel() > 0) std::cerr << "Error opening file" << std::endl;
-        return;
+        return "";
     }
     std::string jstr;
     while (!Stream.eof()) {
@@ -589,6 +612,8 @@ void indk::NeuralNet::setStructure(std::ifstream &Stream) {
         jstr.append(rstr);
     }
     setStructure(jstr);
+
+    return jstr;
 }
 
 /** \example samples/test/structure.json
@@ -804,9 +829,7 @@ void indk::NeuralNet::setStructure(const std::string &Str) {
             }
         }
 
-        if (InterlinkService && InterlinkService->isInterlinked()) {
-            InterlinkService -> setStructure(Str);
-        }
+        doInterlinkSyncStructure(Str);
     } catch (std::exception &e) {
         if (indk::System::getVerbosityLevel() > 0) std::cerr << "Error parsing structure: " << e.what() << std::endl;
     }
@@ -1014,11 +1037,25 @@ std::vector<indk::Neuron*> indk::NeuralNet::getEnsemble(const std::string& ename
 
 uint64_t indk::NeuralNet::getTotalParameterCount() {
     uint64_t count = 0;
+
     for (const auto& n: Neurons) {
+        for (uint64_t e = 0; e < n.second->getEntriesCount(); e++) {
+            count += n.second->getEntry(e)->getSynapsesCount() * n.second->getDimensionsCount();
+        }
+
+        for (uint64_t r = 0; r < n.second->getReceptorsCount(); r++) {
+            count += n.second->getReceptor(r)->getReferencePosScopes().size() * n.second->getDimensionsCount();
+        }
+
         count += n.second->getReceptorsCount() * n.second->getDimensionsCount();
     }
 
     return count;
+}
+
+uint64_t indk::NeuralNet::getModelSize() {
+    uint64_t count = getTotalParameterCount();
+    return count*sizeof(float);
 }
 
 int indk::NeuralNet::getInstanceCount() {

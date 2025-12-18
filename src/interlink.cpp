@@ -9,6 +9,7 @@
 
 #include <indk/interlink.h>
 #include <indk/system.h>
+#include <facefull/bridge/web.hpp>
 #include <json.hpp>
 #include <httplib.h>
 #include <unistd.h>
@@ -19,14 +20,44 @@ indk::Interlink::Interlink() {
     Input = nullptr;
     Output = nullptr;
     Interlinked.store(false);
-    doInitInput(4408, 5);
+    StructureUpdated = false;
+    DataUpdated = false;
 }
 
-indk::Interlink::Interlink(int port, int timeout) {
-    Input = nullptr;
-    Output = nullptr;
-    Interlinked.store(false);
-    doInitInput(port, timeout);
+void indk::Interlink::doInitWebServer(const std::string& path, int port) {
+    WebThread = std::thread([this, port, path]() {
+        FacefullBridgeWeb bridge(path, port);
+
+        bridge.doEventAttach("load_structure", [this](const std::string& data, FacefullBridgeWeb::WebResponser &response) {
+            std::lock_guard<std::mutex> guard(StructureLock);
+            doEventResponse(Structure);
+        });
+
+        bridge.doEventAttach("update_structure", [this](const std::string& data, FacefullBridgeWeb::WebResponser &response) {
+            std::lock_guard<std::mutex> guard(StructureLock);
+            if (!StructureUpdated) return;
+            doEventResponse(Structure);
+            StructureUpdated = false;
+        });
+
+        bridge.doEventAttach("update_data", [this](const std::string& data, FacefullBridgeWeb::WebResponser &response) {
+            std::lock_guard<std::mutex> guard(DataLock);
+            if (!DataUpdated) return;
+
+            json j;
+            for (const auto& db: DataBatches) {
+                j.push_back(db);
+            }
+
+            doEventResponse(j.dump());
+
+            DataBatches.clear();
+            DataUpdated = false;
+        });
+
+        Interlinked.store(true);
+        bridge.doRunServer();
+    });
 }
 
 void indk::Interlink::doInitInput(int port, int _timeout) {
@@ -68,7 +99,7 @@ void indk::Interlink::doInitInput(int port, int _timeout) {
                 });
     });
 
-    Thread = std::thread([this, port, input]() {
+    DataThread = std::thread([this, port, input]() {
         input -> listen("0.0.0.0", port);
     });
 
@@ -110,12 +141,21 @@ void indk::Interlink::doSend(const std::string& command, const std::string& data
     }
 }
 
-void indk::Interlink::doUpdateStructure(const std::string &data) {
-    doSend("io_app_update_structure", data);
+void indk::Interlink::doUpdateStructure(const std::string &data, uint64_t pcount, uint64_t msize) {
+//    doSend("io_app_update_structure", data);
+    json j = json::parse(data);
+    j["parameter_count"] = pcount;
+    j["model_size"] = msize;
+    std::lock_guard<std::mutex> guard(StructureLock);
+    Structure = j.dump();
+    StructureUpdated = true;
 }
 
 void indk::Interlink::doUpdateModelData(const std::string &data) {
-    doSend("io_app_update_model_data", data);
+//    doSend("io_app_update_model_data", data);
+    std::lock_guard<std::mutex> guard(DataLock);
+    DataBatches.push_back(data);
+    DataUpdated = true;
 }
 
 void indk::Interlink::doUpdateMetrics(const std::string &data) {
@@ -131,12 +171,13 @@ std::string indk::Interlink::getStructure() {
     return Structure;
 }
 
-bool indk::Interlink::isInterlinked() {
+bool indk::Interlink::isInterlinked() const {
     return Interlinked.load();
 }
 
 indk::Interlink::~Interlink() {
-    Thread.detach();
+    WebThread.detach();
+    DataThread.detach();
     delete (httplib::Server*)Input;
     delete (httplib::Client*)Output;
 }

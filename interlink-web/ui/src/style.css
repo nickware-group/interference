@@ -1,0 +1,864 @@
+
+:root {
+    --main-component-bg-color: #242424;
+    --windowheader-bg-color: #2b2c33;
+    --panel-toolbar-bg-color: #323335;
+    --toolpanel-border-color: #252525;
+    --toolbutton-bg-color: #595959;
+    --toolbutton-bg-hover-color: #5B6777;
+    --detailslist-bg-color: #2D2F31;
+    --detailslist-border-bg-color: #212121;
+    --creationpanel-bg-color: #aaa;
+    --creationpanel-bg-hover-color: #939393;
+    --creationpanel-selected-bg-color: #6e6e6e;
+    --neuronmodel-bg-color: #272835a6;
+    --interlinkpanel-inactive-bg-color: #9276f6;
+    --interlinkpanel-inactive-bg-hover-color: #7a61d3;
+    --interlinkpanel-disconnected-bg-color: #c53e80;
+    --interlinkpanel-disconnected-bg-hover-color: #862b58;
+    --dashboardpanel-bg-color: #52409D;
+    --dashboard-bg-two-color: #2b80ff7a;
+    --dashboard-bg-three-color: #1b3147;
+    --mainsettings-bg-color: #0f151d;
+    --interlinkpanel-host-font-color: #cbcbcb;
+    --page-bg-color: #1E1F22;
+    --scrollbox-bg-color: #2B2D30;
+    --scrollbar-bg-color: #1a1c20b8;
+    --toolbar-bg-color: #2B2D30;
+}
+
+#CS1, #CS3 {
+    position: relative !important;
+}
+
+.WindowHeader {
+    height: 70px;
+}
+
+.HeaderButton {
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
+    background: transparent;
+    transition: 0.1s;
+    margin-right: 0;
+    font-size: 22px;
+}
+
+.HeaderButton:hover {
+    background-color: var(--toolbutton-bg-hover-color);
+}
+
+.MenuButton::before {
+    content: '\F035C';
+}
+
+.ToolPanel {
+    width: 45px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    background-color: var(--toolbar-bg-color);
+}
+
+.ToolPanel.Left {
+    border-right: 1px solid var(--toolpanel-border-color);
+}
+
+.ToolButton {
+    margin-top: 20px;
+}
+
+.ToolButton.Bottom {
+    bottom: 0;
+    position: absolute;
+    margin-bottom: 20px;
+}
+
+.ToolButton.Selected {
+    background-color: var(--toolbutton-bg-color) !important;
+}
+
+.ToolPanel.Left > .ToolButton:nth-child(1):before {
+    content: '\F15FC';
+}
+
+.ToolPanel.Left > .ToolButton:nth-child(2):before {
+    content: '\F15B6';
+}
+
+.ToolPanel.Left > .ToolButton:nth-child(3):before {
+    content: '\F096A';
+}
+
+.ToolPanel.Left > .ToolButton:nth-child(4):before {
+    content: '\F076A';
+}
+
+.ToolPanel.Right {
+    border-left: 1px solid var(--toolpanel-border-color);
+}
+
+.ToolPanel.Right > .ToolButton:nth-child(1):before {
+    content: '\F02FD';
+}
+
+.ElementList {
+    width: 200px;
+    /*flex-shrink: 0 !important;*/
+    margin-left: 0;
+    margin-right: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.ElementList > .Box {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.ElementList .List li {
+    background-color: transparent;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    font-size: 12px;
+    margin-left: 0 !important;
+}
+
+.ElementList .List li > div:first-child {
+    margin-left: 25px;
+}
+
+.ElementList .List li > div:last-child {
+    text-align: left;
+    position: absolute;
+}
+
+.Box.Grid.MainBox {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.DetailsList {
+    width: 340px;
+    border-left: 1px solid var(--toolpanel-border-color);
+    flex-shrink: 0 !important;
+    margin-right: 0;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 2px solid var(--toolpanel-border-color);
+}
+
+.Toolbar {
+    width: 100%;
+    display: flex;
+    align-content: center;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.Toolbar.Additional {
+    border-bottom: 2px solid #1e2938;
+    background-color: #242c39;
+    justify-content: center;
+}
+
+.Tabs.Structures {
+    padding: 0;
+    margin-bottom: 0;
+}
+
+.Tabs.Structures > div {
+    border-radius: 0;
+    margin-right: 0;
+    padding: 24px 0;
+    background-color: transparent;
+    font-size: 15px;
+}
+
+.Tabs.Structures > div:hover {
+    background-color: transparent;
+    color: var(--main-font-disabled-color)
+}
+
+.Tabs.Structures > div.Selected {
+    background-color: transparent;
+    color: var(--main-component-additional-color)
+}
+
+.HeaderButtonsBlock {
+    position: relative;
+}
+
+.HeaderButtonsBlock.CreationPanel {
+    justify-content: flex-start;
+    background-color: var(--creationpanel-bg-color);
+    width: auto;
+    border-radius: 6px;
+    /*margin-bottom: 10px;*/
+    height: auto;
+    top: auto;
+    left: 0;
+    right: auto;
+    /*margin-left: 60px;*/
+    margin-right: 20px;
+}
+
+.HeaderButtonsBlock.CreationPanel > div:hover {
+    background-color: var(--creationpanel-bg-hover-color);
+}
+
+.HeaderButtonsBlock.CreationPanel > .HeaderButton:nth-child(1):before {
+    content: '\F01BF';
+}
+
+.HeaderButtonsBlock.CreationPanel > .HeaderButton:nth-child(2):before {
+    content: '\F0418';
+}
+
+.HeaderButtonsBlock.CreationPanel > .HeaderButton:nth-child(3):before {
+    content: '\F0419';
+}
+
+.HeaderButtonsBlock.CreationPanel > .HeaderButton:nth-child(4):before {
+    content: '\F0418';
+    transform: rotate(180deg);
+}
+
+.HeaderButtonsBlock.CreationPanel > .HeaderButton:nth-child(5):before {
+    content: '\F055E';
+}
+
+.InterlinkPanel {
+    background-color: var(--interlinkpanel-inactive-bg-color);
+    width: 40%;
+    max-width: 600px;
+    min-width: 300px;
+    border-radius: 6px;
+    text-align: center;
+    padding: 5px 0;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.InterlinkPanel #ICN {
+    font-size: 13px;
+    margin: 0 5px;
+}
+
+.InterlinkPanel #ICH {
+    font-size: 13px;
+    margin: 0 5px;
+    color: var(--interlinkpanel-host-font-color);;
+}
+
+.HeaderButtonsBlock {
+    margin-left: 8px;
+    margin-right: 8px;
+}
+
+.InterlinkPanel.Disconnected {
+    background-color: var(--interlinkpanel-disconnected-bg-color);
+}
+
+.InterlinkPanel:hover {
+    background-color: var(--interlinkpanel-inactive-bg-hover-color);
+}
+
+.InterlinkPanel.Disconnected:hover {
+    background-color: var(--interlinkpanel-disconnected-bg-hover-color);
+}
+
+.HeaderButtonsBlock > .ThemeSwitch.DarkMode:before {
+    content: '\F0594';
+}
+
+.HeaderButtonsBlock > .ThemeSwitch.LightMode:before {
+    content: '\F05A8';
+}
+
+.ElementList .List {
+    margin: 0;
+}
+
+.DetailsList .List {
+    margin: 0;
+}
+
+.DetailsList .Scrolldata {
+    padding-top: 0 !important;
+}
+
+.DetailsList li {
+    padding-top: 0;
+    padding-bottom: 0;
+    border-bottom: 1px solid var(--detailslist-border-bg-color);
+}
+
+.DetailsList li > div {
+    width: 100%;
+    font-size: 12px;
+}
+
+.DetailsList li > label, .DetailsListButtonWrapper {
+    width: 100%;
+    min-width: 146.5px;
+}
+
+.DetailsList li > label > .Edit {
+    width: 100%;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 12px;
+    background-color: var(--detailslist-bg-color);
+    border: #21272E;
+    height: 35px;
+}
+
+.DetailsList li > div:nth-child(1) {
+    margin-left: 30px;
+}
+
+.DetailsList li > div:nth-child(3) {
+    text-align: left;
+    position: absolute;
+    width: auto;
+    margin-left: 0;
+    /*display: none;*/
+}
+
+.CreationPanel.ItemPicker {
+    position: absolute;
+    width: 165px;
+    bottom: 53px;
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+    /*margin: 0 0 0 60px;*/
+}
+
+.CreationPanel.ItemPicker > div:after {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.CreationPanel.ItemPicker > div.Selected {
+    background-color: var(--creationpanel-selected-bg-color);
+}
+
+.CreationPanel.ItemPicker > div {
+    margin: 0;
+    background-color: transparent;
+    width: 33px;
+    height: 33px;
+}
+
+.CreationPanel .HeaderButton {
+    font-size: 17px;
+}
+
+.NeuronDetails {
+    height: 100%;
+    margin: 0;
+}
+
+.NeuronModel {
+    height: 340px;
+    flex-shrink: 0;
+}
+
+.NeuronModelChart {
+
+}
+
+.DetailsListButtonWrapper {
+    height: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.HeaderButton.Plus::before {
+    content: '\F0415';
+}
+
+.HeaderButton.Minus::before {
+    content: '\F0374';
+}
+
+#NMC1, #NMC3 {
+    background-color: var(--neuronmodel-bg-color);
+}
+
+.PopupMenu > ul li {
+    cursor: default;
+}
+
+.InterlinkSettingsWindow {
+    height: 400px;
+}
+
+.MainBlock {
+    height: 100%;
+    width: 100%;
+    position: relative !important;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.MainBlock .ViewerBox {
+    height: 100%;
+    width: 100%;
+    position: relative !important;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.ItemMetricsPanel {
+    width: 100%;
+    height: 300px;
+    border-top: 2px solid var(--toolpanel-border-color);
+    background-color: var(--scrollbox-bg-color);
+    /*padding: 10px;*/
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+#IMC {
+    max-height: 240px;
+    max-width: 100%;
+}
+
+.Combobox.MetricRange {
+    font-size: 12px;
+    /*width: 100%;*/
+    height: 35px;
+    outline: none !important;
+    flex-shrink: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.PanelToolbar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    /*height: 60px;*/
+    flex-shrink: 0;
+    background-color: var(--panel-toolbar-bg-color);
+    padding: 10px;
+    justify-content: space-between;
+}
+
+.PanelToolbar.Metrics > div {
+    margin-right: 10px;
+}
+/*.MetricsToolbar > div:nth-child(2) {*/
+/*    margin-left: 0;*/
+/*    margin-right: 0;*/
+/*}*/
+
+.MetricsChart {
+    width: 100%;
+    height: 240px;
+}
+
+.DataSourceList > li {
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.PanelBox {
+    border-right: 1px solid var(--toolpanel-border-color);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.BottomList {
+    height: 300px;
+    border-top: 1px solid var(--toolpanel-border-color);
+    flex-shrink: 0 !important;
+}
+
+.cy-context-menus-cxt-menuitem {
+    background-color: transparent;
+    color: var(--main-font-disabled-color);
+    padding: 6px 20px;
+}
+
+.cy-context-menus-cxt-menuitem:hover {
+    background-color: var(--main-component-disabled-bg-color);
+    color: var(--main-font-color);
+}
+
+.cy-context-menus-cxt-menuitem:enabled {
+    color: var(--main-font-color);
+}
+
+.cy-context-menus-cxt-menu {
+    border: none;
+    background-color: var(--main-popup-bg-color);
+    border-radius: 8px;
+}
+
+
+.AccountCaption {
+    /*font-family: 'Open Sans', sans-serif;*/
+    font-family: 'MainFont_PTSans', sans-serif;
+    width: auto;
+    height: 30px;
+    padding: 0 36px;
+    font-size: 12px;
+    border-radius: 40px;
+}
+
+.AccountCaption:hover {
+    /*background-color: rgb(8, 39, 66);*/
+}
+
+.AccountCaption.Online #AUN:after {
+    font-family: "Material Design Icons", sans-serif;
+    content: '\F40A';
+    font-size: 13px;
+    transform: rotate(90deg);
+    display: inline-block;
+}
+
+.AccountCaption.Subscription {
+    /*color: rgba(251, 102, 20, 0.67);*/
+    /*border: 2px solid rgba(251, 102, 20, 0.67);*/
+}
+
+.AccountCaption #AUA {
+    width: 17px;
+    height: 17px;
+    vertical-align: middle;
+    background-color: #060a0f;
+    border-radius: 999px;
+    margin-right: 10px;
+    display: flex;
+    font-size: 10px;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--main-font-color);
+    font-family: 'RobotoL', sans-serif;
+    position: relative;
+}
+
+.AccountCaption #AUA .AvatarRing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    left: -2px;
+    right: -2px;
+    border-radius: 999px;
+    z-index: -2;
+    background: #aaa;
+}
+
+.AccountCaption.Subscription #AUA .AvatarRing, #UAA.Subscription .AvatarRing {
+    background: linear-gradient(219deg, #0080ff, #ff5a00) !important;
+}
+
+.MainSettings {
+    width: 60%;
+    height: 90%;
+    min-width: 600px;
+    max-width: 1000px;
+    min-height: 400px;
+    max-height: 800px;
+    background-color: var(--mainsettings-bg-color);
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+}
+
+.MainSettings .Scrolling {
+    background-color: var(--mainsettings-bg-color);
+    padding: 0 10px;
+    margin: 0;
+}
+
+.AlertCaption.SubWindowHeader {
+    height: 50px;
+}
+
+.AlertButtons.SettingsButtons {
+    justify-content: flex-end;
+    flex-shrink: 0;
+    margin: 30px 15px;
+    width: auto;
+    position: relative;
+    bottom: 0;
+}
+
+.AlertButtons.SettingsButtons > div {
+    width: 100px;
+}
+
+.Grid.StatsBlock {
+    width: 560px;
+    height: 370px;
+}
+
+.Grid.StatsBlock:last-child {
+    height: auto;
+}
+
+.Grid.Stats.First > div {
+    background-color: var(--dashboardpanel-bg-color);
+}
+
+.Grid.Stats > div {
+    /*flex-shrink: 0 !important;*/
+    width: 100%;
+    height: auto;
+}
+
+.Grid.Stats .Label {
+    /*flex-shrink: 0 !important;*/
+    font-size: 30px;
+    text-align: center;
+}
+
+.ProjectName {
+    font-size: 30px;
+    margin-bottom: 30px;
+}
+
+.StatsWrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-right: 30px;
+}
+
+.WelcomeLabel {
+    position: fixed;
+    font-size: 53px;
+    line-height: 1.4em;
+    top: 240px;
+    left: 90px;
+}
+
+.SettingsBlock:not(:last-child) {
+    margin-bottom: 30px;
+}
+
+.wrapper {
+    position: absolute;
+    z-index: 1;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+.base {
+    position: absolute;
+    /*filter: blur(90px);*/
+    opacity: 0.8;
+}
+
+.one {
+    border-radius: 100%;
+    background-color: var(--dashboard-bg-two-color);
+    bottom: 304px;
+    left: 403px;
+    width: 1px;
+    height: 1px;
+    box-shadow: 0 0 930px 297px var(--dashboard-bg-two-color);
+    animation: fly 12s linear infinite;
+    transform: rotate(0) translate(80px) rotate(0);
+}
+
+.two {
+    /*width: 1px;*/
+    /*height: 1px;*/
+    /*height: 1007px;*/
+    border-radius: 100%;
+    background-color: var(--dashboard-bg-two-color);
+    bottom: 274px;
+    left: 1146px;
+    box-shadow: 0 0 1830px 265px var(--dashboard-bg-two-color);
+    width: 1px;
+    height: 1px;
+    /*background: radial-gradient(circle, #2b80ffba 0%, rgba(255,255,255,0) 100%);*/
+    /*background-position: 100px 100px;*/
+    /*background-repeat: no-repeat;*/
+}
+
+.three {
+    /*border-radius: 100%;*/
+    border-radius: 100%;
+    background-color: var(--dashboard-bg-three-color);
+    bottom: 650px;
+    left: 619px;
+    width: 1px;
+    height: 1px;
+    box-shadow: 0 0 436px 401px var(--dashboard-bg-three-color);
+    animation: flyPlus 8s linear infinite;
+    transform: rotate(0) translate(100px) rotate(0);
+}
+
+@keyframes fly {
+    100% {
+        transform:rotate(1turn) translate(100px) rotate(-1turn);
+    }
+}
+
+@keyframes flyPlus {
+    100% {
+        transform:rotate(-1turn) translate(100px) rotate(1turn);
+    }
+}
+
+.AlertButtons.Small .Button {
+    width: 100px;
+}
+
+.PanelToolbar .HeaderButton {
+    margin-top: 0;
+}
+
+.PanelToolbar.DataScopes > .HeaderButton:nth-child(2):before {
+    content: '\F0A7A';
+}
+
+.LogoWrapper {
+    height: 64px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.IconLogo {
+    width: 64px;
+    height: 64px;
+    background-image: url("res/logo1-64.png");
+    margin-right: 20px;
+}
+
+.LogoName {
+    font-size: 18px;
+}
+
+.Copyright {
+    margin-top: 15px;
+}
+
+.Alert.Login {
+    width: 100%;
+    height: 100%;
+    border-top: none;
+}
+
+.Alert.Login .LoginScreen {
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+
+.Alert.Login .LoginScreen > div {
+    width: 100%;
+}
+
+.Alert.Login .LoginScreen .LoginLogo {
+    background-image: url("res/logo1-512.png");
+    width: 256px;
+    height: 256px;
+    background-size: contain;
+}
+
+.Alert.Login .LoginScreen > div:nth-child(1) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #0d2a3f;
+}
+
+.Alert.Login .LoginScreen > div:nth-child(2) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #001623;
+}
+
+.Alert.Login .LoginWrapper .Label.Header {
+    font-size: 20px;
+    margin-bottom: 15px;
+    color: #f3f3f3 !important;
+}
+
+.Alert.Login .LoginWrapper {
+
+}
+
+.Alert.Login .LoginWrapper .Label {
+    color: #f3f3f3 !important;
+}
+
+.Label.Username {
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+.Link {
+    margin-bottom: 15px;
+}
+
+.Link.Caution {
+    color: #f16967;
+    /*color: var(--main-caution-color);*/
+}
+
+.Link.Caution:hover {
+    color: #ee807e;
+}
+
+.LoadingIndicator {
+    font-family: "Material Design Icons", sans-serif;
+    font-size: 75px;
+    width: 75px;
+    height: 75px;
+    color: var(--main-component-additional-color);
+    animation: loading-indicator 2s infinite cubic-bezier(0.37, 0.33, 0.31, 0.97);
+}
+
+.LoadingIndicator:before {
+    content: "\F0772";
+}
+
+@keyframes loading-indicator {
+    0% {
+        transform: rotate(0deg);
+    }
+    50% {
+        transform: rotate(180deg);
+    }
+    100% {
+        transform: rotate(359deg);
+    }
+}
+
+.DesignColorPicker > div:nth-child(1) {
+    background-color: #0c1b41;
+}
+
+.DesignColorPicker > div:nth-child(2) {
+    background-color: #cccccc;
+}

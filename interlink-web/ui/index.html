@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Interference Interlink Web</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+        <script src="src/facefull/facefull.min.js" charset="utf-8"></script>
+        <script src="src/cytoscape/cytoscape.js" charset="utf-8"></script>
+        <script src="src/cytoscape/cytoscape-canvas.js" charset="utf-8"></script>
+        <script src="src/cytoscape/klay.js"></script>
+        <script src="src/cytoscape/cytoscape-klay.js" charset="utf-8"></script>
+        <script src="src/cytoscape/cytoscape-grid-guide.js" charset="utf-8"></script>
+        <script src="src/cytoscape/cytoscape-context-menus.js" charset="utf-8"></script>
+        <script src="src/chartjs/chart.js"></script>
+        <script src="src/chartjs/utils.js"></script>
+        <script src="src/chartjs/chartjs-plugin-zoom.js"></script>
+        <script src="src/app.js" charset="utf-8"></script>
+        <script src="src/frames.js" charset="utf-8"></script>
+        <script src="src/viewer.js" charset="utf-8"></script>
+        <script src="src/data.js" charset="utf-8"></script>
+        <script src="src/panels.js" charset="utf-8"></script>
+        <script src="src/neuron-model.js" charset="utf-8"></script>
+        <script src="src/neuron-metrics.js" charset="utf-8"></script>
+        <script src="src/interlink.js" charset="utf-8"></script>
+        <script src="src/settings.js" charset="utf-8"></script>
+        <script src="src/web-bridge.js" charset="utf-8"></script>
+        <link rel="stylesheet" href="src/facefull/facefull.min.css">
+        <link rel="stylesheet" href="src/chartjs/chart.min.css">
+        <link rel="stylesheet" href="src/cytoscape/cytoscape-context-menus.css">
+        <link rel="stylesheet" href="src/style.css">
+        <link rel="stylesheet" href="src/style_w.css">
+    </head>
+    <body>
+        <div id="W" class="Window">
+            <div id="WH" class="WindowHeader" onselectstart="return false">
+                <div class="Toolbar">
+                    <div id="IP1" class="HeaderButtonsBlock"></div>
+                    <div id="IC" class="InterlinkPanel TooltipTarget" onclick="" data-tooltip-text="Interlink Web connection (connected)" data-tooltip-width="150" data-tooltip-pos="bottom">
+                        <div id="ICH"></div> / <div id="ICN"></div>
+                    </div>
+                    <div id="IP2" class="HeaderButtonsBlock">
+                        <div id="TS" class="HeaderButton TooltipTarget ThemeSwitch DarkMode" onclick="doSwitchTheme()" data-tooltip-text="Switch dark mode / light mode" data-tooltip-width="80" data-tooltip-pos="left"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="G" class="GlobalArea">
+                <div class="MainMenu" style="display: none">
+                    <div id="MMI" class="MainMenuItems">
+                        <div class="TooltipTarget" data-pagename="0"></div>
+                    </div>
+                </div>
+                <div class="WorkArea">
+                    <div id="P0" class="Page" style="display: flex;">
+                        <div class="Box Grid MainBox">
+                            <div id="LTP1" class="ToolPanel Left">
+                                <div class="HeaderButton ToolButton TooltipTarget" onclick="doSwitchLeftTopPanel(FManager.getCurrentFrameID(), 0)" data-tooltip-text="Neurons" data-tooltip-width="90" data-tooltip-pos="right"></div>
+                                <div class="HeaderButton ToolButton TooltipTarget" onclick="doSwitchLeftTopPanel(FManager.getCurrentFrameID(), 1)" data-tooltip-text="Entries" data-tooltip-width="90" data-tooltip-pos="right"></div>
+                                <div class="HeaderButton ToolButton TooltipTarget" onclick="doSwitchLeftTopPanel(FManager.getCurrentFrameID(), 2)" data-tooltip-text="Outputs" data-tooltip-width="90" data-tooltip-pos="right"></div>
+                                <div class="HeaderButton ToolButton Bottom TooltipTarget" onclick="doSwitchLeftBottomPanel(FManager.getCurrentFrameID(), 0)" data-tooltip-text="Data scopes" data-tooltip-width="90" data-tooltip-pos="right"></div>
+                            </div>
+                            <div class="PanelBox">
+                                <div id="ELP1" class="Box ElementList">
+                                    <div class="PanelToolbar">Neurons</div>
+                                    <div class="Box Scrolling" data-scrollboxname="ELSB1">
+                                        <div class="Scrolldata">
+                                            <ul class="List Selectable" data-listname="EL1"></ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="ILP1" class="Box ElementList">
+                                    <div class="PanelToolbar">Entries</div>
+                                    <div class="Box Scrolling" data-scrollboxname="ILSB1">
+                                        <div class="Scrolldata">
+                                            <ul class="List Selectable" data-listname="IL1"></ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="OLP1" class="Box ElementList">
+                                    <div class="PanelToolbar">Outputs</div>
+                                    <div class="Box Scrolling" data-scrollboxname="OLSB1">
+                                        <div class="Scrolldata">
+                                            <ul class="List Selectable" data-listname="OL1"></ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="DLP1" class="Box ElementList BottomList">
+                                    <div class="PanelToolbar DataScopes"><div>Model lifetime</div><div class="HeaderButton ToolButton TooltipTarget" onclick="doDeleteAllMetrics()" data-tooltip-text="Delete all data scopes" data-tooltip-width="90" data-tooltip-pos="right"></div></div>
+                                    <div class="Box Scrolling" data-scrollboxname="NMSB">
+                                        <div class="Scrolldata" style="padding: 0 !important;">
+                                            <ul class="List Selectable DataSourceList" data-listname="NMDL"></ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="MB1" class="MainBlock">
+                                <div id="CS1" class="ViewerBox"></div>
+                            </div>
+                            <div id="DRP1" class="DetailsList">
+                                <div class="PanelToolbar">Element details</div>
+                                <div class="Box NeuronDetails Scrolling" onclick="facefull.Scrollboxes['DLSB1'].doUpdateScrollbar()" data-scrollboxname="DLSB1">
+                                    <div class="Scrolldata">
+                                        <ul class="List" data-listname="PL1"></ul>
+                                    </div>
+                                </div>
+                                <div class="PanelToolbar">Neuron structure</div>
+                                <div class="NeuronModel">
+                                    <div class="NeuronModelChart">
+                                        <canvas id="NMC1" width="340" height="340" style="margin: 0 auto;"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="RTP1" class="ToolPanel Right">
+                                <div class="HeaderButton ToolButton TooltipTarget" onclick="doSwitchRightPanel(FManager.getCurrentFrameID(), 0)" data-tooltip-text="Details" data-tooltip-width="90" data-tooltip-pos="left"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="TT" class="Tooltip"></div>
+            <div id="MPM" class="PopupMenu" data-popupmenu="MPM">
+                <ul><li onclick="doExportStructure()">Export structure...</li></ul>
+                <ul><li class="Separator"></li></ul>
+                <ul><li class="Caution" onclick="doAppExit()">Exit</li></ul>
+            </div>
+            <div id="OV" class="Overlay"></div>
+            <div id="AE" class="Alert Hidden Rounded">
+                <div class="AlertCaption"></div>
+                <div class="AlertText"></div>
+                <div class="AlertButtons">
+                    <div id="AB-OK" class="Button Rounded">OK</div>
+                    <div id="AB-Y" class="Button Rounded">Yes</div>
+                    <div id="AB-N" class="Button Rounded">No</div>
+                </div>
+            </div>
+            <div id="APC" class="Alert Hidden Rounded">
+                <div class="AlertCaption">Create new project</div>
+                <div class="AlertText">Enter project name:<label><input id="PNE" class="Edit Rounded"></label></div>
+                <div class="AlertButtons">
+                    <div class="Button Rounded" onclick="doCreateProject()">OK</div>
+                    <div class="Button Rounded" onclick="AlertHideCustom('APC')">Cancel</div>
+                </div>
+            </div>
+            <div id="NC" class="Alert Hidden Info Rounded">
+                <div class="AlertCaption"></div>
+                <div class="LoadingIndicator Centred"></div>
+            </div>
+            <div id="AAC" class="Alert Warning Hidden Rounded">
+                <div class="AlertCaption">Save changes</div>
+                <div class="AlertText">You have some unsaved changed. Save it now and exit or exit without saving?</div>
+                <div class="AlertButtons Small">
+                    <div class="Button Rounded" onclick="doSaveProjectAndExit()">Yes</div>
+                    <div class="Button Rounded" onclick="doAppExitForce()">No</div>
+                    <div class="Button Rounded" onclick="AlertHideCustom('AAC')">Cancel</div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -31,18 +31,25 @@ set(TARGET_SOURCE
         include/indk/types.h
 )
 
-add_library(objlib OBJECT ${TARGET_SOURCE})
-set_property(TARGET objlib PROPERTY POSITION_INDEPENDENT_CODE ON)
+set(FFB_QT5WEBKIT_EXAMPLE_BUILD OFF)
+set(FFB_WXWIDGETS_EXAMPLE_BUILD OFF)
+set(FFB_WB_EXAMPLE_BUILD OFF)
+
+add_subdirectory(deps/facefull-bridge)
+add_library(indk_objlib OBJECT ${TARGET_SOURCE})
+set_property(TARGET indk_objlib PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+add_dependencies(indk_objlib facefull-bridge_static)
 
 function(build_indk LIBTYPE)
     message("Building ${LIBTYPE} variant")
 
     if(${LIBTYPE} STREQUAL shared)
         set(LIBTYPE "")
-        add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:objlib>)
+        add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:indk_objlib>)
     elseif(${LIBTYPE} STREQUAL static)
         set(LIBTYPE "_static")
-        add_library(${PROJECT_NAME}${LIBTYPE} STATIC $<TARGET_OBJECTS:objlib>)
+        add_library(${PROJECT_NAME}${LIBTYPE} STATIC $<TARGET_OBJECTS:indk_objlib>)
     endif()
 
     set_target_properties(${PROJECT_NAME}${LIBTYPE} PROPERTIES
@@ -51,9 +58,11 @@ function(build_indk LIBTYPE)
 
     include_directories(include/)
     include_directories(3rdparty/)
+    include_directories(deps/facefull-bridge/include)
 
     find_package(Threads REQUIRED)
     target_link_libraries(${PROJECT_NAME}${LIBTYPE} Threads::Threads -latomic)
+    target_link_libraries(${PROJECT_NAME}${LIBTYPE} ${CMAKE_CURRENT_BINARY_DIR}/deps/facefull-bridge/libfacefull-bridge_static.a)
 
     if (WIN32)
         target_link_libraries(${PROJECT_NAME}${LIBTYPE} -lws2_32)
@@ -87,6 +96,9 @@ endif()
 
 install(TARGETS ${PROJECT_NAME}_static ARCHIVE DESTINATION ${CMAKE_SOURCE_DIR}/dist/lib NAMELINK_COMPONENT)
 install(DIRECTORY include DESTINATION ${CMAKE_SOURCE_DIR}/dist)
+
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/interlink-web DESTINATION ${CMAKE_SOURCE_DIR}/dist/etc/)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/deps/facefull-bridge/deps/facefull/dist/ DESTINATION ${CMAKE_SOURCE_DIR}/dist/etc/interlink-web/ui/src/facefull)
 
 add_subdirectory(samples/test)
 add_subdirectory(samples/vision)
