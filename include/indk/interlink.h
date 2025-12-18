@@ -45,7 +45,7 @@ namespace indk {
         Interlink();
         void doInitWebServer(const std::string& path, int port);
         void doInitInput(int port, int timeout);
-        void doUpdateStructure(const std::string&);
+        void doUpdateStructure(const std::string&, uint64_t pcount, uint64_t msize);
         void doUpdateModelData(const std::string&);
         void doUpdateMetrics(const std::string&);
         void setStructure(const std::string&);

@@ -141,10 +141,13 @@ void indk::Interlink::doSend(const std::string& command, const std::string& data
     }
 }
 
-void indk::Interlink::doUpdateStructure(const std::string &data) {
+void indk::Interlink::doUpdateStructure(const std::string &data, uint64_t pcount, uint64_t msize) {
 //    doSend("io_app_update_structure", data);
+    json j = json::parse(data);
+    j["parameter_count"] = pcount;
+    j["model_size"] = msize;
     std::lock_guard<std::mutex> guard(StructureLock);
-    Structure = data;
+    Structure = j.dump();
     StructureUpdated = true;
 }
 

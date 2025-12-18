@@ -52,13 +52,13 @@ void indk::NeuralNet::doInterlinkInit(int port, int timeout) {
 
 void indk::NeuralNet::doInterlinkWebInit(const std::string& path, int port) {
     InterlinkService -> doInitWebServer(path, port);
-    InterlinkService -> doUpdateStructure(getStructure());
+    InterlinkService -> doUpdateStructure(getStructure(), getTotalParameterCount(), getModelSize());
 }
 
 void indk::NeuralNet::doInterlinkSyncStructure(const std::string &data) {
     if (!InterlinkService->isInterlinked()) return;
-    if (data.empty()) InterlinkService -> doUpdateStructure(getStructure());
-    else InterlinkService -> doUpdateStructure(data);
+    if (data.empty()) InterlinkService -> doUpdateStructure(getStructure(), getTotalParameterCount(), getModelSize());
+    else InterlinkService -> doUpdateStructure(data, getTotalParameterCount(), getModelSize());
 }
 
 void indk::NeuralNet::doInterlinkSyncData(int mode, int instance) {
@@ -71,6 +71,8 @@ void indk::NeuralNet::doInterlinkSyncData(int mode, int instance) {
 
     json j, jm;
     uint64_t in = 0;
+
+    j["neurons"] = json::parse("{}");
 
     for (const auto &n: Neurons) {
         auto ppos = ppositions.find(n.first);
@@ -112,7 +114,7 @@ void indk::NeuralNet::doInterlinkSyncData(int mode, int instance) {
             jn["receptors"].push_back(jr);
         }
 
-        j["neurons"].push_back(jn);
+        j["neurons"][n.second->getName()] = jn;
         in++;
     }
 
@@ -324,9 +326,6 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vecto
  * @return Output signals.
  */
 std::vector<indk::OutputValue> indk::NeuralNet::doLearn(const std::vector<std::vector<float>>& Xx, bool prepare, const std::vector<std::string>& inputs, int instance) {
-    if (InterlinkService && InterlinkService->isInterlinked()) {
-        InterlinkService -> doUpdateStructure(getStructure());
-    }
     if (prepare) doReset(instance);
     return doSignalProcess(Xx, inputs, true, instance);
 }
@@ -1038,11 +1037,25 @@ std::vector<indk::Neuron*> indk::NeuralNet::getEnsemble(const std::string& ename
 
 uint64_t indk::NeuralNet::getTotalParameterCount() {
     uint64_t count = 0;
+
     for (const auto& n: Neurons) {
+        for (uint64_t e = 0; e < n.second->getEntriesCount(); e++) {
+            count += n.second->getEntry(e)->getSynapsesCount() * n.second->getDimensionsCount();
+        }
+
+        for (uint64_t r = 0; r < n.second->getReceptorsCount(); r++) {
+            count += n.second->getReceptor(r)->getReferencePosScopes().size() * n.second->getDimensionsCount();
+        }
+
         count += n.second->getReceptorsCount() * n.second->getDimensionsCount();
     }
 
     return count;
+}
+
+uint64_t indk::NeuralNet::getModelSize() {
+    uint64_t count = getTotalParameterCount();
+    return count*sizeof(float);
 }
 
 int indk::NeuralNet::getInstanceCount() {

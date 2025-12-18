@@ -118,6 +118,7 @@ int main() {
     std::cout << "Model ver             : " << NN->getVersion() << std::endl;
     std::cout << "Neuron count          : " << NN->getNeuronCount() << std::endl;
     std::cout << "Total parameter count : " << NN->getTotalParameterCount() << std::endl;
+    std::cout << "Model size            : " << NN->getModelSize() << " bytes" << std::endl;
     std::cout << "Compute Instance count: " << NN->getInstanceCount() << std::endl;
     std::cout << std::endl;
 

@@ -113,6 +113,7 @@ namespace indk {
         std::vector<indk::Neuron*> getNeurons();
         uint64_t getNeuronCount();
         uint64_t getTotalParameterCount();
+        uint64_t getModelSize();
         int getInstanceCount();
         ~NeuralNet();
     };
