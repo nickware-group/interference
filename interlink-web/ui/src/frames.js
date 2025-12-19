@@ -87,6 +87,7 @@ function DefaultFrame(id) {
 
         facefull.Lists["NMDL"].doAdd(["["+this.model_lifetime_list.length+"] "+str]);
         facefull.Scrollboxes["NMSB"].doUpdateScrollbar();
+        if (facefull.Lists["NMDL"].getState() === -1) this.last_structure_id = id;
     }
 
     this.doUpdateString = function(str) {
@@ -96,23 +97,6 @@ function DefaultFrame(id) {
     this.doImportViewer = function(data) {
         const pan = {...this.viewer.cs.pan()};
         const zoom = this.viewer.cs.zoom();
-
-        // let name = "CS" + this.id;
-        // let cs = cytoscape({
-        //     container: document.getElementById(name),
-        //     wheelSensitivity: 0.1,
-        //     zoom: 0.6,
-        // });
-        // const bottomLayer = cs.cyCanvas({
-        //     zIndex: -1
-        // });
-        // let canvas = bottomLayer.getCanvas();
-        // let context = canvas.getContext("2d");
-        // this.viewer = {
-        //     cs: cs,
-        //     canvas: canvas,
-        //     context: context
-        // }
 
         this.doUpdateViewer();
         this.viewer.cs.json(data);
@@ -162,26 +146,6 @@ function DefaultFrame(id) {
         this.viewer.cs.remove("node");
         this.viewer.cs.add(elements);
         this.viewer.cs.layout(KlayLayoutOptions).run();
-        // let nodes = this.viewer.cs.filter('node');
-        // console.log(nodes)
-
-        // for (let e in elements) {
-        //     let name = elements[e].data.id;
-        //     this.viewer.cs.nodes('node[id="'+name+'"]').align("top", "left")
-        // }
-
-        // this.viewer.cs.layout({
-        //     name: 'grid',
-        //     rows: 2,
-        //     cols: 2
-        // }).run();
-
-        // this.viewer.cs.fit();
-
-        // doApplyGrid(this.viewer.cs);
-
-        // nodes.select()
-        //cy.emit('tap node', nodes);
     }
 
     this.doInitNeuronModel = function(e, data = [], size = 0) {
@@ -213,7 +177,7 @@ function DefaultFrame(id) {
             this.doRedrawLists(h.structure_id);
 
             this.selected_elements = [];
-            this.last_structure_id = hid;
+            this.last_structure_id = h.structure_id;
         }
 
         let e = this.getLastSelectedElement();

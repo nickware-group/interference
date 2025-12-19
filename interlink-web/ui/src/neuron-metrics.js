@@ -76,61 +76,6 @@ function doShowMetrics(output_data) {
         }
         //options: getChartOptions(size),
     });
-
-    // if (NeuronModelChart === null) {
-    //
-    // } else {
-    //     console.log("updated");
-    //     NeuronModelChart.config.data = data;
-    //     NeuronModelChart.update('none');
-    //     NeuronModelChart.config.options = options;
-    //     NeuronModelChart.update('none');
-    // }
-}
-
-function doInitMetricsShowRanges(element = "") {
-    let current_selected = element;
-    if (current_selected === "") current_selected = FManager.getInterlinkFrame().getLastSelectedElement();
-    if (current_selected === "") return;
-
-    let size = 0;
-
-    // if (facefull.Lists["NMDL"].getState() >= 0)
-    //     size = NeuronMetricsTotals[current_selected][facefull.Lists["NMDL"].getState()];
-
-    console.log("metrics size", size)
-    facefull.Comboboxes["MRCB"].doClear();
-    NeuronMetricsRanges = [];
-
-    if (size === 0) {
-        facefull.Comboboxes["MRCB"].doAddItem(0);
-        NeuronMetricsRanges.push([0, 0]);
-    } else {
-        let steps = size / NeuronMetricsOutputStepSize;
-        let i;
-
-        for (i = 0; i+NeuronMetricsOutputStepSize < size; i += NeuronMetricsOutputStepSize) {
-            facefull.Comboboxes["MRCB"].doAddItem(i + " - " + (i+NeuronMetricsOutputStepSize));
-            NeuronMetricsRanges.push([i, i+NeuronMetricsOutputStepSize]);
-        }
-
-        //i -= NeuronMetricsOutputStepSize;
-        if (i < size) {
-            let etab = document.createElement("div");
-            facefull.Comboboxes["MRCB"].doAddItem(i + " - " + size);
-            NeuronMetricsRanges.push([i, size]);
-        }
-    }
-
-    facefull.Comboboxes["MRCB"].onChangeState = function(num) {
-        let range = NeuronMetricsRanges[num];
-        facefull.doEventSend("doLoadMetrics", current_selected+"|"+facefull.Lists["NMDL"].getState()+"|"+range[0]+"|"+range[1]);
-        if (element === "") doCreateParameterList(FManager.getInterlinkFrame().getLastSelectedElement());
-    };
-
-    // facefull.Comboboxes["MRCB"].setState(0);
-
-    console.log(NeuronMetricsRanges);
 }
 
 function doAddMetricsToList(info) {

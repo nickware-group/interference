@@ -77,19 +77,13 @@ void indk::NeuralNet::doInterlinkSyncData(int mode, int instance) {
     for (const auto &n: Neurons) {
         auto ppos = ppositions.find(n.first);
 
-        json jn, jnm;
+        json jn;
 
         jn["name"] = n.second->getName();
 
-        jnm["name"] = n.second->getName();
-        jnm["output_signal"] = json::parse("[]");
-
-        if (in < InterlinkDataBuffer.size()) {
-            for (const auto& o: InterlinkDataBuffer[in]) {
-                jnm["output_signal"].push_back(o);
-            }
+        if (!mode) {
+            jn["deviation"] = std::get<0>(n.second->doComparePattern(ppos->second));
         }
-        jm.push_back(jnm);
 
         for (int i = 0; i < n.second->getReceptorsCount(); i++) {
             json jr;
@@ -121,7 +115,6 @@ void indk::NeuralNet::doInterlinkSyncData(int mode, int instance) {
     InterlinkDataBuffer.clear();
 
     InterlinkService -> doUpdateModelData(j.dump());
-    InterlinkService -> doUpdateMetrics(jm.dump());
 }
 
 int64_t indk::NeuralNet::doFindEntry(const std::string& ename) {

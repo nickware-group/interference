@@ -179,6 +179,7 @@ function doCreateParameterList(name, type = "neuron", viewer = -1) {
     doAddPanelParameter(name, "Neuron size", info.size);
     doAddPanelParameter(name, "Dimensions", info.dimensions);
     doAddPanelParameter(name, "Inputs", info.input_signals);
+    doAddPanelParameter(name, "Deviation", data&&data.deviation!==undefined?data.deviation:"N/A");
     doAddPanelParameter(name, "Synapses", "", 0, 1);
 
     for (let i = 0; i < info.synapses.length; i++) {
@@ -188,9 +189,6 @@ function doCreateParameterList(name, type = "neuron", viewer = -1) {
 
             doAddPanelParameter(name, "Synapse cluster", "", 1, 1, {id: i});
             doAddPanelParameter(name, "Position", info.synapses[i].position, 2, 0, {type: "synapse", id: i});
-            // for (let p = 0; p < info.synapses[i].position.length; p++) {
-            //     doAddPanelParameter(name, (p>3?"a"+(p-3):position_letters[p]), info.synapses[i].position[p], 3, 0);
-            // }
             doAddPanelParameter(name, "Radius",  info.synapses[i].radius, 2, 0, {type: "synapse", id: i});
             doAddPanelParameter(name, "Neurotransmitter type",  info.synapses[i].neurotransmitter, 2, 0, {type: "synapse", id: i});
             doAddPanelParameter(name, "k1",  info.synapses[i].k1, 2, 0, {type: "synapse", id: i});
@@ -266,10 +264,6 @@ function doAddPanelParameter(name, label, value, level = 0, arrow = 0, info = {}
     else
         eedit.innerHTML = "<input type='text' class='Edit'>";
 
-    eedit.children[0].addEventListener("focusout", function(event) {
-        console.log("onfocusout");
-        doUpdateValues(name, event, label, info);
-    });
     eedit.children[0].value = value;
 
     if (info.type === "scope") {
@@ -281,45 +275,6 @@ function doAddPanelParameter(name, label, value, level = 0, arrow = 0, info = {}
     if (arrow === 0) {
         facefull.Lists["PL"+(viewer+1)].doAdd([label, {element: eedit}], level);
     } else {
-        // if (catlabels.includes(label) || ellabels.includes(label)) {
-        //     let ebuttonwrapper = document.createElement("div");
-        //     ebuttonwrapper.classList.add("DetailsListButtonWrapper");
-        //
-        //     let ebutton = document.createElement("div");
-        //     ebutton.classList.add("HeaderButton");
-        //
-        //     if (catlabels.includes(label)) {
-        //         ebutton.classList.add("Plus");
-        //         ebutton.classList.add("PopupMenuTarget");
-        //
-        //         if (label === "Synapses") {
-        //             ebutton.setAttribute("data-popupmenu", "SCPM");
-        //             ebutton.setAttribute("data-popupmenu-pos", "bottom-left");
-        //         } else if (label === "Receptors") {
-        //             ebutton.setAttribute("data-popupmenu", "RCPM");
-        //             ebutton.setAttribute("data-popupmenu-pos", "bottom-left");
-        //         }
-        //         new PopupMenu(ebutton);
-        //     } else if (ellabels.includes(label)) {
-        //         ebutton.classList.add("Minus");
-        //
-        //         ebutton.addEventListener("click", function() {
-        //             AlertShow("Delete item", "Do you what to delete "+label.toLowerCase()+"?", "warning", "YESNO", [function() {
-        //                 if (label === "Synapse" || label === "Synapse cluster") {
-        //                     doDeleteSynapse(info.id);
-        //                 } else if (label === "Receptor" || label === "Receptor cluster") {
-        //                     doDeleteReceptor(info.id);
-        //                 }
-        //             }, function(){}]);
-        //         });
-        //     }
-        //     ebuttonwrapper.appendChild(ebutton);
-        //
-        //     facefull.Lists["PL"+(viewer+1)].doAdd([label, {element: ebuttonwrapper}], level, {action: "arrow"});
-        // } else
-        {
-            facefull.Lists["PL"+(viewer+1)].doAdd([label, {element: eedit}], level, {action: "arrow"});
-        }
-
+        facefull.Lists["PL"+(viewer+1)].doAdd([label, {element: eedit}], level, {action: "arrow"});
     }
 }
