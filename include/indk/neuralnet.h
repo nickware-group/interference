@@ -44,7 +44,7 @@ namespace indk {
         StateSyncMap StateSyncList;
 
         int64_t doFindEntry(const std::string&);
-        std::vector<indk::Neuron*> doParseActiveNeurons(const std::vector<std::string>& inputs, int mode);
+        std::vector<indk::Neuron*> doParseActiveNeurons(const std::vector<std::string>& inputs, bool mode);
 
         std::vector<indk::Neuron*> LastActiveNeurons;
         std::string PrepareID;
@@ -60,7 +60,7 @@ namespace indk {
         void doInterlinkInit(int port = 4408, int timeout = 5);
         void doInterlinkWebInit(const std::string& path, int port = 8044);
         void doInterlinkSyncStructure(const std::string &data = "");
-        void doInterlinkSyncData(int mode, int instance);
+        void doInterlinkSyncData(bool mode, int instance);
         std::vector<float> doComparePatterns(int CompareFlag = indk::PatternCompareFlags::CompareDefault,
                                              int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin,
                                              int instance = 0);
@@ -78,14 +78,14 @@ namespace indk {
         void doIncludeNeuronToEnsemble(const std::string&, const std::string&);
 
         void doReset(int instance);
-        void doStructurePrepare(int mode = 0, int instance = 0);
+        void doStructurePrepare(bool mode = 0, int instance = 0);
 
         void doCreateInstance(int backend = indk::System::ComputeBackends::NativeCPU);
         void doCreateInstances(int count, int backend = indk::System::ComputeBackends::NativeCPU);
 
         std::vector<indk::OutputValue> doLearn(const std::vector<std::vector<float>>&, bool prepare = true, const std::vector<std::string>& inputs = {}, int instance = 0);
         std::vector<indk::OutputValue> doRecognise(const std::vector<std::vector<float>>&, bool prepare = true, const std::vector<std::string>& inputs = {}, int instance = 0);
-        void doLearnAsync(const std::vector<std::vector<float>>&, const std::function<void(std::vector<indk::OutputValue>)>& Callback = nullptr, bool prepare = true,
+        void doLearnAsync(const std::vector<std::vector<float>>&, const std::function<void(std::vector<indk::OutputValue>)>& callback = nullptr, bool prepare = true,
                           const std::vector<std::string>& inputs = {}, int instance = 0);
         void doRecogniseAsync(const std::vector<std::vector<float>>&, const std::function<void(std::vector<indk::OutputValue>)>& Callback = nullptr, bool prepare = true,
                               const std::vector<std::string>& inputs = {}, int instance = 0);

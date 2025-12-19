@@ -61,7 +61,7 @@ void indk::NeuralNet::doInterlinkSyncStructure(const std::string &data) {
     else InterlinkService -> doUpdateStructure(data, getTotalParameterCount(), getModelSize());
 }
 
-void indk::NeuralNet::doInterlinkSyncData(int mode, int instance) {
+void indk::NeuralNet::doInterlinkSyncData(bool mode, int instance) {
     if (!InterlinkService->isInterlinked()) return;
 
     std::map<std::string, std::vector<indk::Position>> ppositions;
@@ -196,14 +196,14 @@ void indk::NeuralNet::doIncludeNeuronToEnsemble(const std::string& name, const s
 }
 
 /**
- * Resets all neurons in the network.
- * See indk::Neuron::doReset() method for details.
+ * Resets all neurons in the instance (prepare for the new data).
+ * @param instance Instance ID.
  */
 void indk::NeuralNet::doReset(int instance) {
     InstanceManager.doResetInstance(instance);
 }
 
-std::vector<indk::Neuron*> indk::NeuralNet::doParseActiveNeurons(const std::vector<std::string>& inputs, int mode) {
+std::vector<indk::Neuron*> indk::NeuralNet::doParseActiveNeurons(const std::vector<std::string>& inputs, bool mode) {
     std::string id = std::to_string(mode);
     for (auto &i: inputs) id += i;
     if (PrepareID == id) return LastActiveNeurons;
@@ -258,7 +258,12 @@ std::vector<indk::Neuron*> indk::NeuralNet::doParseActiveNeurons(const std::vect
     return LastActiveNeurons;
 }
 
-void indk::NeuralNet::doStructurePrepare(int mode, int instance) {
+/**
+ * Prepare neural network structure for computing. Preparation involves neural network structure translation into Compute Instance.
+ * @param mode Learning mode (true) or inference mode (false).
+ * @param instance Instance ID.
+ */
+void indk::NeuralNet::doStructurePrepare(bool mode, int instance) {
     std::vector<std::string> entries;
     for (const auto &e: Entries) entries.push_back(e.first);
     auto aneurons = doParseActiveNeurons(entries, mode);
@@ -267,10 +272,19 @@ void indk::NeuralNet::doStructurePrepare(int mode, int instance) {
     else InstanceManager.doTranslateToInstance(aneurons, Outputs, {}, PrepareID, instance);
 }
 
+/**
+ * Create Compute Instance.
+ * @param backend Compute Backend ID for creating instance.
+ */
 void indk::NeuralNet::doCreateInstance(int backend) {
     InstanceManager.doCreateInstance(backend);
 }
 
+/**
+ * Create multiple Compute Instances.
+ * @param count Number of the instances to create.
+ * @param backend Compute Backend ID for creating instance.
+ */
 void indk::NeuralNet::doCreateInstances(int count, int backend) {
     InstanceManager.doCreateInstances(count, backend);
 }
@@ -316,6 +330,9 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vecto
 /**
  * Start neural network learning process.
  * @param Xx Input data vector that contain signals for learning.
+ * @param prepare Reset instance (prepare for the new data).
+ * @param inputs A vector of signal entry names. The vector size must match the size of the Xx data vector. If the inputs vector is empty, all neural network entries are used.
+ * @param instance Instance ID to start computing on.
  * @return Output signals.
  */
 std::vector<indk::OutputValue> indk::NeuralNet::doLearn(const std::vector<std::vector<float>>& Xx, bool prepare, const std::vector<std::string>& inputs, int instance) {
@@ -326,6 +343,9 @@ std::vector<indk::OutputValue> indk::NeuralNet::doLearn(const std::vector<std::v
 /**
  * Recognize data by neural network.
  * @param Xx Input data vector that contain signals for recognizing.
+ * @param prepare Reset instance (prepare for the new data).
+ * @param inputs A vector of signal entry names. The vector size must match the size of the Xx data vector. If the inputs vector is empty, all neural network entries are used.
+ * @param instance Instance ID to start computing on.
  * @return Output signals.
  */
 std::vector<indk::OutputValue> indk::NeuralNet::doRecognise(const std::vector<std::vector<float>>& Xx, bool prepare, const std::vector<std::string>& inputs, int instance) {
@@ -337,55 +357,48 @@ std::vector<indk::OutputValue> indk::NeuralNet::doRecognise(const std::vector<st
  * Start neural network learning process asynchronously.
  * @param Xx Input data vector that contain signals for learning.
  * @param callback Callback function for output signals.
+ * @param prepare Reset instance (prepare for the new data).
+ * @param inputs A vector of signal entry names. The vector size must match the size of the Xx data vector. If the inputs vector is empty, all neural network entries are used.
+ * @param instance Instance ID to start computing on.
  */
 void indk::NeuralNet::doLearnAsync(const std::vector<std::vector<float>>& Xx, const std::function<void(std::vector<indk::OutputValue>)>& callback, bool prepare,
                                    const std::vector<std::string>& inputs, int instance) {
     InstanceManager.setMode(true, instance);
     if (prepare) doReset(instance);
-//    doSignalTransferAsync(Xx, callback, inputs);
+
+    std::function<void()> tCallback([this, Xx, inputs, instance, callback] () {
+        auto Y = doSignalProcess(Xx, inputs, false, instance);
+
+        if (callback) {
+            callback(Y);
+        }
+    });
+    std::thread CallbackThread(tCallback);
+    CallbackThread.detach();
 }
 
 /**
  * Recognize data by neural network asynchronously.
  * @param Xx Input data vector that contain signals for recognizing.
  * @param callback Callback function for output signals.
+ * @param prepare Reset instance (prepare for the new data).
+ * @param inputs A vector of signal entry names. The vector size must match the size of the Xx data vector. If the inputs vector is empty, all neural network entries are used.
+ * @param instance Instance ID to start computing on.
  */
 void indk::NeuralNet::doRecogniseAsync(const std::vector<std::vector<float>>& Xx, const std::function<void(std::vector<indk::OutputValue>)>& callback, bool prepare,
                                        const std::vector<std::string>& inputs, int instance) {
     InstanceManager.setMode(false, instance);
     if (prepare) doReset(instance);
-//    doSignalTransferAsync(Xx, callback, inputs);
-}
 
-/**
- * Get output signals.
- * @return Output signals vector.
- */
-std::vector<indk::OutputValue> indk::NeuralNet::doSignalReceive(const std::string& ensemble) {
-    std::vector<indk::OutputValue> ny;
-    std::vector<std::string> elist;
+    std::function<void()> tCallback([this, Xx, inputs, instance, callback] () {
+        auto Y = doSignalProcess(Xx, inputs, false, instance);
 
-    if (!ensemble.empty()) {
-        auto en = Ensembles.find(ensemble);
-        if (en == Ensembles.end()) return {};
-        elist = en -> second;
-        if (elist.empty()) return {};
-    }
-
-    for (const auto& oname: Outputs) {
-        auto n = Neurons.find(oname);
-        if (n != Neurons.end()) {
-            if (!elist.empty()) {
-                auto item = std::find_if(elist.begin(), elist.end(), [oname](const std::string &value) {
-                    return oname == value;
-                });
-                if (item == elist.end()) continue;
-            }
-
-//            ny.emplace_back(n->second->doSignalReceive().second, oname);
+        if (callback) {
+            callback(Y);
         }
-    }
-    return ny;
+    });
+    std::thread CallbackThread(tCallback);
+    CallbackThread.detach();
 }
 
 /**
