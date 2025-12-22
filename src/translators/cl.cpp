@@ -43,9 +43,9 @@ void* indk::Translators::CL::doTranslate(const std::vector<indk::Neuron*>& neuro
 }
 
 void indk::Translators::CL::doReset(indk::Translators::CL::ModelData *model) {
+#ifdef INDK_OPENCL_SUPPORT
     memset(model->Outputs, 0, sizeof(cl_float)*model->neuron_pool_size);
 
-#ifdef INDK_OPENCL_SUPPORT
     indk::Position *rpos, *spos;
     uint64_t px = 0, pxstart;
     uint64_t rx = 0, rxstart;
@@ -110,12 +110,14 @@ void indk::Translators::CL::doReset(indk::Translators::CL::ModelData *model) {
 }
 
 void indk::Translators::CL::doClear(indk::Translators::CL::ModelData *model) {
+#ifdef INDK_OPENCL_SUPPORT
     delete [] model->PairsInfo;
     delete [] model->ReceptorsInfo;
     delete [] model->NeuronsInfo;
     delete [] model->Inputs;
     delete [] model->Outputs;
     delete [] model->Times;
+#endif
     delete model;
 }
 
