@@ -4,14 +4,14 @@
     {
       "name": "N1",
       "size": 1000,
-      "dimensions": 3,
+      "dimensions": 2,
       "input_signals": ["E1", "E2"],
       "ensemble": "A1",
 
       "synapses": [
         {
           "type": "cluster",
-          "position": [500, 500, 0],
+          "position": [500, 500],
           "radius": 25,
           "neurotransmitter": "activation",
           "k1": 10
@@ -21,7 +21,7 @@
       "receptors": [
         {
           "type": "cluster",
-          "position": [500, 500, 0],
+          "position": [500, 500],
           "count": 15,
           "radius": 10
         }
@@ -30,14 +30,14 @@
     {
       "name": "N2",
       "size": 200,
-      "dimensions": 3,
+      "dimensions": 2,
       "input_signals": ["N1", "N6"],
       "ensemble": "A1",
 
       "synapses": [
         {
           "type": "cluster",
-          "position": [100, 100, 0],
+          "position": [100, 100],
           "radius": 30,
           "neurotransmitter": "activation",
           "k1": 30
@@ -46,7 +46,7 @@
       "receptors": [
         {
           "type": "cluster",
-          "position": [100, 100, 0],
+          "position": [100, 100],
           "count": 15,
           "radius": 10
         }
@@ -55,14 +55,14 @@
     {
       "name": "N3",
       "size": 201,
-      "dimensions": 3,
+      "dimensions": 2,
       "input_signals": ["N1", "N6"],
       "ensemble": "A1",
 
       "synapses": [
         {
           "type": "cluster",
-          "position": [100, 100, 0],
+          "position": [100, 100],
           "radius": 30,
           "neurotransmitter": "activation",
           "k1": 50
@@ -71,7 +71,7 @@
       "receptors": [
         {
           "type": "cluster",
-          "position": [100, 100, 0],
+          "position": [100, 100],
           "count": 15,
           "radius": 10
         }
@@ -80,7 +80,7 @@
     {
       "name": "N4",
       "size": 300,
-      "dimensions": 3,
+      "dimensions": 2,
       "input_signals": ["N3", "N5", "N6"],
       "latency": 1,
       "ensemble": "A1",
@@ -88,7 +88,7 @@
       "synapses": [
         {
           "type": "cluster",
-          "position": [150, 150, 0],
+          "position": [150, 150],
           "radius": 5,
           "neurotransmitter": "activation",
           "k1": 25
@@ -97,7 +97,7 @@
       "receptors": [
         {
           "type": "cluster",
-          "position": [150, 150, 0],
+          "position": [150, 150],
           "count": 15,
           "radius": 1
         }
@@ -106,14 +106,14 @@
     {
       "name": "N5",
       "size": 200,
-      "dimensions": 3,
+      "dimensions": 2,
       "input_signals": ["N2", "N4"],
       "ensemble": "A1",
 
       "synapses": [
         {
           "entry": 0,
-          "position": [100, 100, 0],
+          "position": [100, 100],
           "neurotransmitter": "activation",
           "k1": 100
         }
@@ -121,13 +121,13 @@
       "receptors": [
         {
           "type": "cluster",
-          "position": [100, 100, 0],
+          "position": [100, 100],
           "count": 15,
           "radius": 5
         },
         {
           "type": "cluster",
-          "position": [100, 100, 0],
+          "position": [100, 100],
           "count": 10,
           "radius": 10
         }
@@ -136,7 +136,7 @@
     {
       "name": "N6",
       "size": 100,
-      "dimensions": 3,
+      "dimensions": 2,
       "input_signals": ["N2", "N3", "N4"],
       "latency": 2,
       "ensemble": "A1",
@@ -144,7 +144,7 @@
       "synapses": [
         {
           "type": "cluster",
-          "position": [50, 50, 0],
+          "position": [50, 50],
           "radius": 50,
           "neurotransmitter": "activation",
           "k1": 100
@@ -153,13 +153,13 @@
       "receptors": [
         {
           "type": "cluster",
-          "position": [50, 50, 0],
+          "position": [50, 50],
           "count": 15,
           "radius": 30
         },
         {
           "type": "cluster",
-          "position": [50, 50, 0],
+          "position": [50, 50],
           "count": 10,
           "radius": 35
         }
@@ -169,5 +169,5 @@
   "output_signals": ["N6"],
   "name": "superstructure test net",
   "desc": "neural net structure for general testing",
-  "version": "1.3"
+  "version": "1.4"
 }

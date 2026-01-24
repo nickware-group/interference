@@ -58,24 +58,24 @@ namespace indk {
                 ReceptorParams *receptors;
                 float *position_buffer;
                 float *output;
+                uint64_t batch_size;
             } NeuronParams;
 
             typedef struct cpu_model_data {
                 std::map<std::string, NeuronParams*> objects;
                 std::vector<NeuronParams*> outputs;
                 indk::StateSyncMap sync_map;
-                uint64_t batch_size;
                 bool learning_mode;
             } ModelData;
 
             static NeuronParams* doTranslateNeuronToInstance(indk::Neuron *neuron, std::map<std::string, NeuronParams*>& objects);
 
             static void* doTranslate(const std::vector<indk::Neuron*> &neurons, const std::vector<std::string>& outputs, const indk::StateSyncMap& sync);
-            static void doReset(ModelData *model);
+            static void doReset(const std::vector<std::string> &neurons, ModelData *model);
             static void doClear(ModelData *model);
 
-            static std::vector<indk::OutputValue> getOutputValues(ModelData *model);
-            static std::map<std::string, std::vector<indk::Position>> getReceptorPositions(ModelData *model);
+            static std::vector<indk::OutputValue> getOutputValues(const std::vector<std::string> &neurons, ModelData *model);
+            static std::map<std::string, std::vector<indk::Position>> getReceptorPositions(const std::vector<std::string> &neurons, ModelData *model);
 
             static std::string getTranslatorName();
         };

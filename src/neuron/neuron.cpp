@@ -19,7 +19,6 @@ indk::Neuron::Neuron() {
     DimensionsCount = 0;
     ProcessingMode = indk::Neuron::ProcessingModes::ProcessingModeDefault;
     OutputMode = indk::Neuron::OutputModes::OutputModeStream;
-    Learned = false;
 }
 
 indk::Neuron::Neuron(const indk::Neuron &N) {
@@ -28,7 +27,6 @@ indk::Neuron::Neuron(const indk::Neuron &N) {
     DimensionsCount = N.getDimensionsCount();
     ProcessingMode = N.getProcessingMode();
     OutputMode = N.getOutputMode();
-    Learned = false;
     auto elabels = N.getEntries();
     for (int64_t i = 0; i < N.getEntriesCount(); i++) Entries.emplace_back(elabels[i], new Entry(*N.getEntry(i)));
     for (int64_t i = 0; i < N.getReceptorsCount(); i++) Receptors.push_back(new Receptor(*N.getReceptor(i)));
@@ -41,7 +39,6 @@ indk::Neuron::Neuron(unsigned int XSize, unsigned int DC, uint64_t latency, cons
     DimensionsCount = DC;
     ProcessingMode = indk::Neuron::ProcessingModes::ProcessingModeDefault;
     OutputMode = indk::Neuron::OutputModes::OutputModeStream;
-    Learned = false;
     for (auto &i: InputNames) {
         auto *E = new Entry();
         Entries.emplace_back(i, E);
@@ -74,16 +71,22 @@ void indk::Neuron::doCreateNewSynapse(const std::string& EName, std::vector<floa
  * @param R Cluster radius.
  */
 void indk::Neuron::doCreateNewSynapseCluster(const std::vector<float>& PosVector, unsigned R, float k1, int64_t Tl, int NT) {
+    if (PosVector.size() < 2) return;
+    std::vector<float> pos;
+
     float x = PosVector[0];
     float y = PosVector[1];
 
     float dfi = 360. / Entries.size();
     float fi = 0;
     float xr, yr;
+
     for (auto &ne: Entries) {
         xr = x + R * cos(fi/180*M_PI);
         yr = y + R * sin(fi/180*M_PI);
-        doCreateNewSynapse(ne.first, {xr, yr, 0}, k1, Tl, NT);
+        pos = {xr, yr};
+        if (PosVector.size() > 2) pos.insert(pos.end(), PosVector.begin()+2, PosVector.end());
+        doCreateNewSynapse(ne.first, pos, k1, Tl, NT);
         fi += dfi;
     }
 }
@@ -108,15 +111,22 @@ void indk::Neuron::doCreateNewReceptor(std::vector<float> PosVector) {
  * @param C Count of receptors in cluster.
  */
 void indk::Neuron::doCreateNewReceptorCluster(const std::vector<float>& PosVector, unsigned R, unsigned C) {
+    if (PosVector.size() < 2) return;
+    std::vector<float> pos;
+
     float x = PosVector[0];
     float y = PosVector[1];
+
     float dfi = 360. / C;
     float fi = 0;
     float xr, yr;
+
     for (int i = 0; i < C; i++) {
         xr = x + R * cos(fi/180*M_PI);
         yr = y + R * sin(fi/180*M_PI);
-        doCreateNewReceptor({xr, yr, 0});
+        pos = {xr, yr};
+        if (PosVector.size() > 2) pos.insert(pos.end(), PosVector.begin()+2, PosVector.end());
+        doCreateNewReceptor(pos);
         fi += dfi;
     }
 
@@ -132,14 +142,6 @@ void indk::Neuron::doCreateNewReceptorCluster(const std::vector<float>& PosVecto
 //    }
 }
 
-/**
- * Prepare synapses for new signal.
- */
-void indk::Neuron::doPrepare() {
-    for (auto E: Entries) E.second -> doPrepare();
-    for (auto R: Receptors) R -> doPrepare();
-}
-
 void indk::Neuron::doCreateNewScope(float output) {
     for (auto R: Receptors) R -> doCreateNewScope();
     OutputsPredefined.push_back(output);
@@ -147,16 +149,6 @@ void indk::Neuron::doCreateNewScope(float output) {
 
 void indk::Neuron::doChangeScope(uint64_t scope) {
     for (auto R: Receptors) R -> doChangeScope(scope);
-}
-
-/**
- * Reset neuron state. During the reset, the neuron parameters (time, receptors, synapses) will be reset to the default state.
- */
-void indk::Neuron::doReset() {
-    Learned = false;
-    for (auto E: Entries) E.second -> doPrepare();
-    for (auto R: Receptors) R -> doReset();
-    OutputsPredefined.clear();
 }
 
 /**
@@ -287,24 +279,13 @@ void indk::Neuron::setName(const std::string& NName) {
 }
 
 /**
- * Set neuron to `learned` state
- * @param LearnedFlag `Learned` state flag.
- */
-void indk::Neuron::setLearned(bool LearnedFlag) {
-    Learned = LearnedFlag;
-
-    if (Learned)
-        for (auto R: Receptors) R -> doLock();
-    else
-        for (auto R: Receptors) R -> doUnlock();
-}
-
-/**
  * Check if neuron is in `learned` state.
  * @return Neuron state.
  */
 bool indk::Neuron::isLearned() const {
-    return Learned;
+    bool learned = true;
+    for (const auto R: Receptors) learned &= !R->getReferencePosScopes().empty();
+    return learned;
 }
 
 std::vector<std::string> indk::Neuron::getLinkOutput() const {

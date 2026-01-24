@@ -36,16 +36,16 @@ namespace indk {
         ComputeInstanceManager() = default;
         void doCreateInstance(int backend = indk::System::ComputeBackends::NativeCPU);
         void doCreateInstances(int count, int backend = indk::System::ComputeBackends::NativeCPU);
-        void doTranslateToInstance(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string>& outputs, const indk::StateSyncMap &sync, const std::string& prepareid, int iid = 0);
-        void doRunInstance(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs, int iid = 0);
-        void doResetInstance(int iid = 0);
+        void doTranslateToInstance(const std::vector<indk::Neuron*> &neurons, const std::vector<std::string> &outputs, const indk::StateSyncMap &sync, const std::string& prepareid, int iid = 0);
+        void doRunInstance(const std::vector<indk::Neuron*> &neurons, const std::vector<std::vector<float>> &x, const std::vector<std::string> &inputs, int iid = 0);
+        void doResetInstance(const std::vector<std::string> &neurons, int iid = 0);
         void doClearInstance(int iid = 0);
         void doClearInstances();
         void setMode(bool learning, int iid = 0);
-        std::map<std::string, std::vector<indk::Position>> getReceptorPositions(int iid = 0);
-        std::vector<indk::OutputValue> getOutputValues(int iid = 0);
-        int getInstanceCount();
-        ~ComputeInstanceManager() = default;
+        std::map<std::string, std::vector<indk::Position>> getReceptorPositions(const std::vector<std::string> &neurons, int iid = 0);
+        std::vector<indk::OutputValue> getOutputValues(const std::vector<std::string> &neurons, int iid = 0);
+        int getInstanceCount() const;
+        ~ComputeInstanceManager();
     };
 }
 

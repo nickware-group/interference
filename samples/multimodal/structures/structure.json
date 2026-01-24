@@ -4,14 +4,14 @@
     {
       "name": "N1",
       "size": 1000,
-      "dimensions": 3,
+      "dimensions": 2,
       "input_signals": ["E1", "E2", "E3", "E4", "E5", "E6"],
       "ensemble": "A1",
 
       "synapses": [
         {
           "type": "cluster",
-          "position": [500, 500, 0],
+          "position": [500, 500],
           "radius": 500,
           "neurotransmitter": "activation",
           "k1": 2.2
@@ -21,7 +21,7 @@
       "receptors": [
         {
           "type": "cluster",
-          "position": [500, 500, 0],
+          "position": [500, 500],
           "count": 5,
           "radius": 5
         }
@@ -30,14 +30,14 @@
     {
       "name": "N2",
       "size": 500,
-      "dimensions": 3,
+      "dimensions": 2,
       "input_signals": ["E7"],
       "ensemble": "A1",
 
       "synapses": [
         {
           "entry": 0,
-          "position": [250, 250, 0],
+          "position": [250, 250],
           "neurotransmitter": "activation",
           "k1": 70
         }
@@ -46,7 +46,7 @@
       "receptors": [
         {
           "type": "cluster",
-          "position": [250, 250, 0],
+          "position": [250, 250],
           "count": 10,
           "radius": 15
         }
@@ -55,20 +55,20 @@
     {
       "name": "N3",
       "size": 1000,
-      "dimensions": 3,
+      "dimensions": 2,
       "input_signals": ["N1", "N2"],
       "ensemble": "A1",
 
       "synapses": [
         {
           "entry": 0,
-          "position": [510, 500, 0],
+          "position": [510, 500],
           "neurotransmitter": "activation",
           "k1": 1
         },
         {
           "entry": 1,
-          "position": [500, 510, 0],
+          "position": [500, 510],
           "neurotransmitter": "activation",
           "k1": 300
         }
@@ -77,7 +77,7 @@
       "receptors": [
         {
           "type": "cluster",
-          "position": [500, 500, 0],
+          "position": [500, 500],
           "count": 5,
           "radius": 5
         }
@@ -87,5 +87,5 @@
   "output_signals": ["N3"],
   "name": "multimodal",
   "desc": "neural net structure for interference multimodal sample",
-  "version": "1.0"
+  "version": "1.1"
 }

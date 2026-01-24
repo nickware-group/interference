@@ -23,8 +23,8 @@ void* indk::ComputeBackends::NativeCPU::doTranslate(const std::vector<indk::Neur
     return indk::Translators::CPU::doTranslate(neurons, outputs, sync);
 }
 
-void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, void *_model) {
-    auto model = (indk::Translators::CPU::ModelData*)_model;
+void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<indk::Neuron*> &neurons, const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, void *_model) {
+    auto model = static_cast<indk::Translators::CPU::ModelData*>(_model);
 
     float fisum, d, p;
     uint64_t csize = x[0].size();
@@ -34,9 +34,20 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
         throw indk::Error(indk::Error::EX_BACKEND_NOSIGNAL_ERROR);
     }
 
+    std::map<std::string, indk::Translators::CPU::NeuronParams*> local;
+
+    for (const auto &n: neurons) {
+        auto o = model->objects.find(n->getName());
+        if (o != model->objects.end()) {
+            local.insert(std::pair<std::string, indk::Translators::CPU::NeuronParams*>(n->getName(), o->second));
+        } else {
+            throw indk::Error(indk::Error::EX_BACKEND_CONSISTENCY_ERROR, "neuron with name "+n->getName()+" not translated");
+        }
+    }
+
     // linking necessary neural network inputs to neurons
     for (int i = 0; i < inputs.size(); i++) {
-        for (const auto &o: model->objects) {
+        for (const auto &o: local) {
             for (int j = 0; j < o.second->entry_count; j++) {
                 if (!o.second->entries[j].entry_type) {
                     if (o.second->entries[j].input_from == inputs[i]) o.second->entries[j].input = (void*)x[i].data();
@@ -49,19 +60,19 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
         }
     }
 
-    if (model->batch_size < csize) {
-        model -> batch_size = csize;
-        for (const auto &o: model->objects) {
+    for (const auto& o: local) {
+        if (o.second->batch_size < csize) {
             delete [] o.second->output;
-            o.second -> output = new float[model->batch_size];
-            memset(o.second->output, 0, sizeof(float)*model->batch_size);
+            o.second -> output = new float[csize];
+            memset(o.second->output, 0, sizeof(float)*csize);
+            o.second -> batch_size = csize;
         }
     }
 
     // main loop
-    while (done < model->objects.size()) {
+    while (done < local.size()) {
         bool processed = false;
-        for (const auto &o: model->objects) {
+        for (const auto &o: local) {
             if (o.second->t == csize) continue;
             if (!model->learning_mode) {
                 auto f = model->sync_map.find(o.second->name);
@@ -189,7 +200,7 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
         }
 
         if (!processed) {
-            throw indk::Error(indk::Error::EX_BACKEND_NATIVE_CPU_PROCESSING_ERROR, "objects done "+std::to_string(done)+", total objects "+std::to_string(model->objects.size())+", batch size"+std::to_string(model->batch_size));
+            throw indk::Error(indk::Error::EX_BACKEND_NATIVE_CPU_PROCESSING_ERROR, "objects done "+std::to_string(done)+", total objects "+std::to_string(local.size())+", batch size "+std::to_string(csize));
         }
     }
 
@@ -231,26 +242,26 @@ void indk::ComputeBackends::NativeCPU::doCompute(const std::vector<std::vector<f
     }
 }
 
-void indk::ComputeBackends::NativeCPU::doReset(void *model) {
-    indk::Translators::CPU::doReset((indk::Translators::CPU::ModelData*)model);
+void indk::ComputeBackends::NativeCPU::doReset(const std::vector<std::string> &neurons, void *model) {
+    indk::Translators::CPU::doReset(neurons, static_cast<indk::Translators::CPU::ModelData*>(model));
 }
 
 void indk::ComputeBackends::NativeCPU::doClear(void *model) {
-    indk::Translators::CPU::doClear((indk::Translators::CPU::ModelData*)model);
+    indk::Translators::CPU::doClear(static_cast<indk::Translators::CPU::ModelData*>(model));
 }
 
 void indk::ComputeBackends::NativeCPU::setMode(void *_model, bool learning) {
-    auto model = (indk::Translators::CPU::ModelData*)_model;
+    auto model = static_cast<indk::Translators::CPU::ModelData*>(_model);
     model -> learning_mode = learning;
 }
 
 void indk::ComputeBackends::NativeCPU::setParameters(indk::ComputeBackend::Parameters*) {
 }
 
-std::vector<indk::OutputValue> indk::ComputeBackends::NativeCPU::getOutputValues(void *model) {
-    return indk::Translators::CPU::getOutputValues((indk::Translators::CPU::ModelData*)model);
+std::vector<indk::OutputValue> indk::ComputeBackends::NativeCPU::getOutputValues(const std::vector<std::string> &neurons, void *model) {
+    return indk::Translators::CPU::getOutputValues(neurons, static_cast<indk::Translators::CPU::ModelData*>(model));
 }
 
-std::map<std::string, std::vector<indk::Position>> indk::ComputeBackends::NativeCPU::getReceptorPositions(void *model) {
-    return indk::Translators::CPU::getReceptorPositions((indk::Translators::CPU::ModelData*)model);
+std::map<std::string, std::vector<indk::Position>> indk::ComputeBackends::NativeCPU::getReceptorPositions(const std::vector<std::string> &neurons, void *model) {
+    return indk::Translators::CPU::getReceptorPositions(neurons, static_cast<indk::Translators::CPU::ModelData*>(model));
 }

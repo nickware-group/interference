@@ -4,14 +4,14 @@
     {
       "name": "N1",
       "size": 1200,
-      "dimensions": 3,
+      "dimensions": 2,
       "input_signals": ["E1", "E2"],
       "ensemble": "A1",
 
       "synapses": [
         {
           "type": "cluster",
-          "position": [600, 600, 0],
+          "position": [600, 600],
           "radius": 50,
           "neurotransmitter": "activation",
           "k1": 1050
@@ -21,7 +21,7 @@
       "receptors": [
         {
           "type": "cluster",
-          "position": [600, 600, 0],
+          "position": [600, 600],
           "count": 10,
           "radius": 5
         }
