@@ -317,10 +317,6 @@ void indk::NeuralNet::doTranslateToInstance(std::vector<std::string> inputs, int
 }
 
 void indk::NeuralNet::doSignalProcess(const std::vector<std::vector<float>>& x, std::vector<std::string> inputs, bool mode, int instance) {
-    if (!isLearned()) {
-        doCreateNewScope();
-    }
-
     if (inputs.empty()) {
         for (const auto &e: Entries) {
             inputs.push_back(e.first);
@@ -358,6 +354,9 @@ void indk::NeuralNet::doSignalProcess(const std::vector<std::vector<float>>& x, 
  */
 std::vector<indk::OutputValue> indk::NeuralNet::doLearn(const std::vector<std::vector<float>>& Xx, bool reset, const std::vector<std::string> &inputs, int instance) {
     if (reset) doReset(instance);
+    if (!isLearned()) {
+        doCreateNewScope();
+    }
     doTranslateToInstance(inputs, instance);
     doSignalProcess(Xx, inputs, true, instance);
     return getOutputValues({}, instance);
@@ -875,11 +874,11 @@ void indk::NeuralNet::setStateSyncEnabled(bool enabled) {
  * Check if neural network has learned something.
  * @return
  */
-bool indk::NeuralNet::isLearned() {
+bool indk::NeuralNet::isLearned() const {
     for (const auto& n: Neurons) {
-        if (!n.second->isLearned()) return false;
+        if (n.second->isLearned()) return true;
     }
-    return true;
+    return false;
 }
 
 /**

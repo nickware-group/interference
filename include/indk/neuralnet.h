@@ -101,9 +101,8 @@ namespace indk {
 
         std::string setStructure(std::ifstream&);
         void setStructure(const std::string &Str);
-        void setLearned(bool);
         void setStateSyncEnabled(bool enabled = true);
-        bool isLearned();
+        bool isLearned() const;
         std::vector<indk::OutputValue> getOutputValues(const std::vector<std::string> &neurons = {}, int instance = 0);
         std::string getStructure(bool minimized = true);
         std::string getName();
