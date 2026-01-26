@@ -64,7 +64,6 @@ void doLoadModel(const std::string& path, int size) {
     for (int i = 2; i <= size; i++) {
         NN.doReplicateEnsemble("A1", "A"+std::to_string(i));
     }
-    NN.doStructurePrepare();
 
     std::cout << "Model name            : " << NN.getName() << std::endl;
     std::cout << "Model desc            : " << NN.getDescription() << std::endl;
@@ -103,7 +102,7 @@ int doTests(const std::string& name, float ref) {
 
     for (auto &info: backends) {
         if (info.ready) {
-            NN.doStructurePrepare(true, info.backend_id);
+            NN.doTranslateToInstance({}, info.backend_id);
             std::cout << std::setw(60) << std::left << name+" ("+info.backend_name+"): ";
             count += doTest(ref, info.backend_id); // using backend id as instance id
         }

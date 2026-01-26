@@ -17,7 +17,7 @@
 #include <indk/types.h>
 
 #ifdef INDK_OPENCL_SUPPORT
-    #include <CL/opencl.hpp>
+    #include <CL/cl.hpp>
 #endif
 
 namespace indk {

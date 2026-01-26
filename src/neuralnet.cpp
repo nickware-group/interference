@@ -61,46 +61,48 @@ void indk::NeuralNet::doInterlinkSyncStructure(const std::string &data) {
     else InterlinkService -> doUpdateStructure(data, getTotalParameterCount(), getModelSize());
 }
 
-void indk::NeuralNet::doInterlinkSyncData(bool mode, int instance) {
+void indk::NeuralNet::doInterlinkSyncData(const std::vector<std::string> &neurons, bool mode, int instance) {
     if (!InterlinkService->isInterlinked()) return;
 
     std::map<std::string, std::vector<indk::Position>> ppositions;
     if (!mode) {
-        ppositions = InstanceManager.getReceptorPositions(instance);
+        ppositions = InstanceManager.getReceptorPositions(neurons, instance);
     }
 
     json j, jm;
-    uint64_t in = 0;
 
     j["neurons"] = json::parse("{}");
 
-    for (const auto &n: Neurons) {
-        auto ppos = ppositions.find(n.first);
+    for (const auto &n: neurons) {
+        auto ppos = ppositions.find(n);
+
+        auto nfound = Neurons.find(n);
+        if (nfound == Neurons.end()) continue;
 
         json jn;
 
-        jn["name"] = n.second->getName();
+        jn["name"] = n;
 
-        if (!mode) {
-            jn["deviation"] = std::get<0>(n.second->doComparePattern(ppos->second));
+        if (ppos != ppositions.end() && !mode) {
+            jn["deviation"] = std::get<0>(nfound->second->doComparePattern(ppos->second));
         }
 
-        for (int i = 0; i < n.second->getReceptorsCount(); i++) {
+        for (int i = 0; i < nfound->second->getReceptorsCount(); i++) {
             json jr;
-            auto r = n.second -> getReceptor(i);
+            auto r = nfound -> second -> getReceptor(i);
             jr["sensitivity"] = r -> getSensitivityValue();
 
             auto scopes = r -> getReferencePosScopes();
             for (const auto &s: scopes) {
                 json js;
-                for (int p = 0; p < n.second->getDimensionsCount(); p++) {
+                for (int p = 0; p < nfound->second->getDimensionsCount(); p++) {
                     js.push_back(s->getPositionValue(p));
                 }
                 jr["scopes"].push_back(js);
             }
 
             if (ppos != ppositions.end()) {
-                for (int p = 0; p < n.second->getDimensionsCount(); p++) {
+                for (int p = 0; p < nfound->second->getDimensionsCount(); p++) {
                     jr["phantom"].push_back(ppos->second[i].getPositionValue(p));
                 }
             }
@@ -108,11 +110,8 @@ void indk::NeuralNet::doInterlinkSyncData(bool mode, int instance) {
             jn["receptors"].push_back(jr);
         }
 
-        j["neurons"][n.second->getName()] = jn;
-        in++;
+        j["neurons"][n] = jn;
     }
-
-    InterlinkDataBuffer.clear();
 
     InterlinkService -> doUpdateModelData(j.dump());
 }
@@ -144,9 +143,9 @@ std::vector<float> indk::NeuralNet::doComparePatterns(const std::string& ename, 
 std::vector<float> indk::NeuralNet::doComparePatterns(std::vector<std::string> nnames, int CompareFlag, int ProcessingMethod, int instance) {
     std::vector<float> PDiffR, PDiff;
 
-    auto result = InstanceManager.getReceptorPositions(instance);
-
     if (nnames.empty()) nnames = Outputs;
+
+    auto result = InstanceManager.getReceptorPositions(nnames, instance);
     for (const auto& O: nnames) {
         auto n = Neurons.find(O);
         if (n == Neurons.end()) break;
@@ -200,17 +199,37 @@ void indk::NeuralNet::doIncludeNeuronToEnsemble(const std::string& name, const s
  * @param instance Instance ID.
  */
 void indk::NeuralNet::doReset(int instance) {
-    InstanceManager.doResetInstance(instance);
+    InstanceManager.doResetInstance({}, instance);
 }
 
-std::vector<indk::Neuron*> indk::NeuralNet::doParseActiveNeurons(const std::vector<std::string>& inputs, bool mode) {
-    std::string id = std::to_string(mode);
-    for (auto &i: inputs) id += i;
-    if (PrepareID == id) return LastActiveNeurons;
+/**
+ * Resets neurons in specified ensemble in the instance (prepare for the new data).
+ * @param ensemble Ensemble name.
+ * @param instance Instance ID.
+ */
+void indk::NeuralNet::doReset(const std::string &ensemble, int instance) {
+    auto ns = Ensembles.find(ensemble);
+    if (ns != Ensembles.end()) {
+        InstanceManager.doResetInstance(ns->second, instance);
+    }
+}
 
-    InstanceManager.doClearInstances();
+/**
+ * Resets specified neurons in the instance (prepare for the new data).
+ * @param neurons Neurons name list.
+ * @param instance Instance ID.
+ */
+void indk::NeuralNet::doReset(const std::vector<std::string> &neurons, int instance) {
+    InstanceManager.doResetInstance(neurons, instance);
+}
 
-    std::vector<indk::Neuron*> aneurons;
+std::pair<std::vector<indk::Neuron*>, std::vector<std::string>> indk::NeuralNet::doParseActiveNeurons(const std::vector<std::string>& inputs) {
+     std::string id;
+     for (auto &i: inputs) id += i;
+     if (PrepareID == id) return LastActiveNeurons;
+
+    std::vector<indk::Neuron*> aneuronsp;
+    std::vector<std::string> aneuronsn;
 
     NQueue nqueue;
 
@@ -230,10 +249,11 @@ std::vector<indk::Neuron*> indk::NeuralNet::doParseActiveNeurons(const std::vect
         auto n = Neurons.find(nname);
 
         if (n != Neurons.end()) {
-            auto found = std::find(aneurons.begin(), aneurons.end(), n->second);
-            if (found != aneurons.end()) continue;
+            auto found = std::find(aneuronsp.begin(), aneuronsp.end(), n->second);
+            if (found != aneuronsp.end()) continue;
 
-            aneurons.push_back(n->second);
+            aneuronsp.push_back(n->second);
+            aneuronsn.push_back(n->second->getName());
 
             auto nlinks = n -> second -> getLinkOutput();
             for (auto &nl: nlinks) {
@@ -242,34 +262,23 @@ std::vector<indk::Neuron*> indk::NeuralNet::doParseActiveNeurons(const std::vect
         }
     }
 
-    if (!mode && StateSyncEnabled) { // state sync working if mode is not learning
+    if (StateSyncEnabled) { // state sync working if mode is not learning
         for (const auto &s: StateSyncList) {
-            auto found = std::find_if(aneurons.begin(), aneurons.end(), [s](indk::Neuron *n) { return n->getName() == s.second; });
-            if (found != aneurons.end()) {
+            auto found = std::find_if(aneuronsp.begin(), aneuronsp.end(), [s](indk::Neuron *n) { return n->getName() == s.second; });
+            if (found != aneuronsp.end()) {
                 auto n = Neurons.find(s.first);
-                if (n != Neurons.end()) aneurons.push_back(n->second);
+                if (n != Neurons.end()) {
+                    aneuronsp.push_back(n->second);
+                    aneuronsn.push_back(n->second->getName());
+                }
             }
         }
     }
 
-    LastActiveNeurons = aneurons;
+    LastActiveNeurons = {aneuronsp, aneuronsn};
     PrepareID = id;
 
-    return LastActiveNeurons;
-}
-
-/**
- * Prepare neural network structure for computing. Preparation involves neural network structure translation into Compute Instance.
- * @param mode Learning mode (true) or inference mode (false).
- * @param instance Instance ID.
- */
-void indk::NeuralNet::doStructurePrepare(bool mode, int instance) {
-    std::vector<std::string> entries;
-    for (const auto &e: Entries) entries.push_back(e.first);
-    auto aneurons = doParseActiveNeurons(entries, mode);
-
-    if (StateSyncEnabled) InstanceManager.doTranslateToInstance(aneurons, Outputs, StateSyncList, PrepareID, instance);
-    else InstanceManager.doTranslateToInstance(aneurons, Outputs, {}, PrepareID, instance);
+    return {aneuronsp, aneuronsn};
 }
 
 /**
@@ -289,26 +298,42 @@ void indk::NeuralNet::doCreateInstances(int count, int backend) {
     InstanceManager.doCreateInstances(count, backend);
 }
 
-std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs, bool mode, int instance) {
-    std::vector<std::string> entries = inputs;
-
-    if (entries.empty()) {
+/**
+ * Prepare neural network structure for computing. Preparation involves neural network structure translation into Compute Instance.
+ * @param mode Learning mode (true) or inference mode (false).
+ * @param instance Instance ID.
+ */
+void indk::NeuralNet::doTranslateToInstance(std::vector<std::string> inputs, int instance) {
+    if (inputs.empty()) {
         for (const auto &e: Entries) {
-            entries.push_back(e.first);
+            inputs.push_back(e.first);
         }
     }
 
-    auto aneurons = doParseActiveNeurons(entries, mode);
+    InstanceManager.doClearInstance(instance);
+    auto aneurons = doParseActiveNeurons(inputs);
+    if (StateSyncEnabled) InstanceManager.doTranslateToInstance(aneurons.first, Outputs, StateSyncList, PrepareID, instance);
+    else InstanceManager.doTranslateToInstance(aneurons.first, Outputs, {}, PrepareID, instance);
+}
 
-    if (StateSyncEnabled) InstanceManager.doTranslateToInstance(aneurons, Outputs, StateSyncList, PrepareID, instance);
-    else InstanceManager.doTranslateToInstance(aneurons, Outputs, {}, PrepareID, instance);
+void indk::NeuralNet::doSignalProcess(const std::vector<std::vector<float>>& x, std::vector<std::string> inputs, bool mode, int instance) {
+    if (!isLearned()) {
+        doCreateNewScope();
+    }
 
+    if (inputs.empty()) {
+        for (const auto &e: Entries) {
+            inputs.push_back(e.first);
+        }
+    }
+
+    auto aneurons = doParseActiveNeurons(inputs);
     InstanceManager.setMode(mode, instance);
-    InstanceManager.doRunInstance(x, entries, instance);
+    InstanceManager.doRunInstance(aneurons.first, x, inputs, instance);
 
     // if mode == learning, save receptor positions in current scope
     if (mode) {
-        auto positions = InstanceManager.getReceptorPositions(instance);
+        auto positions = InstanceManager.getReceptorPositions(aneurons.second, instance);
         for (const auto &p: positions) {
             auto found = Neurons.find(p.first);
             if (found != Neurons.end()) {
@@ -320,37 +345,37 @@ std::vector<indk::OutputValue> indk::NeuralNet::doSignalProcess(const std::vecto
         }
     }
 
-    auto output = InstanceManager.getOutputValues(instance);
-
-    doInterlinkSyncData(mode, instance);
-
-    return output;
+    doInterlinkSyncData(aneurons.second, mode, instance);
 }
 
 /**
  * Start neural network learning process.
  * @param Xx Input data vector that contain signals for learning.
- * @param prepare Reset instance (prepare for the new data).
+ * @param reset Reset instance (prepare for the new data).
  * @param inputs A vector of signal entry names. The vector size must match the size of the Xx data vector. If the inputs vector is empty, all neural network entries are used.
  * @param instance Instance ID to start computing on.
  * @return Output signals.
  */
-std::vector<indk::OutputValue> indk::NeuralNet::doLearn(const std::vector<std::vector<float>>& Xx, bool prepare, const std::vector<std::string>& inputs, int instance) {
-    if (prepare) doReset(instance);
-    return doSignalProcess(Xx, inputs, true, instance);
+std::vector<indk::OutputValue> indk::NeuralNet::doLearn(const std::vector<std::vector<float>>& Xx, bool reset, const std::vector<std::string> &inputs, int instance) {
+    if (reset) doReset(instance);
+    doTranslateToInstance(inputs, instance);
+    doSignalProcess(Xx, inputs, true, instance);
+    return getOutputValues({}, instance);
 }
 
 /**
  * Recognize data by neural network.
  * @param Xx Input data vector that contain signals for recognizing.
- * @param prepare Reset instance (prepare for the new data).
+ * @param reset Reset instance (prepare for the new data).
  * @param inputs A vector of signal entry names. The vector size must match the size of the Xx data vector. If the inputs vector is empty, all neural network entries are used.
  * @param instance Instance ID to start computing on.
  * @return Output signals.
  */
-std::vector<indk::OutputValue> indk::NeuralNet::doRecognise(const std::vector<std::vector<float>>& Xx, bool prepare, const std::vector<std::string>& inputs, int instance) {
-    if (prepare) doReset(instance);
-    return doSignalProcess(Xx, inputs, false, instance);
+std::vector<indk::OutputValue> indk::NeuralNet::doRecognise(const std::vector<std::vector<float>>& Xx, bool reset, const std::vector<std::string> &inputs, int instance) {
+    if (reset) doReset(instance);
+    doTranslateToInstance(inputs, instance);
+    doSignalProcess(Xx, inputs, false, instance);
+    return getOutputValues({}, instance);
 }
 
 /**
@@ -362,12 +387,13 @@ std::vector<indk::OutputValue> indk::NeuralNet::doRecognise(const std::vector<st
  * @param instance Instance ID to start computing on.
  */
 void indk::NeuralNet::doLearnAsync(const std::vector<std::vector<float>>& Xx, const std::function<void(std::vector<indk::OutputValue>)>& callback, bool prepare,
-                                   const std::vector<std::string>& inputs, int instance) {
+                                   const std::vector<std::string> &inputs, int instance) {
     InstanceManager.setMode(true, instance);
     if (prepare) doReset(instance);
 
     std::function<void()> tCallback([this, Xx, inputs, instance, callback] () {
-        auto Y = doSignalProcess(Xx, inputs, false, instance);
+        doSignalProcess(Xx, inputs, false, instance);
+        auto Y = getOutputValues({}, instance);
 
         if (callback) {
             callback(Y);
@@ -386,12 +412,13 @@ void indk::NeuralNet::doLearnAsync(const std::vector<std::vector<float>>& Xx, co
  * @param instance Instance ID to start computing on.
  */
 void indk::NeuralNet::doRecogniseAsync(const std::vector<std::vector<float>>& Xx, const std::function<void(std::vector<indk::OutputValue>)>& callback, bool prepare,
-                                       const std::vector<std::string>& inputs, int instance) {
+                                       const std::vector<std::string> &inputs, int instance) {
     InstanceManager.setMode(false, instance);
     if (prepare) doReset(instance);
 
     std::function<void()> tCallback([this, Xx, inputs, instance, callback] () {
-        auto Y = doSignalProcess(Xx, inputs, false, instance);
+        doSignalProcess(Xx, inputs, false, instance);
+        auto Y = getOutputValues({}, instance);
 
         if (callback) {
             callback(Y);
@@ -598,10 +625,6 @@ void indk::NeuralNet::doReplicateEnsemble(const std::string& From, const std::st
     doInterlinkSyncStructure();
 }
 
-void indk::NeuralNet::doClearCache() {
-    PrepareID = "";
-}
-
 /**
  * Load neural network structure.
  * @param Stream Input stream of file that contains neural network structure in JSON format.
@@ -803,7 +826,6 @@ void indk::NeuralNet::setStructure(const std::string &Str) {
                 } else {
                     N -> doCreateNewReceptor(pos);
                     auto r = N -> getReceptor(N->getReceptorsCount()-1);
-                    r -> doReset();
                     for (auto &jscope: jreceptor.value()["scopes"].items()) {
                         pos.clear();
                         for (auto &jposition: jscope.value().items()) {
@@ -842,16 +864,6 @@ void indk::NeuralNet::setStructure(const std::string &Str) {
 }
 
 /**
- * Set neural network to `learned` state.
- * @param LearnedFlag
- */
-void indk::NeuralNet::setLearned(bool LearnedFlag) {
-    for (const auto& N: Neurons) {
-        N.second -> setLearned(LearnedFlag);
-    }
-}
-
-/**
  * Enable neuron state synchronization.
  * @param enable
  */
@@ -860,14 +872,24 @@ void indk::NeuralNet::setStateSyncEnabled(bool enabled) {
 }
 
 /**
- * Check if neural network is in learned state.
+ * Check if neural network has learned something.
  * @return
  */
 bool indk::NeuralNet::isLearned() {
-    for (const auto& N: Neurons) {
-        if (!N.second -> isLearned()) return false;
+    for (const auto& n: Neurons) {
+        if (!n.second->isLearned()) return false;
     }
     return true;
+}
+
+/**
+ * Get output values.
+ * @param neurons Neurons name list.
+ * @param instance Instance ID to get output values.
+ * @return Vector of output values.
+ */
+std::vector<indk::OutputValue> indk::NeuralNet::getOutputValues(const std::vector<std::string> &neurons, int instance) {
+    return InstanceManager.getOutputValues(neurons, instance);
 }
 
 /**

@@ -23,6 +23,7 @@ indk::Translators::CPU::NeuronParams* indk::Translators::CPU::doTranslateNeuronT
     params -> output = nullptr;
     params -> position_buffer = new float[params->dimension_count];
     params -> t = 0;
+    params -> batch_size = 0;
     params -> latency = neuron->getLatency();
 
     auto elist = neuron -> getEntries();
@@ -67,7 +68,6 @@ indk::Translators::CPU::NeuronParams* indk::Translators::CPU::doTranslateNeuronT
         params -> receptors[j].rs_default = params -> receptors[j].rs;
         params -> receptors[j].fi = r -> getFi();
         params -> receptors[j].d_fi = r -> getdFi();
-        params -> receptors[j].l = r -> getL();
         params -> receptors[j].position = new float[params->dimension_count];
         params -> receptors[j].position_default = new float[params->dimension_count];
 
@@ -100,7 +100,6 @@ void* indk::Translators::CPU::doTranslate(const std::vector<indk::Neuron*> &neur
 
     model -> outputs.clear();
     model -> sync_map = sync;
-    model -> batch_size = 0;
 
     // translating neurons
     for (const auto &n: neurons) {
@@ -116,10 +115,22 @@ void* indk::Translators::CPU::doTranslate(const std::vector<indk::Neuron*> &neur
     return model;
 }
 
-void indk::Translators::CPU::doReset(indk::Translators::CPU::ModelData *model) {
-    for (const auto &o: model->objects) {
+void indk::Translators::CPU::doReset(const std::vector<std::string> &neurons, indk::Translators::CPU::ModelData *model) {
+    std::map<std::string, NeuronParams*> local;
+
+    for (auto &n: neurons) {
+        auto f = model->objects.find(n);
+        if (f != model->objects.end()) {
+            local.emplace(*f);
+        }
+    }
+
+    if (local.empty()) local = model->objects;
+
+    for (const auto &o: local) {
         auto neuron = o.second;
         neuron -> t = 0;
+        neuron -> batch_size = 0;
 
         for (int i = 0; i < neuron->receptor_count; i++) {
             auto r = o.second -> receptors[i];
@@ -164,11 +175,21 @@ void indk::Translators::CPU::doClear(indk::Translators::CPU::ModelData *model) {
     delete model;
 }
 
-std::vector<indk::OutputValue> indk::Translators::CPU::getOutputValues(indk::Translators::CPU::ModelData *model) {
+std::vector<indk::OutputValue> indk::Translators::CPU::getOutputValues(const std::vector<std::string> &neurons, indk::Translators::CPU::ModelData *model) {
     std::vector<indk::OutputValue> outputs;
-    outputs.reserve(model->outputs.size());
 
-    for (const auto &o: model->outputs) {
+    std::vector<NeuronParams*> objects;
+    for (const auto &n: neurons) {
+        auto nfound = model->objects.find(n);
+        if (nfound == model->objects.end()) continue;
+
+        objects.push_back(nfound->second);
+    }
+
+    if (objects.empty()) objects = model -> outputs;
+
+    outputs.reserve(objects.size());
+    for (const auto &o: objects) {
         auto value = o->t == 0 ? 0 : o->output[o->t-1];
         indk::OutputValue output = {.value=value, .source=o->name, .time=o->t};
         outputs.emplace_back(output);
@@ -177,10 +198,20 @@ std::vector<indk::OutputValue> indk::Translators::CPU::getOutputValues(indk::Tra
     return outputs;
 }
 
-std::map<std::string, std::vector<indk::Position>> indk::Translators::CPU::getReceptorPositions(indk::Translators::CPU::ModelData *model) {
+std::map<std::string, std::vector<indk::Position>> indk::Translators::CPU::getReceptorPositions(const std::vector<std::string> &neurons, indk::Translators::CPU::ModelData *model) {
     std::map<std::string, std::vector<indk::Position>> list;
+    std::map<std::string, NeuronParams*> local;
 
-    for (auto &n: model->objects) {
+    for (auto &n: neurons) {
+        auto f = model->objects.find(n);
+        if (f != model->objects.end()) {
+            local.emplace(*f);
+        }
+    }
+
+    if (local.empty()) local = model->objects;
+
+    for (auto &n: local) {
         std::vector<indk::Position> positions;
         for (uint64_t r = 0; r < n.second->receptor_count; r++) {
             positions.emplace_back(n.second->size, std::vector<float>(n.second->receptors[r].position, n.second->receptors[r].position+n.second->dimension_count));

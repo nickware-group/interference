@@ -39,7 +39,6 @@ namespace indk {
         unsigned int Xm, DimensionsCount;
 
         int ProcessingMode, OutputMode;
-        bool Learned;
         std::vector<float> OutputsPredefined;
         std::string Name;
     public:
@@ -75,10 +74,8 @@ namespace indk {
         void doCreateNewReceptor(std::vector<float>);
         void doCreateNewReceptorCluster(const std::vector<float>& PosVector, unsigned R, unsigned C);
 
-        void doPrepare();
         void doCreateNewScope(float output = 0);
         void doChangeScope(uint64_t);
-        void doReset();
         indk::PatternDefinition doComparePattern(const std::vector<indk::Position>& positions, int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin) const;
 
         void doLinkOutput(const std::string&);
@@ -99,7 +96,6 @@ namespace indk {
         void setProcessingMode(int);
         void setOutputMode(int);
         void setName(const std::string&);
-        void setLearned(bool LearnedFlag);
         bool isLearned() const;
 
         std::vector<std::string> getLinkOutput() const;
@@ -188,48 +184,31 @@ namespace indk {
     class Neuron::Receptor {
     private:
         std::vector<indk::Position*> CP, CPf;
-        //indk::Position *RPos, *RPos0, *RPosf;
         std::vector<indk::Position*> ReferencePos;
         indk::Position* DefaultPos;
-        indk::Position* PhantomPos;
         float k3;
         float Rs;
-        bool Locked;
-        float L, Lf;
         float Fi, dFi;
         uint64_t Scope;
     public:
         Receptor();
         Receptor(const indk::Neuron::Receptor&);
         Receptor(indk::Position*, float);
-        bool doCheckActive() const;
-        void doLock();
-        void doUnlock();
         void doCreateNewScope();
         void doChangeScope(uint64_t);
-        void doReset();
-        void doPrepare();
-        void doSavePos();
-        void doUpdateSensitivityValue();
-        void doUpdatePos(indk::Position*);
         void setPos(indk::Position*);
         void setRs(float);
         void setk3(float);
-        void setFi(float);
         std::vector<indk::Position*> getCP() const;
         std::vector<indk::Position*> getCPf() const;
         indk::Position* getPos() const;
         indk::Position* getPos0() const;
-        indk::Position* getPosf() const;
         std::vector<indk::Position*> getReferencePosScopes();
         float getRs() const;
         float getk3() const;
         float getFi();
         float getdFi();
         float getSensitivityValue() const;
-        bool isLocked() const;
-        float getL() const;
-        float getLf() const;
         ~Receptor() = default;
     };
 }

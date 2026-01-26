@@ -223,13 +223,14 @@ indk::ComputeBackends::OpenCL::DeviceContext* indk::ComputeBackends::OpenCL::doI
 
     return dcontext;
 #endif
+    return {};
 }
 
 void* indk::ComputeBackends::OpenCL::doTranslate(const std::vector<indk::Neuron*>& neurons, const std::vector<std::string> &outputs, const indk::StateSyncMap &sync) {
     return indk::Translators::CL::doTranslate(neurons, outputs, sync);
 }
 
-void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, void *_model) {
+void indk::ComputeBackends::OpenCL::doCompute(const std::vector<indk::Neuron*> &neurons, const std::vector<std::vector<float>> &x, const std::vector<std::string>& inputs, void *_model) {
     auto model = (indk::Translators::CL::ModelData*)_model;
 
 #ifdef INDK_OPENCL_SUPPORT
@@ -380,7 +381,7 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<std::vector<floa
 #endif
 }
 
-void indk::ComputeBackends::OpenCL::doReset(void *model) {
+void indk::ComputeBackends::OpenCL::doReset(const std::vector<std::string> &neurons, void *model) {
     indk::Translators::CL::doReset((indk::Translators::CL::ModelData*)model);
 }
 
@@ -397,7 +398,7 @@ void indk::ComputeBackends::OpenCL::setParameters(indk::ComputeBackend::Paramete
     CurrentDeviceName = ((Parameters*)parameters) -> device_name;
 }
 
-std::vector<indk::OutputValue> indk::ComputeBackends::OpenCL::getOutputValues(void *_model) {
+std::vector<indk::OutputValue> indk::ComputeBackends::OpenCL::getOutputValues(const std::vector<std::string> &neurons, void *_model) {
     auto model = (indk::Translators::CL::ModelData*)_model;
 
     std::vector<indk::OutputValue> outputs;
@@ -416,7 +417,7 @@ std::vector<indk::OutputValue> indk::ComputeBackends::OpenCL::getOutputValues(vo
     return outputs;
 }
 
-std::map<std::string, std::vector<indk::Position>> indk::ComputeBackends::OpenCL::getReceptorPositions(void *_model) {
+std::map<std::string, std::vector<indk::Position>> indk::ComputeBackends::OpenCL::getReceptorPositions(const std::vector<std::string> &neurons, void *_model) {
     auto model = (indk::Translators::CL::ModelData*)_model;
 
     std::map<std::string, std::vector<indk::Position>> list;

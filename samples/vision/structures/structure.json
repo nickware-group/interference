@@ -4,14 +4,14 @@
     {
       "name": "N1",
       "size": 1200,
-      "dimensions": 3,
+      "dimensions": 2,
       "input_signals": ["E1", "E2", "E3", "E4", "E5", "E6"],
       "ensemble": "A1",
 
       "synapses": [
         {
           "type": "cluster",
-          "position": [600, 600, 0],
+          "position": [600, 600],
           "radius": 300,
           "neurotransmitter": "activation",
           "k1": 5
@@ -21,13 +21,13 @@
       "receptors": [
         {
           "type": "cluster",
-          "position": [600, 600, 0],
+          "position": [600, 600],
           "count": 6,
           "radius": 75
         },
         {
           "type": "cluster",
-          "position": [600, 600, 0],
+          "position": [600, 600],
           "count": 3,
           "radius": 200
         }
@@ -37,5 +37,5 @@
   "output_signals": ["N1"],
   "name": "vision",
   "desc": "neural net structure for interference vision sample",
-  "version": "1.4"
+  "version": "1.5"
 }

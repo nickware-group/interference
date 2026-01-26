@@ -44,9 +44,9 @@ namespace indk {
         StateSyncMap StateSyncList;
 
         int64_t doFindEntry(const std::string&);
-        std::vector<indk::Neuron*> doParseActiveNeurons(const std::vector<std::string>& inputs, bool mode);
+        std::pair<std::vector<indk::Neuron*>, std::vector<std::string>> doParseActiveNeurons(const std::vector<std::string>& inputs);
 
-        std::vector<indk::Neuron*> LastActiveNeurons;
+        std::pair<std::vector<indk::Neuron*>, std::vector<std::string>> LastActiveNeurons;
         std::string PrepareID;
         bool StateSyncEnabled;
 
@@ -60,7 +60,7 @@ namespace indk {
         void doInterlinkInit(int port = 4408, int timeout = 5);
         void doInterlinkWebInit(const std::string& path, int port = 8044);
         void doInterlinkSyncStructure(const std::string &data = "");
-        void doInterlinkSyncData(bool mode, int instance);
+        void doInterlinkSyncData(const std::vector<std::string> &neurons, bool mode, int instance);
         std::vector<float> doComparePatterns(int CompareFlag = indk::PatternCompareFlags::CompareDefault,
                                              int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin,
                                              int instance = 0);
@@ -74,36 +74,37 @@ namespace indk {
                                              int instance = 0);
         void doCreateNewScope();
         void doChangeScope(uint64_t);
+
         void doAddNewOutput(const std::string&);
         void doIncludeNeuronToEnsemble(const std::string&, const std::string&);
 
         void doReset(int instance);
-        void doStructurePrepare(bool mode = 0, int instance = 0);
+        void doReset(const std::string &ensemble, int instance);
+        void doReset(const std::vector<std::string> &neurons, int instance);
 
         void doCreateInstance(int backend = indk::System::ComputeBackends::NativeCPU);
         void doCreateInstances(int count, int backend = indk::System::ComputeBackends::NativeCPU);
 
-        std::vector<indk::OutputValue> doLearn(const std::vector<std::vector<float>>&, bool prepare = true, const std::vector<std::string>& inputs = {}, int instance = 0);
-        std::vector<indk::OutputValue> doRecognise(const std::vector<std::vector<float>>&, bool prepare = true, const std::vector<std::string>& inputs = {}, int instance = 0);
-        void doLearnAsync(const std::vector<std::vector<float>>&, const std::function<void(std::vector<indk::OutputValue>)>& callback = nullptr, bool prepare = true,
-                          const std::vector<std::string>& inputs = {}, int instance = 0);
-        void doRecogniseAsync(const std::vector<std::vector<float>>&, const std::function<void(std::vector<indk::OutputValue>)>& Callback = nullptr, bool prepare = true,
-                              const std::vector<std::string>& inputs = {}, int instance = 0);
+        void doTranslateToInstance(std::vector<std::string> inputs = {}, int instance = 0);
+        void doSignalProcess(const std::vector<std::vector<float>>& x, std::vector<std::string> inputs, bool mode, int instance = 0);
 
-        std::vector<indk::OutputValue> doSignalReceive(const std::string& ensemble = "");
+        std::vector<indk::OutputValue> doLearn(const std::vector<std::vector<float>>&, bool reset = true, const std::vector<std::string> &inputs = {}, int instance = 0);
+        std::vector<indk::OutputValue> doRecognise(const std::vector<std::vector<float>>&, bool reset = true, const std::vector<std::string> &inputs = {}, int instance = 0);
+        void doLearnAsync(const std::vector<std::vector<float>>&, const std::function<void(std::vector<indk::OutputValue>)>& callback = nullptr, bool prepare = true,
+                          const std::vector<std::string> &inputs = {}, int instance = 0);
+        void doRecogniseAsync(const std::vector<std::vector<float>>&, const std::function<void(std::vector<indk::OutputValue>)>& Callback = nullptr, bool prepare = true,
+                              const std::vector<std::string> &inputs = {}, int instance = 0);
+
         indk::Neuron* doReplicateNeuron(const std::string& from, const std::string& to, bool integrate);
         void doDeleteNeuron(const std::string& name);
         void doReplicateEnsemble(const std::string& From, const std::string& To, bool CopyEntries = false);
-        void doClearCache();
-
-
-        std::vector<indk::OutputValue> doSignalProcess(const std::vector<std::vector<float>>& x, const std::vector<std::string>& inputs, bool mode, int instance = 0);
 
         std::string setStructure(std::ifstream&);
         void setStructure(const std::string &Str);
         void setLearned(bool);
         void setStateSyncEnabled(bool enabled = true);
         bool isLearned();
+        std::vector<indk::OutputValue> getOutputValues(const std::vector<std::string> &neurons = {}, int instance = 0);
         std::string getStructure(bool minimized = true);
         std::string getName();
         std::string getDescription();
