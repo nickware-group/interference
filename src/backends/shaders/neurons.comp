@@ -1,0 +1,49 @@
+#version 450
+
+layout(local_size_x = 64) in;
+
+layout(std430, binding = 0) buffer ReceptorsBuffer {
+    vec2 receptors[];
+};
+
+layout(std430, binding = 1) buffer NeuronsBuffer {
+    vec4 neurons[];
+};
+
+layout(std430, binding = 2) buffer InputsBuffer {
+    vec2 inputs[];
+};
+
+layout(std430, binding = 3) buffer OutputsBuffer {
+    float outputs[];
+};
+
+layout(std430, binding = 4) buffer TimesBuffer {
+    int times[];
+};
+
+void main() {
+    uint id = gl_GlobalInvocationID.x;
+
+    // neurons[id]: (left_receptors_range, right_receptors_range, input_index, latency)
+    int inputIdx = int(neurons[id].z);
+    int run = int(inputs[inputIdx].x);
+
+    if (run != 0) {
+        float p = 0.0;
+        int leftReceptors = int(neurons[id].x);
+        int rightReceptors = int(neurons[id].y);
+        int rcount = rightReceptors - leftReceptors;
+
+        for (int i = leftReceptors; i < rightReceptors; i++) {
+            uint rbase = uint(i) * 4;
+            p += receptors[rbase + 3].x;
+        }
+        p /= float(rcount);
+
+        outputs[id] = p;
+        times[id]++;
+    } else {
+        outputs[id] = -1.0;
+    }
+}

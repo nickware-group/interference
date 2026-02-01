@@ -24,9 +24,11 @@ set(TARGET_SOURCE
         src/backends/native.cpp                 include/indk/backends/native.h
         src/backends/native_multithread.cpp     include/indk/backends/native_multithread.h
         src/backends/opencl.cpp                 include/indk/backends/opencl.h
+        src/backends/vulkan.cpp                 include/indk/backends/vulkan.h
 
         src/translators/cpu.cpp                 include/indk/translators/cpu.h
         src/translators/cl.cpp                  include/indk/translators/cl.h
+        src/translators/vk.cpp                  include/indk/translators/vk.h
 
         include/indk/types.h
 )
@@ -69,6 +71,7 @@ function(build_indk LIBTYPE)
     ENDIF()
 
     OPTION(INDK_OPENCL_SUPPORT "Interference NDK OpenCL compute backend support" OFF)
+    OPTION(INDK_VULKAN_SUPPORT "Interference NDK Vulkan compute backend support" OFF)
 
     if(INDK_OPENCL_SUPPORT)
         find_package(OpenCL REQUIRED)
@@ -82,6 +85,17 @@ function(build_indk LIBTYPE)
 
         add_compile_definitions(INDK_OPENCL_SUPPORT)
         message(STATUS "Interference NDK OpenCL compute backend support is enabled")
+    endif()
+
+    if(INDK_VULKAN_SUPPORT)
+        find_package(Vulkan REQUIRED)
+
+        target_link_libraries(${PROJECT_NAME}${LIBTYPE} Vulkan::Vulkan)
+
+        include_directories(${Vulkan_INCLUDE_DIRS})
+
+        add_compile_definitions(INDK_VULKAN_SUPPORT)
+        message(STATUS "Interference NDK Vulkan compute backend support is enabled")
     endif()
 endfunction()
 

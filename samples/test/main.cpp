@@ -14,6 +14,7 @@
 #include <iomanip>
 #include "indk/backends/native_multithread.h"
 #include "indk/backends/opencl.h"
+#include "indk/backends/vulkan.h"
 
 indk::NeuralNet NN;
 std::vector<std::vector<float>> X;
@@ -39,6 +40,18 @@ int doCheckAvailableBackends() {
     if (indk::System::isComputeBackendAvailable(indk::System::ComputeBackends::OpenCL)) {
         auto info = indk::ComputeBackends::OpenCL::getDevicesInfo();
         std::cout << "=== OPENCL DEVICES ===" << std::endl;
+        std::cout << std::setw(40) << std::left << "Platform name" << std::setw(80) << "Device name" << std::setw(20) << "Compute units" << std::setw(20) << "Workgroup size" << std::endl;
+        std::cout << "------------------------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
+        for (auto &i: info) {
+            std::cout << std::setw(40) << i.platform_name << std::setw(80) << std::left << i.device_name << std::setw(20) << i.compute_units << std::setw(20) << i.workgroup_size << std::endl;
+        }
+        std::cout << "------------------------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
+        std::cout << std::endl;
+    }
+
+    if (indk::System::isComputeBackendAvailable(indk::System::ComputeBackends::Vulkan)) {
+        auto info = indk::ComputeBackends::Vulkan::getDevicesInfo();
+        std::cout << "=== VULKAN DEVICES ===" << std::endl;
         std::cout << std::setw(40) << std::left << "Platform name" << std::setw(80) << "Device name" << std::setw(20) << "Compute units" << std::setw(20) << "Workgroup size" << std::endl;
         std::cout << "------------------------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
         for (auto &i: info) {
@@ -99,12 +112,14 @@ int doTest(float ref, int instance) {
 
 int doTests(const std::string& name, float ref) {
     int count = 0;
+    int id = 0;
 
     for (auto &info: backends) {
         if (info.ready) {
-            NN.doTranslateToInstance({}, info.backend_id);
+            NN.doTranslateToInstance({}, id);
             std::cout << std::setw(60) << std::left << name+" ("+info.backend_name+"): ";
-            count += doTest(ref, info.backend_id); // using backend id as instance id
+            count += doTest(ref, id);
+            id++;
         }
     }
     std::cout << std::endl << std::endl;
