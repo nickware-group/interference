@@ -33,9 +33,9 @@ set(TARGET_SOURCE
         include/indk/types.h
 )
 
-set(FFB_QT5WEBKIT_EXAMPLE_BUILD OFF)
-set(FFB_WXWIDGETS_EXAMPLE_BUILD OFF)
-set(FFB_WB_EXAMPLE_BUILD OFF)
+set(FFB_QT5WEBKIT_EXAMPLE_BUILD OFF CACHE BOOL "Disable building Facefull bridge example")
+set(FFB_WXWIDGETS_EXAMPLE_BUILD OFF CACHE BOOL "Disable building Facefull bridge example")
+set(FFB_WB_EXAMPLE_BUILD OFF CACHE BOOL "Disable building Facefull bridge example")
 
 add_subdirectory(deps/facefull-bridge)
 add_library(indk_objlib OBJECT ${TARGET_SOURCE})
