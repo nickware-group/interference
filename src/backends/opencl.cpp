@@ -438,9 +438,24 @@ std::map<std::string, std::vector<indk::Position>> indk::ComputeBackends::OpenCL
 
     std::map<std::string, std::vector<indk::Position>> list;
 #ifdef INDK_OPENCL_SUPPORT
+    std::vector<indk::Neuron*> objects;
+
+    if (!neurons.empty()) {
+        for (const auto &n: neurons) {
+            auto nfound = std::find_if(model->objects.begin(), model->objects.end(), [n](indk::Neuron *ni) {
+                return ni->getName() == n;
+            });
+            if (nfound == model->objects.end()) continue;
+
+            objects.push_back(*nfound);
+        }
+    } else {
+        objects = model -> objects;
+    }
+
     uint64_t ri = 0;
-    for (uint64_t i = 0; i < model->objects.size(); i++) {
-        auto n = model->objects[i];
+    for (uint64_t i = 0; i < objects.size(); i++) {
+        auto n = objects[i];
         std::vector<indk::Position> positions;
 
         for (uint64_t r = 0; r < n->getReceptorsCount(); r++) {
