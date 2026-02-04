@@ -112,9 +112,6 @@ function doProcessData(viewer, str, full_update = true) {
     setInterlinkConnectionStatus(true);
 
     try {
-        let elements = [];
-        let enpos = 0;
-
         let data = JSON.parse(str);
 
         FManager.getFrame(viewer).doCreateModel();
@@ -124,27 +121,13 @@ function doProcessData(viewer, str, full_update = true) {
         FManager.getFrame(viewer).doUpdateString(str);
 
         for (let i = 0; i < data.entries.length; i++) {
-            elements.push({
-                group: 'nodes',
-                classes: 'viewer-node-small',
-                data: { id: data.entries[i], name: data.entries[i], weight: 1  },
-                selectable: true,
-                grabbable: true
-                //renderedPosition: {x: 0, y: enpos}
-            });
-
-            enpos += ENTRY_POS_Y_SHIFT;
+            doRenderNewNode(data.entries[i], null, 1, data.entries[i]);
             FManager.getFrame(viewer).getData().entry_list.push(data.entries[i]);
         }
 
         let ensemble = "";
         for (let i = 0; i < data.neurons.length; i++) {
-            elements.push({
-                group: 'nodes',
-                data: { id: data.neurons[i].name, name: data.neurons[i].name, weight: -1 },
-                selectable: true,
-                grabbable: true
-            });
+            doRenderNewNode(data.neurons[i].name, null, 0, data.neurons[i].name);
 
             if (!data.neurons[i].synapses) data.neurons[i].synapses = [];
             if (!data.neurons[i].receptors) data.neurons[i].receptors = [];
@@ -165,25 +148,15 @@ function doProcessData(viewer, str, full_update = true) {
                 let found2 = data.neurons.find((value) => data.neurons[i].input_signals[j] === value.name);
 
                 if (found1 || found2) {
-                    elements.push({
-                        data: { id: data.neurons[i].input_signals[j]+"-"+data.neurons[i].name, source: data.neurons[i].input_signals[j], target: data.neurons[i].name },
-                    });
+                    doRenderNewEdge(data.neurons[i].input_signals[j], data.neurons[i].name);
                 }
             }
         }
 
         for (let i = 0; data.output_signals && i < data.output_signals.length; i++) {
-            elements.push({
-                group: 'nodes',
-                classes: 'viewer-node-small',
-                data: { id: "O"+(i+1), name: "Output "+(i+1), weight: 2 },
-                selectable: true,
-                grabbable: true
-            });
+            doRenderNewNode("O"+(i+1), null, 2, "Output "+(i+1));
+            doRenderNewEdge(data.output_signals[i], "O"+(i+1));
 
-            elements.push({
-                data: { id: "o"+i, source: data.output_signals[i], target: "O"+(i+1) }
-            });
             FManager.getFrame(viewer).getData().output_list.push({id: "O"+(i+1), link: data.output_signals[i]});
         }
 
@@ -199,8 +172,8 @@ function doProcessData(viewer, str, full_update = true) {
 
         //if (full_update) FManager.getFrame(viewer).doInitViewer(elements, FManager.getFrame(viewer).getData().entry_list[0]);
         //else
-        FManager.getFrame(viewer).doUpdateViewer(elements);
-        FManager.getFrame(viewer).getData().viewer_elements = FManager.getFrame(viewer).getViewer().cs.json();
+        FManager.getFrame(viewer).doUpdateLayout();
+        FManager.getFrame(viewer).getData().viewer_elements = FManager.getFrame(viewer).getViewer().save();
         FManager.getFrame(viewer).doRedrawLists();
         FManager.getFrame(viewer).doAddModelHistoryToList("Structure update");
 
@@ -272,7 +245,6 @@ function doAddNode(pos, name = "", type = 0) {
         doRenderNewNode(newname, pos, type, "Output "+(num+1));
     }
     console.log("add node", newname, type);
-    setProjectChanged();
     return newname;
 }
 

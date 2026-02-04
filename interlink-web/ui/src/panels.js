@@ -148,9 +148,8 @@ function doCreateParameterList(name, type = "neuron", viewer = -1) {
         return;
     }
 
-    if (type !== "output") {
-        doAddPanelParameter(name, "Element name", name, 0, 0, {type: type});
-    }
+    doAddPanelParameter(name, "Element name", name, 0, 0, {type: type});
+
     if (type !== "neuron") {
         doClearNeuronModel(viewer);
         facefull.Scrollboxes['DLSB'+(viewer+1)].doUpdateScrollbar();

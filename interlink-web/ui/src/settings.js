@@ -26,11 +26,7 @@ function doApplyTheme() {
 
     facefull.Themes.doApplyTheme(Settings.theme);
     if (FManager && FManager.getCurrentFrame()) {
-        FManager.getCurrentFrame().getViewer().cs.style().clear();
-        doApplyStylesheet(FManager.getCurrentFrame().getViewer().cs.style())
-        FManager.getCurrentFrame().getViewer().cs.style().update();
-        doApplyGrid(FManager.getCurrentFrame().getViewer().cs);
-        doClearBackground();
+        doApplyStylesheet(FManager.getCurrentFrame().getViewer())
     }
 }
 

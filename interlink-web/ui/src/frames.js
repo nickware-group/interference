@@ -95,57 +95,24 @@ function DefaultFrame(id) {
     }
 
     this.doImportViewer = function(data) {
-        const pan = {...this.viewer.cs.pan()};
-        const zoom = this.viewer.cs.zoom();
-
-        this.doUpdateViewer();
-        this.viewer.cs.json(data);
-
-        this.viewer.cs.pan(pan);
-        this.viewer.cs.zoom(zoom);
-
-        doApplyGrid(this.viewer.cs);
+        this.viewer.clear();
+        this.viewer.load(data);
+        doApplyStylesheet(this.viewer);
     }
 
     this.doInitViewer = function(elements = [], startpoint = "") {
         let name = "CS" + this.id;
-        let cs = cytoscape({
-            container: document.getElementById(name),
+        this.viewer = new GraphViewer(document.getElementById(name));
 
-            boxSelectionEnabled: true,
-            wheelSensitivity: 0.1,
-            motionBlur: false,
-            zoom: 0.9,
-            // autounselectify: true,
-            pan: { x: document.getElementById(name).offsetWidth/2, y: 0 },
-            // selectionType: 'additive',
+        doApplyStylesheet(this.viewer);
 
-            elements: elements,
-        });
-        doApplyStylesheet(cs.style())
-        cs.style().update();
-
-        const bottomLayer = cs.cyCanvas({
-            zIndex: -1
-        });
-        let canvas = bottomLayer.getCanvas();
-        let context = canvas.getContext("2d");
-        this.viewer = {
-            cs: cs,
-            canvas: canvas,
-            context: context
-        }
-
-        doInitViewerAttributes(this.viewer.cs, startpoint, false, this.id);
+        doInitViewerAttributes(this.viewer, startpoint, false, this.id);
 
         console.log("doInitViewer done", performance.now());
     }
 
-    this.doUpdateViewer = function(elements = []) {
-        console.log("update viewer");
-        this.viewer.cs.remove("node");
-        this.viewer.cs.add(elements);
-        this.viewer.cs.layout(KlayLayoutOptions).run();
+    this.doUpdateLayout = function() {
+        this.viewer.autoLayout();
     }
 
     this.doInitNeuronModel = function(e, data = [], size = 0) {
@@ -181,7 +148,7 @@ function DefaultFrame(id) {
         }
 
         let e = this.getLastSelectedElement();
-        if (e !== "") doCreateParameterList(e);
+        if (e !== "") doCreateParameterList(e.name, NodeTypeNameByType[e.type]);
         else doCreateParameterList("", "background");
     }
 
@@ -219,22 +186,22 @@ function DefaultFrame(id) {
         facefull.Scrollboxes["OLSB"+this.id].doUpdateScrollbar();
     }
 
-    this.doAddSelectedElement = function(name) {
+    this.doAddSelectedElement = function(name, type) {
         if (name === "") return;
 
         let eid = this.selected_elements.findIndex(function(element) {
-            return element === name;
+            return element.name === name;
         });
 
         if (eid === -1)
-            this.selected_elements.push(name);
+            this.selected_elements.push({name: name, type: type});
 
         console.log("added selected element", name, this.selected_elements)
     }
 
     this.doRemoveSelectedElement = function(name) {
         let eid = this.selected_elements.findIndex(function(element) {
-            return element === name;
+            return element.name === name;
         });
 
         if (eid !== -1)

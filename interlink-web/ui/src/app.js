@@ -69,8 +69,6 @@ function App() {
         FManager.getCurrentFrame().doManageViewport(id);
     };
 
-    MouseLinkFrom = "";
-    NeuronForCopy = "";
     doClearBackground();
     FManager.doSwitchCurrentFrame(0);
     document.getElementById("P0").style.zIndex = 0;
