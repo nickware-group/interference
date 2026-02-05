@@ -94,6 +94,12 @@ function doAddMetricsToList(info) {
     facefull.Scrollboxes["NMSB"].doUpdateScrollbar();
 }
 
+function doSwitchAutoDataScope() {
+    FManager.getInterlinkFrame().doManageViewport(-1);
+    facefull.Lists["NMDL"].doSelect(facefull.Lists["NMDL"].getLength()-1);
+    facefull.Scrollboxes["NMSB"].doScrollToEnd();
+}
+
 function doDeleteAllMetrics() {
     facefull.Lists["NMDL"].doClear();
     facefull.doEventSend("doClearMetricsData");

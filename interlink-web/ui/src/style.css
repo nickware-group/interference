@@ -736,7 +736,15 @@
     margin-top: 0;
 }
 
-.PanelToolbar.DataScopes > .HeaderButton:nth-child(2):before {
+.ToolButtonWrapper {
+    display: flex;
+}
+
+.ToolButtonWrapper > .HeaderButton:nth-child(1):before {
+    content: '\F0045';
+}
+
+.ToolButtonWrapper > .HeaderButton:nth-child(2):before {
     content: '\F0A7A';
 }
 

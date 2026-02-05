@@ -125,6 +125,22 @@ function App() {
         }
     }
 
+    document.getElementById("LT-B1").addEventListener("click", function() {
+        doSwitchLeftTopPanel(FManager.getCurrentFrameID(), 0);
+    });
+
+    document.getElementById("LT-B2").addEventListener("click", function() {
+        doSwitchLeftTopPanel(FManager.getCurrentFrameID(), 1)
+    });
+
+    document.getElementById("LT-B3").addEventListener("click", function() {
+        doSwitchLeftTopPanel(FManager.getCurrentFrameID(), 2)
+    });
+
+    document.getElementById("LT-B4").addEventListener("click", function() {
+        doSwitchLeftBottomPanel(FManager.getCurrentFrameID(), 0)
+    });
+
     console.log("done init", performance.now());
     facefull.doEventSend("doWindowReady");
 }

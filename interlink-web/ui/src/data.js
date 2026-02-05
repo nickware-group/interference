@@ -1,7 +1,3 @@
-const ENTRY_POS_Y_SHIFT = 100;
-let ElementsForCopy = [];
-let SourceForCopy = 0;
-let PastePos = {x: 0, y: 0};
 
 facefull.doEventHandlerAttach("doProcessData", function(str) {
     if (str === "") return;

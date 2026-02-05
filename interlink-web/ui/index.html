@@ -48,10 +48,10 @@
                     <div id="P0" class="Page" style="display: flex;">
                         <div class="Box Grid MainBox">
                             <div id="LTP1" class="ToolPanel Left">
-                                <div class="HeaderButton ToolButton TooltipTarget" onclick="doSwitchLeftTopPanel(FManager.getCurrentFrameID(), 0)" data-tooltip-text="Neurons" data-tooltip-width="90" data-tooltip-pos="right"></div>
-                                <div class="HeaderButton ToolButton TooltipTarget" onclick="doSwitchLeftTopPanel(FManager.getCurrentFrameID(), 1)" data-tooltip-text="Entries" data-tooltip-width="90" data-tooltip-pos="right"></div>
-                                <div class="HeaderButton ToolButton TooltipTarget" onclick="doSwitchLeftTopPanel(FManager.getCurrentFrameID(), 2)" data-tooltip-text="Outputs" data-tooltip-width="90" data-tooltip-pos="right"></div>
-                                <div class="HeaderButton ToolButton Bottom TooltipTarget" onclick="doSwitchLeftBottomPanel(FManager.getCurrentFrameID(), 0)" data-tooltip-text="Data scopes" data-tooltip-width="90" data-tooltip-pos="right"></div>
+                                <div id="LT-B1" class="HeaderButton ToolButton TooltipTarget" data-tooltip-text="Neurons" data-tooltip-width="90" data-tooltip-pos="right"></div>
+                                <div id="LT-B2" class="HeaderButton ToolButton TooltipTarget" data-tooltip-text="Entries" data-tooltip-width="90" data-tooltip-pos="right"></div>
+                                <div id="LT-B3" class="HeaderButton ToolButton TooltipTarget" data-tooltip-text="Outputs" data-tooltip-width="90" data-tooltip-pos="right"></div>
+                                <div id="LT-B4" class="HeaderButton ToolButton Bottom TooltipTarget" data-tooltip-text="Data scopes" data-tooltip-width="90" data-tooltip-pos="right"></div>
                             </div>
                             <div class="PanelBox">
                                 <div id="ELP1" class="Box ElementList">
@@ -79,7 +79,13 @@
                                     </div>
                                 </div>
                                 <div id="DLP1" class="Box ElementList BottomList">
-                                    <div class="PanelToolbar DataScopes"><div>Model lifetime</div><div class="HeaderButton ToolButton TooltipTarget" onclick="doDeleteAllMetrics()" data-tooltip-text="Delete all data scopes" data-tooltip-width="90" data-tooltip-pos="right"></div></div>
+                                    <div class="PanelToolbar DataScopes">
+                                        <div>Model lifetime</div>
+                                        <div class="ToolButtonWrapper">
+                                            <div class="HeaderButton ToolButton TooltipTarget" onclick="doSwitchAutoDataScope()" data-tooltip-text="Use latest data scope" data-tooltip-width="90" data-tooltip-pos="right"></div>
+                                            <div class="HeaderButton ToolButton TooltipTarget" onclick="doDeleteAllMetrics()" data-tooltip-text="Delete all data scopes" data-tooltip-width="90" data-tooltip-pos="right"></div>
+                                        </div>
+                                    </div>
                                     <div class="Box Scrolling" data-scrollboxname="NMSB">
                                         <div class="Scrolldata" style="padding: 0 !important;">
                                             <ul class="List Selectable DataSourceList" data-listname="NMDL"></ul>
