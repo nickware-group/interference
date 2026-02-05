@@ -69,14 +69,17 @@ facefull.doEventHandlerAttach("doUpdateData", function(str) {
                         //     local_data_scope = local_neuron_data.receptors[i].data_scopes.length-1;
                         // }
 
-                        for (let j = 0; j < neuron.receptors[i].scopes.length; j++) {
-                            if (ScopesEditList[i*neuron.receptors.length+j])
-                                ScopesEditList[i*neuron.receptors.length+j].element.value = neuron.receptors[i].scopes[j];
-                            rpos.push({x: neuron.receptors[i].scopes[j][0],
-                                y: neuron.receptors[i].scopes[j][1],
-                                r: 2,
-                                type: "Reference receptor "+(i+1)+" (scope "+j+")"});
+                        if (neuron.receptors[i].scopes !== undefined) {
+                            for (let j = 0; j < neuron.receptors[i].scopes.length; j++) {
+                                if (ScopesEditList[i*neuron.receptors.length+j])
+                                    ScopesEditList[i*neuron.receptors.length+j].element.value = neuron.receptors[i].scopes[j];
+                                rpos.push({x: neuron.receptors[i].scopes[j][0],
+                                    y: neuron.receptors[i].scopes[j][1],
+                                    r: 2,
+                                    type: "Reference receptor "+(i+1)+" (scope "+j+")"});
+                            }
                         }
+
                         if (neuron.receptors[i].phantom !== undefined) {
                             if (PhantomEditList[i])
                                 PhantomEditList[i].element.value = neuron.receptors[i].phantom;
@@ -117,6 +120,7 @@ function doProcessData(viewer, str, full_update = true) {
         FManager.getFrame(viewer).doCreateModel();
 
         console.log("done", performance.now(), data);
+        FManager.getFrame(viewer).getViewer().clear();
         FManager.getFrame(viewer).doClearLists();
         FManager.getFrame(viewer).doUpdateString(str);
 
@@ -154,10 +158,10 @@ function doProcessData(viewer, str, full_update = true) {
         }
 
         for (let i = 0; data.output_signals && i < data.output_signals.length; i++) {
-            doRenderNewNode("O"+(i+1), null, 2, "Output "+(i+1));
-            doRenderNewEdge(data.output_signals[i], "O"+(i+1));
+            doRenderNewNode("Output "+(i+1), null, 2, "Output "+(i+1));
+            doRenderNewEdge(data.output_signals[i], "Output "+(i+1));
 
-            FManager.getFrame(viewer).getData().output_list.push({id: "O"+(i+1), link: data.output_signals[i]});
+            FManager.getFrame(viewer).getData().output_list.push({id: "Output "+(i+1), link: data.output_signals[i]});
         }
 
         FManager.getFrame(viewer).getData().network_info.name = data.name;
@@ -181,71 +185,6 @@ function doProcessData(viewer, str, full_update = true) {
     } catch (e) {
         console.log(e);
     }
-}
-
-function doAddNode(pos, name = "", type = 0) {
-    let newname = name;
-    if (!type) {
-        let keys = Object.keys(FManager.getCurrentFrame().getData().neuron_list);
-
-        if (name === "") {
-            let num = 0;
-            for (let k in keys) {
-                let key = keys[k];
-                if (key.charAt(0) === 'N' && !isNaN(parseInt(key.substring(1)))) {
-                    let newnum = parseInt(key.substring(1));
-                    if (num < newnum) {
-                        num = newnum;
-                    }
-                }
-            }
-            newname = 'N'+(num+1);
-        }
-
-        FManager.getCurrentFrame().getData().neuron_list[newname] = {
-            name: newname,
-            ensemble: "",
-            latency: 0,
-            dimensions: 2,
-            size: 100,
-            input_signals: [],
-            synapses: [],
-            receptors: [],
-        };
-        doRefreshNeuronList(FManager.getCurrentFrameID());
-        doRenderNewNode(newname, pos, type);
-    } else if (type === 1) {
-        if (name === "") {
-            let num = 0;
-            for (let en in FManager.getCurrentFrame().getData().entry_list) {
-                let key = FManager.getCurrentFrame().getData().entry_list[en];
-                if (key.charAt(0) === 'E' && !isNaN(parseInt(key.substring(1)))) {
-                    let newnum = parseInt(key.substring(1));
-                    if (num < newnum) {
-                        num = newnum;
-                    }
-                }
-            }
-            newname = 'E'+(num+1);
-        }
-
-        FManager.getCurrentFrame().getData().entry_list.push(newname);
-        facefull.Lists["IL"+(FManager.getCurrentFrameID()+1)].doAdd([newname]);
-        doRenderNewNode(newname, pos, type);
-    } else if (type === 2) {
-        let nodes = FManager.getCurrentFrame().getData().output_list;
-        let num = nodes.length;
-        let lastid = 0;
-        if (num)
-            lastid = parseInt(nodes[num-1].id.substring(1));
-        newname = 'O'+(lastid+1);
-        // console.log(nodes, num);
-        facefull.Lists["OL"+(FManager.getCurrentFrameID()+1)].doAdd(["Output "+(num+1)]);
-        FManager.getCurrentFrame().getData().output_list.push({id: 'O'+(lastid+1), link: ""});
-        doRenderNewNode(newname, pos, type, "Output "+(num+1));
-    }
-    console.log("add node", newname, type);
-    return newname;
 }
 
 function doComputeClusterPosition(pos, radius, count, r, type="Cluster") {

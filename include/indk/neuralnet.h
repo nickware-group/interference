@@ -60,7 +60,7 @@ namespace indk {
         void doInterlinkInit(int port = 4408, int timeout = 5);
         void doInterlinkWebInit(const std::string& path, int port = 8044);
         void doInterlinkSyncStructure(const std::string &data = "");
-        void doInterlinkSyncData(const std::vector<std::string> &neurons, bool mode, int instance);
+        void doInterlinkSyncData(const std::vector<std::string> &aneurons, bool mode, int instance);
         std::vector<float> doComparePatterns(int CompareFlag = indk::PatternCompareFlags::CompareDefault,
                                              int ProcessingMethod = indk::ScopeProcessingMethods::ProcessMin,
                                              int instance = 0);
@@ -86,7 +86,7 @@ namespace indk {
         void doCreateInstances(int count, int backend = indk::System::ComputeBackends::NativeCPU);
 
         void doTranslateToInstance(std::vector<std::string> inputs = {}, int instance = 0);
-        void doSignalProcess(const std::vector<std::vector<float>>& x, std::vector<std::string> inputs, bool mode, int instance = 0);
+        std::vector<std::string> doSignalProcess(const std::vector<std::vector<float>>& x, std::vector<std::string> inputs, bool mode, int instance = 0);
 
         std::vector<indk::OutputValue> doLearn(const std::vector<std::vector<float>>&, bool reset = true, const std::vector<std::string> &inputs = {}, int instance = 0);
         std::vector<indk::OutputValue> doRecognise(const std::vector<std::vector<float>>&, bool reset = true, const std::vector<std::string> &inputs = {}, int instance = 0);

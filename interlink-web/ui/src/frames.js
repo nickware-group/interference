@@ -136,6 +136,17 @@ function DefaultFrame(id) {
         e.innerHTML = "";
     }
 
+    this.doCheckObjectExists = function(name) {
+        let current_data = this.getData(this.last_structure_id);
+        return current_data.neuron_list[name] !== null && current_data.neuron_list[name] !== undefined
+            || current_data.entry_list.find(function (e) {
+                return e === name
+            })
+            || current_data.output_list.find(function (e) {
+                return e === name
+            });
+    }
+
     this.doManageViewport = function(hid) {
         let h = this.getHistoryListItem(hid);
 

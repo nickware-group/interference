@@ -61,8 +61,15 @@ void indk::NeuralNet::doInterlinkSyncStructure(const std::string &data) {
     else InterlinkService -> doUpdateStructure(data, getTotalParameterCount(), getModelSize());
 }
 
-void indk::NeuralNet::doInterlinkSyncData(const std::vector<std::string> &neurons, bool mode, int instance) {
+void indk::NeuralNet::doInterlinkSyncData(const std::vector<std::string> &aneurons, bool mode, int instance) {
     if (!InterlinkService->isInterlinked()) return;
+
+    std::vector<std::string> neurons = aneurons;
+    if (neurons.empty()) {
+        for (const auto &n: Neurons) {
+            neurons.push_back(n.first);
+        }
+    }
 
     std::map<std::string, std::vector<indk::Position>> ppositions;
     if (!mode) {
@@ -316,7 +323,7 @@ void indk::NeuralNet::doTranslateToInstance(std::vector<std::string> inputs, int
     else InstanceManager.doTranslateToInstance(aneurons.first, Outputs, {}, PrepareID, instance);
 }
 
-void indk::NeuralNet::doSignalProcess(const std::vector<std::vector<float>>& x, std::vector<std::string> inputs, bool mode, int instance) {
+std::vector<std::string> indk::NeuralNet::doSignalProcess(const std::vector<std::vector<float>>& x, std::vector<std::string> inputs, bool mode, int instance) {
     if (inputs.empty()) {
         for (const auto &e: Entries) {
             inputs.push_back(e.first);
@@ -341,7 +348,7 @@ void indk::NeuralNet::doSignalProcess(const std::vector<std::vector<float>>& x, 
         }
     }
 
-    doInterlinkSyncData(aneurons.second, mode, instance);
+    return aneurons.second;
 }
 
 /**
@@ -358,7 +365,8 @@ std::vector<indk::OutputValue> indk::NeuralNet::doLearn(const std::vector<std::v
         doCreateNewScope();
     }
     doTranslateToInstance(inputs, instance);
-    doSignalProcess(Xx, inputs, true, instance);
+    const auto active = doSignalProcess(Xx, inputs, true, instance);
+    doInterlinkSyncData(active, true, instance);
     return getOutputValues({}, instance);
 }
 
@@ -373,7 +381,8 @@ std::vector<indk::OutputValue> indk::NeuralNet::doLearn(const std::vector<std::v
 std::vector<indk::OutputValue> indk::NeuralNet::doRecognise(const std::vector<std::vector<float>>& Xx, bool reset, const std::vector<std::string> &inputs, int instance) {
     if (reset) doReset(instance);
     doTranslateToInstance(inputs, instance);
-    doSignalProcess(Xx, inputs, false, instance);
+    const auto active = doSignalProcess(Xx, inputs, false, instance);
+    doInterlinkSyncData(active, false, instance);
     return getOutputValues({}, instance);
 }
 

@@ -1,3 +1,12 @@
+/////////////////////////////////////////////////////////////////////////////
+// Name:        graph-viewer
+// Purpose:     Graph Viewer module
+// Author:      Nickolay Babich
+// Created:     02.02.2026
+// Copyright:   (c) NickWare Group
+// Licence:     MIT licence
+/////////////////////////////////////////////////////////////////////////////
+
 function GraphViewer(container, options) {
     options = options || {};
     
@@ -65,7 +74,7 @@ GraphViewer.prototype._readCSSStyles = function() {
         nodeStrokeWidth: this._getCSSVar('--node-stroke-width', 0),
         nodeTextColor: this._getCSSVar('--node-text-color', '#ffffff'),
         nodeRadius: this._getCSSVar('--node-radius', 24),
-        nodeFontSize: this._getCSSVar('--node-font-size', 14),
+        nodeFontSize: this._getCSSVar('--node-font-size', 16),
         nodeLabelOffset: this._getCSSVar('--node-label-offset', 6),
         nodeLabelColor: this._getCSSVar('--node-label-color', '#2c5282'),
         nodeSelectionColor: this._getCSSVar('--node-selection-color', '#ff6b6b'),
@@ -306,6 +315,11 @@ GraphViewer.prototype.setNodeRadius = function(id, radius) {
 
 GraphViewer.prototype.getNode = function(id) {
     return this.nodes.get(id);
+};
+
+GraphViewer.prototype.getNodeData = function(id) {
+    var node = this.nodes.get(id);
+    return node ? node.data : null;
 };
 
 GraphViewer.prototype.getOccupiedGridPositions = function() {
@@ -653,6 +667,22 @@ GraphViewer.prototype.isSelected = function(id) {
     return this.selectedNodes.has(id);
 };
 
+GraphViewer.prototype.isNodeVisible = function(id) {
+    var node = this.nodes.get(id);
+    if (!node) return false;
+    
+    var screen = this._worldToScreen(node.x, node.y);
+    var radius = this._getNodeRadius(node);
+    var scaledRadius = radius * this.transform.scale;
+    var fontSize = this.styles.nodeFontSize;
+    var labelOffset = this.styles.nodeLabelOffset != null ? this.styles.nodeLabelOffset : 6;
+    
+    var margin = scaledRadius + fontSize * this.transform.scale + labelOffset * this.transform.scale;
+    
+    return screen.x >= -margin && screen.x <= this.displayWidth + margin &&
+           screen.y >= -margin && screen.y <= this.displayHeight + margin;
+};
+
 GraphViewer.prototype.getSelectedNodes = function() {
     return Array.from(this.selectedNodes);
 };
@@ -764,9 +794,28 @@ GraphViewer.prototype._renderGridWithSkip = function(startX, startY, endX, endY,
     }
 };
 
+GraphViewer.prototype._isLineInViewport = function(x1, y1, x2, y2) {
+    var w = this.displayWidth;
+    var h = this.displayHeight;
+    
+    if ((x1 >= 0 && x1 <= w && y1 >= 0 && y1 <= h) ||
+        (x2 >= 0 && x2 <= w && y2 >= 0 && y2 <= h)) {
+        return true;
+    }
+    
+    if ((x1 < 0 && x2 < 0) || (x1 > w && x2 > w) ||
+        (y1 < 0 && y2 < 0) || (y1 > h && y2 > h)) {
+        return false;
+    }
+    
+    return true;
+};
+
 GraphViewer.prototype._renderEdges = function() {
     var ctx = this.ctx;
     var arrowSize = this.styles.edgeArrowSize;
+    var w = this.displayWidth;
+    var h = this.displayHeight;
     
     for (var i = 0; i < this.edges.length; i++) {
         var edge = this.edges[i];
@@ -777,6 +826,8 @@ GraphViewer.prototype._renderEdges = function() {
         
         var from = this._worldToScreen(fromNode.x, fromNode.y);
         var to = this._worldToScreen(toNode.x, toNode.y);
+        
+        if (!this._isLineInViewport(from.x, from.y, to.x, to.y)) continue;
         
         var dx = to.x - from.x;
         var dy = to.y - from.y;
@@ -840,11 +891,20 @@ GraphViewer.prototype._renderNodes = function() {
     var fontSize = this.styles.nodeFontSize;
     var labelOffset = this.styles.nodeLabelOffset != null ? this.styles.nodeLabelOffset : 6;
     var self = this;
+    var w = this.displayWidth;
+    var h = this.displayHeight;
     
     this.nodes.forEach(function(node, id) {
         var screen = self._worldToScreen(node.x, node.y);
         var radius = self._getNodeRadius(node);
         var scaledRadius = radius * self.transform.scale;
+        
+        var margin = scaledRadius + fontSize * self.transform.scale + labelOffset * self.transform.scale;
+        if (screen.x < -margin || screen.x > w + margin ||
+            screen.y < -margin || screen.y > h + margin) {
+            return;
+        }
+        
         var isSelected = self.selectedNodes.has(id);
         
         var fillColor = isSelected 

@@ -69,112 +69,59 @@ function App() {
         FManager.getCurrentFrame().doManageViewport(id);
     };
 
-    doClearBackground();
     FManager.doSwitchCurrentFrame(0);
     document.getElementById("P0").style.zIndex = 0;
+
+    let onObjectClick = function(viewer, id, list_name) {
+        let name = facefull.Lists[list_name+(viewer+1)].elist.children[id].children[0].innerHTML;
+        console.log("selection list", FManager.getFrame(viewer).selected_elements);
+
+        FManager.getFrame(viewer).doClearSelectedElements();
+        FManager.getFrame(viewer).getViewer().deselectAll();
+
+        let data = FManager.getFrame(viewer).getViewer().getNodeData(name);
+
+        if (data) {
+            FManager.getFrame(viewer).getViewer().selectNode(name);
+            FManager.getCurrentFrame().doAddSelectedElement(data.name, data.type);
+            doClearParameterList(FManager.getCurrentFrameID());
+            doCreateParameterList(data.name, NodeTypeNameByType[data.type]);
+        }
+    };
+
+    let onObjectDoubleClick = function(viewer, id, list_name) {
+        let name = facefull.Lists[list_name+(viewer+1)].elist.children[id].children[0].innerHTML;
+
+        let data = FManager.getFrame(viewer).getViewer().getNodeData(name);
+        if (data) {
+            FManager.getFrame(viewer).getViewer().centerOnNode(name);
+        }
+    };
 
     let init_viewers = [0];
     for (let v in init_viewers) {
         facefull.Lists["EL"+(init_viewers[v]+1)].onSelect = function(id) {
-            let name = facefull.Lists["EL"+(init_viewers[v]+1)].elist.children[id].children[0].innerHTML;
-            console.log("selection list", FManager.getFrame(init_viewers[v]).selected_elements)
-            let list = [...FManager.getFrame(init_viewers[v]).selected_elements];
-            for (let i in list) {
-                FManager.getFrame(init_viewers[v]).getViewer().cs.filter('[id = "'+list[i]+'"]').unselect();
-            }
-
-            // FManager.getFrame(init_viewers[v]).doClearSelectedElements();
-            let obj = FManager.getFrame(init_viewers[v]).getViewer().cs.filter('node[id = "'+name+'"]');
-
-            if (obj.length > 0) {
-                obj.select();
-                doCreateParameterList(name);
-            } else {
-                doClearParameterList(FManager.getCurrentFrameID());
-                doCreateParameterList("", "background");
-            }
+            onObjectClick(init_viewers[v], id, "EL");
         };
 
         facefull.Lists["EL"+(init_viewers[v]+1)].onDoubleClick = function(id) {
-            let name = facefull.Lists["EL"+(init_viewers[v]+1)].elist.children[id].children[0].innerHTML;
-            let obj = FManager.getFrame(init_viewers[v]).getViewer().cs.filter('node[id = "'+name+'"]');
-            if (obj.length > 0) {
-                let position = obj.renderedPosition();
-                let cs_width = FManager.getFrame(init_viewers[v]).getViewer().cs.width();
-                let cs_height = FManager.getFrame(init_viewers[v]).getViewer().cs.height();
-                let current_pan = FManager.getFrame(init_viewers[v]).getViewer().cs.pan();
-                let px= current_pan.x - position.x + cs_width/2
-                let py= current_pan.y - position.y + cs_height/2
-                FManager.getFrame(init_viewers[v]).getViewer().cs.pan({ x: px, y: py });
-            }
+            onObjectDoubleClick(init_viewers[v], id, "EL");
         }
 
         facefull.Lists["IL"+(init_viewers[v]+1)].onSelect = function(id) {
-            let name = facefull.Lists["IL"+(init_viewers[v]+1)].elist.children[id].children[0].innerHTML;
-            console.log("selection list", FManager.getFrame(init_viewers[v]).selected_elements)
-            let list = [...FManager.getFrame(init_viewers[v]).selected_elements];
-            for (let i in list) {
-                FManager.getFrame(init_viewers[v]).getViewer().cs.filter('[id = "'+list[i]+'"]').unselect();
-            }
-
-            // FManager.getFrame(init_viewers[v]).doClearSelectedElements();
-            let obj = FManager.getFrame(init_viewers[v]).getViewer().cs.filter('node[id = "'+name+'"]');
-
-            if (obj.length > 0) {
-                obj.select();
-                doCreateParameterList(name, "entry");
-            } else {
-                doClearParameterList(FManager.getCurrentFrameID());
-            }
+            onObjectClick(init_viewers[v], id, "IL");
         }
 
         facefull.Lists["IL"+(init_viewers[v]+1)].onDoubleClick = function(id) {
-            let name = facefull.Lists["IL"+(init_viewers[v]+1)].elist.children[id].children[0].innerHTML;
-            let obj = FManager.getFrame(init_viewers[v]).getViewer().cs.filter('node[id = "'+name+'"]');
-            if (obj.length > 0) {
-                let position = obj.renderedPosition();
-                let cs_width = FManager.getFrame(init_viewers[v]).getViewer().cs.width();
-                let cs_height = FManager.getFrame(init_viewers[v]).getViewer().cs.height();
-                let current_pan = FManager.getFrame(init_viewers[v]).getViewer().cs.pan();
-                console.log("d click", position, cs_width, cs_height);
-                let px= current_pan.x - position.x + cs_width/2
-                let py= current_pan.y - position.y + cs_height/2
-                FManager.getFrame(init_viewers[v]).getViewer().cs.pan({ x: px, y: py });
-            }
+            onObjectDoubleClick(init_viewers[v], id, "IL");
         }
 
         facefull.Lists["OL"+(init_viewers[v]+1)].onSelect = function(id) {
-            let name = FManager.getFrame(init_viewers[v]).getData().output_list[id].id;
-            console.log("selection list", FManager.getFrame(init_viewers[v]).selected_elements)
-            let list = [...FManager.getFrame(init_viewers[v]).selected_elements];
-            for (let i in list) {
-                FManager.getFrame(init_viewers[v]).getViewer().cs.filter('[id = "'+list[i]+'"]').unselect();
-            }
-
-            // FManager.getFrame(init_viewers[v]).doClearSelectedElements();
-            let obj = FManager.getFrame(init_viewers[v]).getViewer().cs.filter('node[id = "'+name+'"]');
-
-            if (obj.length > 0) {
-                obj.select();
-                doCreateParameterList(name, "output");
-            } else {
-                doClearParameterList(FManager.getCurrentFrameID());
-            }
+            onObjectClick(init_viewers[v], id, "OL");
         }
 
         facefull.Lists["OL"+(init_viewers[v]+1)].onDoubleClick = function(id) {
-            let name = FManager.getFrame(init_viewers[v]).getData().output_list[id].id;
-            let obj = FManager.getFrame(init_viewers[v]).getViewer().cs.filter('node[id = "'+name+'"]');
-            if (obj.length > 0) {
-                let position = obj.renderedPosition();
-                let cs_width = FManager.getFrame(init_viewers[v]).getViewer().cs.width();
-                let cs_height = FManager.getFrame(init_viewers[v]).getViewer().cs.height();
-                let current_pan = FManager.getFrame(init_viewers[v]).getViewer().cs.pan();
-                console.log("d click", position, cs_width, cs_height);
-                let px= current_pan.x - position.x + cs_width/2
-                let py= current_pan.y - position.y + cs_height/2
-                FManager.getFrame(init_viewers[v]).getViewer().cs.pan({ x: px, y: py });
-            }
+            onObjectDoubleClick(init_viewers[v], id, "OL");
         }
     }
 

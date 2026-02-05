@@ -6,7 +6,6 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
         <script src="src/facefull/facefull.min.js" charset="utf-8"></script>
-        <script src="src/cytoscape/cytoscape.js" charset="utf-8"></script>
         <script src="src/chartjs/chart.js"></script>
         <script src="src/chartjs/utils.js"></script>
         <script src="src/chartjs/chartjs-plugin-zoom.js"></script>
@@ -113,11 +112,6 @@
                 </div>
             </div>
             <div id="TT" class="Tooltip"></div>
-            <div id="MPM" class="PopupMenu" data-popupmenu="MPM">
-                <ul><li onclick="doExportStructure()">Export structure...</li></ul>
-                <ul><li class="Separator"></li></ul>
-                <ul><li class="Caution" onclick="doAppExit()">Exit</li></ul>
-            </div>
             <div id="OV" class="Overlay"></div>
             <div id="AE" class="Alert Hidden Rounded">
                 <div class="AlertCaption"></div>
@@ -128,26 +122,9 @@
                     <div id="AB-N" class="Button Rounded">No</div>
                 </div>
             </div>
-            <div id="APC" class="Alert Hidden Rounded">
-                <div class="AlertCaption">Create new project</div>
-                <div class="AlertText">Enter project name:<label><input id="PNE" class="Edit Rounded"></label></div>
-                <div class="AlertButtons">
-                    <div class="Button Rounded" onclick="doCreateProject()">OK</div>
-                    <div class="Button Rounded" onclick="AlertHideCustom('APC')">Cancel</div>
-                </div>
-            </div>
             <div id="NC" class="Alert Hidden Info Rounded">
                 <div class="AlertCaption"></div>
                 <div class="LoadingIndicator Centred"></div>
-            </div>
-            <div id="AAC" class="Alert Warning Hidden Rounded">
-                <div class="AlertCaption">Save changes</div>
-                <div class="AlertText">You have some unsaved changed. Save it now and exit or exit without saving?</div>
-                <div class="AlertButtons Small">
-                    <div class="Button Rounded" onclick="doSaveProjectAndExit()">Yes</div>
-                    <div class="Button Rounded" onclick="doAppExitForce()">No</div>
-                    <div class="Button Rounded" onclick="AlertHideCustom('AAC')">Cancel</div>
-                </div>
             </div>
         </div>
     </body>

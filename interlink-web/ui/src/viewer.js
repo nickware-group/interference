@@ -3,10 +3,12 @@ let NodeWeightByType = {0: 24, 1: 15, 2: 15}
 let NodeTypeNameByType = {0: "neuron", 1: "entry", 2: "output"}
 
 let doHighlightNode = function(id) {
-    FManager.getInterlinkFrame().getViewer().setNodeColor(id, getCSStyleColor("node-highlighted"));
-    setTimeout(function() {
-        FManager.getInterlinkFrame().getViewer().setNodeColor(id, getCSStyleColor("node"));
-    }, 1000);
+    if (FManager.getInterlinkFrame().getViewer().isNodeVisible(id)) {
+        FManager.getInterlinkFrame().getViewer().setNodeColor(id, getCSStyleColor("node-highlighted"));
+        setTimeout(function() {
+            FManager.getInterlinkFrame().getViewer().setNodeColor(id, getCSStyleColor("node"));
+        }, 1500);
+    }
 };
 
 function doApplyStylesheet(viewer) {
@@ -67,26 +69,6 @@ function doInitViewerAttributes(viewer, startpoint = "", predefined = false, id 
             console.log(e);
         }
     });
-    //
-    // cy.on('select', function(evt) {
-    //     try {
-    //         let flag = (evt.target.data("weight"));
-    //         if (flag === -1 || flag === 1 || flag === 2)
-    //
-    //     } catch (e) {
-    //         console.log("on node select", e);
-    //     }
-    // });
-    //
-    // cy.on('unselect', function(evt) {
-    //     try {
-    //         let flag = (evt.target.data("weight"));
-    //         if (flag === -1 || flag === 1 || flag === 2)
-    //             FManager.getCurrentFrame().doRemoveSelectedElement(evt.target.id());
-    //     } catch (e) {
-    //         console.log("on node unselect", e);
-    //     }
-    // });
 }
 
 function doRenderNewNode(id, pos = null, type = 0, name = "") {
@@ -97,13 +79,4 @@ function doRenderNewNode(id, pos = null, type = 0, name = "") {
 function doRenderNewEdge(id1, id2) {
     FManager.getCurrentFrame().getViewer().addEdge(id1, id2);
     FManager.getCurrentFrame().getViewer().setEdgeColor(id1, id2, getCSStyleColor("edge"));
-}
-
-function doClearBackground() {
-
-    // if (FManager.getCurrentFrame() && FManager.getCurrentFrame().getViewer().context && FManager.getCurrentFrame().getViewer().canvas) {
-    //     FManager.getCurrentFrame().getViewer().context.fillStyle = getCSStyleColor("bg"); // page bg color
-    //     FManager.getCurrentFrame().getViewer().context.fillRect(0, 0, FManager.getCurrentFrame().getViewer().canvas.width,
-    //                                                                         FManager.getCurrentFrame().getViewer().canvas.height);
-    // }
 }

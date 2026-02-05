@@ -230,13 +230,16 @@ function doCreateParameterList(name, type = "neuron", viewer = -1) {
             doAddPanelParameter(name, "Scopes", "", 2, 1, {type: "receptor", id: i});
 
             if (FManager.getCurrentFrameID() === FManager.getInterlinkFrameID() && data) {
-                for (let j = 0; j < data.receptors[i].scopes.length; j++) {
-                    doAddPanelParameter(name, "Scope "+j+" position", data.receptors[i].scopes[j], 3, 0, {type: "scope", id: i.toString()+"-"+j.toString()});
-                    rpos.push({x: data.receptors[i].scopes[j][0],
-                        y: data.receptors[i].scopes[j][1],
-                        r: 2,
-                        type: "Reference receptor "+(i+1)+" (scope "+j+")"});
+                if (data.receptors[i].scopes) {
+                    for (let j = 0; j < data.receptors[i].scopes.length; j++) {
+                        doAddPanelParameter(name, "Scope "+j+" position", data.receptors[i].scopes[j], 3, 0, {type: "scope", id: i.toString()+"-"+j.toString()});
+                        rpos.push({x: data.receptors[i].scopes[j][0],
+                            y: data.receptors[i].scopes[j][1],
+                            r: 2,
+                            type: "Reference receptor "+(i+1)+" (scope "+j+")"});
+                    }
                 }
+
                 if (data.receptors[i].phantom) {
                     doAddPanelParameter(name, "Phantom position", data.receptors[i].phantom, 2, 1, {type: "phantom", id: i});
                     rposf.push({x: data.receptors[i].phantom[0],
