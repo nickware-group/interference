@@ -66,6 +66,7 @@ function App() {
     doSwitchRightPanel(0, 0);
 
     facefull.Lists["NMDL"].onSelect = function(id) {
+        FManager.getCurrentFrame().setAutoUpdateScope(false);
         FManager.getCurrentFrame().doManageViewport(id);
     };
 

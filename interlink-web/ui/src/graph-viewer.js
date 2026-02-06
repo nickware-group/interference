@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        graph-viewer
+// Name:        graph-viewer.js
 // Purpose:     Graph Viewer module
 // Author:      Nickolay Babich
 // Created:     02.02.2026
@@ -43,6 +43,7 @@ function GraphViewer(container, options) {
     this.selectedNodes = new Set();
     
     this.gridColorOverride = null;
+    this.autoRender = true;
     
     this._createCanvas();
     this._bindEvents();
@@ -274,7 +275,7 @@ GraphViewer.prototype.addNode = function(id, gridX, gridY, options) {
     };
     
     this.nodes.set(id, node);
-    this.render();
+    this._autoRender();
     return this;
 };
 
@@ -283,7 +284,7 @@ GraphViewer.prototype.removeNode = function(id) {
     this.edges = this.edges.filter(function(edge) {
         return edge.from !== id && edge.to !== id;
     });
-    this.render();
+    this._autoRender();
     return this;
 };
 
@@ -291,7 +292,7 @@ GraphViewer.prototype.setNodeColor = function(id, color) {
     var node = this.nodes.get(id);
     if (node) {
         node.color = color;
-        this.render();
+        this._autoRender();
     }
     return this;
 };
@@ -300,7 +301,7 @@ GraphViewer.prototype.setAllNodesColor = function(color) {
     this.nodes.forEach(function(node) {
         node.color = color;
     });
-    this.render();
+    this._autoRender();
     return this;
 };
 
@@ -308,7 +309,7 @@ GraphViewer.prototype.setNodeRadius = function(id, radius) {
     var node = this.nodes.get(id);
     if (node) {
         node.radius = radius;
-        this.render();
+        this._autoRender();
     }
     return this;
 };
@@ -514,7 +515,7 @@ GraphViewer.prototype.layoutComponent = function(nodeIds, startX, startY, gapX, 
         x += gapX;
     }
     
-    this.render();
+    this._autoRender();
     return this;
 };
 
@@ -542,7 +543,7 @@ GraphViewer.prototype.autoLayout = function(gapX, gapY) {
         currentY += componentHeight + gapY + 1;
     }
     
-    this.render();
+    this._autoRender();
     return this;
 };
 
@@ -556,7 +557,7 @@ GraphViewer.prototype.addEdge = function(fromId, toId, options) {
     };
     
     this.edges.push(edge);
-    this.render();
+    this._autoRender();
     return this;
 };
 
@@ -564,7 +565,7 @@ GraphViewer.prototype.removeEdge = function(fromId, toId) {
     this.edges = this.edges.filter(function(edge) {
         return !(edge.from === fromId && edge.to === toId);
     });
-    this.render();
+    this._autoRender();
     return this;
 };
 
@@ -574,7 +575,7 @@ GraphViewer.prototype.setEdgeColor = function(fromId, toId, color) {
     });
     if (edge) {
         edge.color = color;
-        this.render();
+        this._autoRender();
     }
     return this;
 };
@@ -583,25 +584,25 @@ GraphViewer.prototype.setAllEdgesColor = function(color) {
     for (var i = 0; i < this.edges.length; i++) {
         this.edges[i].color = color;
     }
-    this.render();
+    this._autoRender();
     return this;
 };
 
 GraphViewer.prototype.setGridColor = function(color) {
     this.gridColorOverride = color;
-    this.render();
+    this._autoRender();
     return this;
 };
 
 GraphViewer.prototype.setBackgroundColor = function(color) {
     this.styles.backgroundColor = color;
-    this.render();
+    this._autoRender();
     return this;
 };
 
 GraphViewer.prototype.setAllLabelsColor = function(color) {
     this.styles.nodeLabelColor = color;
-    this.render();
+    this._autoRender();
     return this;
 };
 
@@ -622,7 +623,7 @@ GraphViewer.prototype.selectNode = function(id) {
     this.selectedNodes.add(id);
     
     this._notifySelectionChange();
-    this.render();
+    this._autoRender();
     return this;
 };
 
@@ -632,7 +633,7 @@ GraphViewer.prototype.addToSelection = function(id) {
     this.selectedNodes.add(id);
     
     this._notifySelectionChange();
-    this.render();
+    this._autoRender();
     return this;
 };
 
@@ -640,7 +641,7 @@ GraphViewer.prototype.deselectNode = function(id) {
     if (this.selectedNodes.has(id)) {
         this.selectedNodes.delete(id);
         this._notifySelectionChange();
-        this.render();
+        this._autoRender();
     }
     return this;
 };
@@ -649,7 +650,7 @@ GraphViewer.prototype.deselectAll = function() {
     if (this.selectedNodes.size > 0) {
         this.selectedNodes.clear();
         this._notifySelectionChange();
-        this.render();
+        this._autoRender();
     }
     return this;
 };
@@ -689,7 +690,7 @@ GraphViewer.prototype.getSelectedNodes = function() {
 
 GraphViewer.prototype.setSelectionColor = function(color) {
     this.styles.nodeSelectionColor = color;
-    this.render();
+    this._autoRender();
     return this;
 };
 
@@ -727,6 +728,28 @@ GraphViewer.prototype.setZoom = function(scale) {
     this.transform.offsetY = centerY - worldY * this.transform.scale;
     
     this.render();
+    return this;
+};
+
+GraphViewer.prototype._autoRender = function() {
+    if (this.autoRender) {
+        this.render();
+    }
+};
+
+GraphViewer.prototype.beginBatch = function() {
+    this.autoRender = false;
+    return this;
+};
+
+GraphViewer.prototype.endBatch = function() {
+    this.autoRender = true;
+    this.render();
+    return this;
+};
+
+GraphViewer.prototype.setAutoRender = function(enabled) {
+    this.autoRender = enabled;
     return this;
 };
 
@@ -974,7 +997,8 @@ GraphViewer.prototype.saveJSON = function() {
 };
 
 GraphViewer.prototype.load = function(data) {
-    var self = this;
+    var prevAutoRender = this.autoRender;
+    this.autoRender = false;
     
     this.nodes.clear();
     this.edges = [];
@@ -1003,7 +1027,8 @@ GraphViewer.prototype.load = function(data) {
         }
     }
     
-    this.render();
+    this.autoRender = prevAutoRender;
+    this._autoRender();
     return this;
 };
 
@@ -1015,7 +1040,7 @@ GraphViewer.prototype.clear = function() {
     this.nodes.clear();
     this.edges = [];
     this.selectedNodes.clear();
-    this.render();
+    this._autoRender();
     return this;
 };
 

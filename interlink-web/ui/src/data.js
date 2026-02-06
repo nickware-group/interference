@@ -111,19 +111,27 @@ function doProcessData(viewer, str, full_update = true) {
     setInterlinkConnectionStatus(true);
 
     try {
+        console.log("[process] start parse", performance.now());
+
         let data = JSON.parse(str);
 
         FManager.getFrame(viewer).doCreateModel();
 
-        console.log("done", performance.now(), data);
+        console.log("[process] parse done", performance.now());
+
         FManager.getFrame(viewer).getViewer().clear();
+        FManager.getFrame(viewer).getViewer().setAutoRender(false);
         FManager.getFrame(viewer).doClearLists();
         FManager.getFrame(viewer).doUpdateString(str);
+
+        console.log("[process] rendering prepare done", performance.now());
 
         for (let i = 0; i < data.entries.length; i++) {
             doRenderNewNode(data.entries[i], null, 1, data.entries[i]);
             FManager.getFrame(viewer).getData().entry_list.push(data.entries[i]);
         }
+
+        console.log("[process] entries rendering done", performance.now());
 
         let ensemble = "";
         for (let i = 0; i < data.neurons.length; i++) {
@@ -153,12 +161,16 @@ function doProcessData(viewer, str, full_update = true) {
             }
         }
 
+        console.log("[process] neurons rendering done", performance.now());
+
         for (let i = 0; data.output_signals && i < data.output_signals.length; i++) {
             doRenderNewNode("Output "+(i+1), null, 2, "Output "+(i+1));
             doRenderNewEdge(data.output_signals[i], "Output "+(i+1));
 
             FManager.getFrame(viewer).getData().output_list.push({id: "Output "+(i+1), link: data.output_signals[i]});
         }
+
+        console.log("[process] outputs rendering done", performance.now());
 
         FManager.getFrame(viewer).getData().network_info.name = data.name;
         FManager.getFrame(viewer).getData().network_info.desc = data.desc;
@@ -168,10 +180,9 @@ function doProcessData(viewer, str, full_update = true) {
 
         setInterlinkConnectionName(data.name);
 
-        console.log("done", performance.now());
+        console.log("[process] rendering done", performance.now());
 
-        //if (full_update) FManager.getFrame(viewer).doInitViewer(elements, FManager.getFrame(viewer).getData().entry_list[0]);
-        //else
+        FManager.getFrame(viewer).getViewer().setAutoRender(true);
         FManager.getFrame(viewer).doUpdateLayout();
         FManager.getFrame(viewer).getData().viewer_elements = FManager.getFrame(viewer).getViewer().save();
         FManager.getFrame(viewer).doRedrawLists();

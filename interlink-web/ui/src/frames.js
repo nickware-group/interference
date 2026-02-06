@@ -50,6 +50,7 @@ function DefaultFrame(id) {
     this.rightpanel_state = -1;
     this.selected_elements = [];
     this.last_structure_id = -1;
+    this.auto_update_scope = true;
 
     this.doInit = function() {
         console.log("frame init");
@@ -87,6 +88,13 @@ function DefaultFrame(id) {
 
         facefull.Lists["NMDL"].doAdd(["["+this.model_lifetime_list.length+"] "+str]);
         facefull.Scrollboxes["NMSB"].doUpdateScrollbar();
+
+        if (this.auto_update_scope) {
+            facefull.Lists["NMDL"].doSelect(facefull.Lists["NMDL"].getLength()-1);
+
+            this.auto_update_scope = true; // redefine after list's doSelect
+        }
+
         if (facefull.Lists["NMDL"].getState() === -1) this.last_structure_id = id;
     }
 
@@ -236,6 +244,14 @@ function DefaultFrame(id) {
 
     this.setRightPanelState = function(state) {
         this.rightpanel_state = state;
+    }
+
+    this.setAutoUpdateScope = function(update = true) {
+        this.auto_update_scope = update;
+    }
+
+    this.getAutoUpdateScope = function() {
+        return this.auto_update_scope;
     }
 
     this.getViewer = function() {
