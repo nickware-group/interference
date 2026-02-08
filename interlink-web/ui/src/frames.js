@@ -157,6 +157,7 @@ function DefaultFrame(id) {
 
     this.doManageViewport = function(hid) {
         let h = this.getHistoryListItem(hid);
+        let update = true;
 
         if (h.structure_id !== this.last_structure_id) {
             this.doImportViewer(this.getData(h.structure_id).viewer_elements);
@@ -164,10 +165,11 @@ function DefaultFrame(id) {
 
             this.selected_elements = [];
             this.last_structure_id = h.structure_id;
+            update = false;
         }
 
         let e = this.getLastSelectedElement();
-        if (e !== "") doCreateParameterList(e.name, NodeTypeNameByType[e.type]);
+        if (e !== "") doCreateParameterList(e.name, NodeTypeNameByType[e.type], -1, update);
         else doCreateParameterList("", "background");
     }
 

@@ -128,14 +128,27 @@ function doClearParameterList(viewer = 0) {
     doClearNeuronModel(viewer);
 }
 
-function doCreateParameterList(name, type = "neuron", viewer = -1) {
+function doCreateParameterList(name, type = "neuron", viewer = -1, reopen = false) {
     console.log("creating param list for", name, type, viewer)
-    if (viewer === -1) viewer = FManager.getCurrentFrameID();
-    facefull.Lists["PL"+(viewer+1)].doClear();
+
+    let opened = [];
 
     let hid = facefull.Lists["NMDL"].getState();
     let h = FManager.getCurrentFrame().getHistoryListItem(hid);
-    console.log(h);
+    if (viewer === -1) viewer = FManager.getCurrentFrameID();
+
+    if (reopen) {
+        console.log("list", facefull.Lists["PL"+(viewer+1)].elist.children.length)
+        for (let i = 0; i < facefull.Lists["PL"+(viewer+1)].elist.children.length; i++) {
+            let eitem = facefull.Lists["PL"+(viewer+1)].elist.children[i];
+            let eaction = eitem.children[eitem.children.length-1];
+            if (eaction.classList.contains("Opened")) {
+                opened.push(i);
+            }
+        }
+    }
+
+    facefull.Lists["PL"+(viewer+1)].doClear();
 
     if (type === "background") {
         doAddPanelParameter(name, "Structure name", FManager.getFrame(viewer).getData(h.structure_id).network_info.name, 0, 0, {type: type}, viewer);
@@ -166,12 +179,12 @@ function doCreateParameterList(name, type = "neuron", viewer = -1) {
     let rposf = [];
 
     // console.log("timeline data", FManager.getFrame(viewer).getData().timeline_data);
+    // console.log("parameter list", info, data);
 
     let info = FManager.getFrame(viewer).getData(h.structure_id).neuron_list[name];
     let data = null;
     if (h.data_id >= 0 && FManager.getFrame(viewer).getData(h.structure_id).timeline_data && FManager.getFrame(viewer).getData(h.structure_id).timeline_data.length > h.data_id)
         data = FManager.getFrame(viewer).getData(h.structure_id).timeline_data[h.data_id].neurons[name];
-    // console.log("parameter list", info, data);
 
     doAddPanelParameter(name, "Ensemble", info.ensemble);
     doAddPanelParameter(name, "Latency", info.latency!==undefined?info.latency:0);
@@ -248,6 +261,13 @@ function doCreateParameterList(name, type = "neuron", viewer = -1) {
                         type: "Phantom receptor "+(i+1)});
                 }
             }
+        }
+    }
+
+    if (reopen) {
+        for (let i = 0; i < opened.length; i++) {
+            let eitem = facefull.Lists["PL"+(viewer+1)].elist.children[opened[i]];
+            if (eitem) facefull.Lists["PL"+(viewer+1)].doOpenClose({target: eitem});
         }
     }
 
