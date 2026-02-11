@@ -48,7 +48,7 @@
 }
 
 .List li {
-    padding-left: 5px;
+    padding-left: 10px;
 }
 
 .List.Selectable li {
@@ -120,7 +120,7 @@
 }
 
 .ElementList {
-    width: 200px;
+    width: 250px;
     /*flex-shrink: 0 !important;*/
     margin-left: 0;
     margin-right: 0;
@@ -139,15 +139,19 @@
     padding-bottom: 4px;
     font-size: 12px;
     margin-left: 0 !important;
+    justify-content: flex-start;
 }
 
 .ElementList .List li > div:first-child {
     margin-left: 25px;
+    order: 2;
 }
 
 .ElementList .List li > div:last-child {
     text-align: left;
     position: absolute;
+    margin-top: -4px;
+    order: 1;
 }
 
 .Box.Grid.MainBox {
@@ -322,6 +326,7 @@
 .DetailsList li > label, .DetailsListButtonWrapper {
     width: 100%;
     min-width: 146.5px;
+    order: 3;
 }
 
 .DetailsList li > label > .Edit {
@@ -335,7 +340,8 @@
 }
 
 .DetailsList li > div:nth-child(1) {
-    margin-left: 30px;
+    margin-left: 35px;
+    order: 2;
 }
 
 .DetailsList li > div:nth-child(3) {
@@ -343,6 +349,8 @@
     position: absolute;
     width: auto;
     margin-left: 0;
+    order: 1;
+    margin-top: 4px;
     /*display: none;*/
 }
 

@@ -103,11 +103,6 @@ function doSwitchAutoDataScope() {
 
 function doDeleteAllMetrics() {
     facefull.Lists["NMDL"].doClear();
-    facefull.doEventSend("doClearMetricsData");
     facefull.Scrollboxes["NMSB"].doUpdateScrollbar();
-    for (let n in FManager.getInterlinkFrame().getData().neuron_list) {
-        for (let i = 0; i < FManager.getInterlinkFrame().getData().neuron_list[n].receptors.length; i++) {
-            FManager.getInterlinkFrame().getData().neuron_list[n].receptors[i].data_scopes = [];
-        }
-    }
+    FManager.getInterlinkFrame().doClearModelHistory();
 }

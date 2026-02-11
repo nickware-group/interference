@@ -173,6 +173,10 @@ function DefaultFrame(id) {
         else doCreateParameterList("", "background");
     }
 
+    this.doClearModelHistory = function() {
+        this.model_lifetime_list = [];
+    }
+
     this.doRedrawLists = function(id = -1) {
         this.doClearLists();
         let ne_list = {};
