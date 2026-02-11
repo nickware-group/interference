@@ -63,8 +63,11 @@ namespace indk {
             std::string CurrentDeviceName;
 #ifdef INDK_VULKAN_SUPPORT
             vk::Instance Instance;
-#endif
 
+            static vk::ShaderModule doCreateShaderModule(vk::Device device, const std::vector<uint32_t>& spirvCode);
+            static uint32_t doFindMemoryType(vk::PhysicalDevice physicalDevice, uint32_t typeFilter, vk::MemoryPropertyFlags properties);
+            static void doCreateComputePipeline(DeviceContext* dcontext);
+#endif
         public:
             typedef struct Parameters : public indk::ComputeBackend::Parameters {
                 std::string device_name;
@@ -83,14 +86,6 @@ namespace indk {
             std::vector<DeviceInfo> getDeviceInfoList();
             static std::vector<DeviceInfo> getDevicesInfo();
             ~Vulkan();
-
-        private:
-#ifdef INDK_VULKAN_SUPPORT
-            vk::ShaderModule createShaderModule(vk::Device device, const std::vector<uint32_t>& spirvCode);
-            void createComputePipeline(DeviceContext* dcontext);
-            vk::Buffer createBuffer(vk::Device device, vk::DeviceSize size, vk::BufferUsageFlags usage);
-            uint32_t findMemoryType(vk::PhysicalDevice physicalDevice, uint32_t typeFilter, vk::MemoryPropertyFlags properties);
-#endif
         };
     }
 }

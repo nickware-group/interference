@@ -18,10 +18,10 @@
 #include "shaders/vulkan_shaders.h"
 #endif
 
-indk::ComputeBackends::Vulkan *vk_handler = nullptr;
+indk::ComputeBackends::Vulkan *VulkanHandler = nullptr;
 
 indk::ComputeBackends::Vulkan::Vulkan() {
-    vk_handler = this;
+    VulkanHandler = this;
     BackendName = "Vulkan";
     TranslatorName = indk::Translators::VK::getTranslatorName();
     Ready = false;
@@ -91,7 +91,7 @@ indk::ComputeBackends::Vulkan::Vulkan() {
 }
 
 #ifdef INDK_VULKAN_SUPPORT
-vk::ShaderModule indk::ComputeBackends::Vulkan::createShaderModule(vk::Device device, const std::vector<uint32_t>& spirvCode) {
+vk::ShaderModule indk::ComputeBackends::Vulkan::doCreateShaderModule(vk::Device device, const std::vector<uint32_t>& spirvCode) {
     vk::ShaderModuleCreateInfo createInfo;
     createInfo.codeSize = spirvCode.size() * sizeof(uint32_t);
     createInfo.pCode = spirvCode.data();
@@ -99,7 +99,7 @@ vk::ShaderModule indk::ComputeBackends::Vulkan::createShaderModule(vk::Device de
     return device.createShaderModule(createInfo);
 }
 
-uint32_t indk::ComputeBackends::Vulkan::findMemoryType(vk::PhysicalDevice physicalDevice, uint32_t typeFilter, vk::MemoryPropertyFlags properties) {
+uint32_t indk::ComputeBackends::Vulkan::doFindMemoryType(vk::PhysicalDevice physicalDevice, uint32_t typeFilter, vk::MemoryPropertyFlags properties) {
     auto memProperties = physicalDevice.getMemoryProperties();
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
         if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
@@ -109,8 +109,8 @@ uint32_t indk::ComputeBackends::Vulkan::findMemoryType(vk::PhysicalDevice physic
     throw std::runtime_error("Failed to find suitable memory type!");
 }
 
-void indk::ComputeBackends::Vulkan::createComputePipeline(DeviceContext* dcontext) {
-    // Create descriptor set layout with 5 bindings (max needed by neurons shader)
+void indk::ComputeBackends::Vulkan::doCreateComputePipeline(DeviceContext* dcontext) {
+    // Create descriptor set layout with 5 bindings
     std::vector<vk::DescriptorSetLayoutBinding> bindings(5);
     for (uint32_t i = 0; i < 5; i++) {
         bindings[i].binding = i;
@@ -133,9 +133,9 @@ void indk::ComputeBackends::Vulkan::createComputePipeline(DeviceContext* dcontex
     dcontext->pipelineLayout = dcontext->device.createPipelineLayout(pipelineLayoutInfo);
 
     // Create shader modules
-    dcontext->pairsShader = createShaderModule(dcontext->device, indk::shaders::pairs_spirv);
-    dcontext->receptorsShader = createShaderModule(dcontext->device, indk::shaders::receptors_spirv);
-    dcontext->neuronsShader = createShaderModule(dcontext->device, indk::shaders::neurons_spirv);
+    dcontext->pairsShader = doCreateShaderModule(dcontext->device, indk::ComputeBackends::Shaders::PairsSPIRV);
+    dcontext->receptorsShader = doCreateShaderModule(dcontext->device,indk::ComputeBackends::Shaders::ReceptorsSPIRV);
+    dcontext->neuronsShader = doCreateShaderModule(dcontext->device, indk::ComputeBackends::Shaders::NeuronsSPIRV);
 
     // Create compute pipelines
     auto createPipeline = [&](vk::ShaderModule shader) -> vk::Pipeline {
@@ -206,7 +206,7 @@ indk::ComputeBackends::Vulkan::DeviceContext* indk::ComputeBackends::Vulkan::doI
     dcontext->commandPool = dcontext->device.createCommandPool(poolInfo);
 
     // Create pipelines
-    createComputePipeline(dcontext);
+    doCreateComputePipeline(dcontext);
 
     dcontext->ready = true;
 
@@ -246,7 +246,7 @@ void indk::ComputeBackends::Vulkan::doCompute(const std::vector<indk::Neuron*> &
         auto memRequirements = dcontext->device.getBufferMemoryRequirements(buffer);
         vk::MemoryAllocateInfo allocInfo;
         allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = findMemoryType(dcontext->physicalDevice, memRequirements.memoryTypeBits,
+        allocInfo.memoryTypeIndex = doFindMemoryType(dcontext->physicalDevice, memRequirements.memoryTypeBits,
             vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
         auto memory = dcontext->device.allocateMemory(allocInfo);
@@ -591,7 +591,7 @@ std::vector<indk::ComputeBackends::Vulkan::DeviceInfo> indk::ComputeBackends::Vu
 }
 
 std::vector<indk::ComputeBackends::Vulkan::DeviceInfo> indk::ComputeBackends::Vulkan::getDevicesInfo() {
-    if (vk_handler) return vk_handler->getDeviceInfoList();
+    if (VulkanHandler) return VulkanHandler->getDeviceInfoList();
     return {};
 }
 

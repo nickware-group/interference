@@ -15,10 +15,10 @@
 
 #define KERNEL(name, ...) std::string name = #__VA_ARGS__
 
-indk::ComputeBackends::OpenCL *handler = nullptr;
+indk::ComputeBackends::OpenCL *OpenCLHandler = nullptr;
 
 indk::ComputeBackends::OpenCL::OpenCL() {
-    handler = this;
+    OpenCLHandler = this;
     BackendName = "OpenCL";
     TranslatorName = indk::Translators::CL::getTranslatorName();
     Ready = false;
@@ -489,7 +489,7 @@ std::vector<indk::ComputeBackends::OpenCL::DeviceInfo> indk::ComputeBackends::Op
 }
 
 std::vector<indk::ComputeBackends::OpenCL::DeviceInfo> indk::ComputeBackends::OpenCL::getDevicesInfo() {
-    if (handler) return handler->getDeviceInfoList();
+    if (OpenCLHandler) return OpenCLHandler->getDeviceInfoList();
     return {};
 }
 
