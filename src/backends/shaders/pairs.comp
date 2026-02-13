@@ -1,0 +1,65 @@
+#version 450
+
+layout(local_size_x = 64) in;
+
+layout(std430, binding = 0) buffer PairsBuffer {
+    vec4 pairs[];  // Using vec4 arrays, 4 vec4s per pair (16 floats)
+};
+
+layout(std430, binding = 1) buffer InputsBuffer {
+    vec2 inputs[];
+};
+
+layout(std430, binding = 2) buffer OutputsBuffer {
+    float outputs[];
+};
+
+void main() {
+    uint id = gl_GlobalInvocationID.x;
+    uint base = id * 4;  // 4 vec4s per pair
+
+    // pairs[base+0]: (receptor_x, receptor_y, synapse_x, synapse_y)
+    // pairs[base+1]: (gamma, input_index, lambda, k1)
+    // pairs[base+2]: (k2, reserved, reserved, reserved)
+    // pairs[base+3]: (nx, ny, fi, reserved) - output
+
+    int inputIdx = int(pairs[base + 1].y);
+    int run = int(inputs[inputIdx].x);
+
+    if (run != 0) {
+        float inVal = inputs[inputIdx].y;
+
+        // Vector length (distance)
+        float dx = pairs[base].x - pairs[base].z;
+        float dy = pairs[base].y - pairs[base].w;
+        float d = sqrt(dx * dx + dy * dy);
+
+        float gamma = pairs[base + 1].x;
+        float lambda = pairs[base + 1].z;
+        float k1 = pairs[base + 1].w;
+        float k2 = pairs[base + 2].x;
+
+        // New gamma value
+        float ngamma = gamma + (k1 * inVal - gamma / k2);
+
+        // Fi function
+        float e = lambda * exp(-lambda * d);
+        float fi = ngamma * e;
+        float dfi = (ngamma - gamma) * e;
+
+        float nx = 0.0, ny = 0.0;
+        if (dfi > 0.0 && d > 0.0) {
+            float nposd = sqrt(dfi) / d;
+            nx = dx * nposd;
+            ny = dy * nposd;
+        }
+
+        // Update gamma value
+        pairs[base + 1].x = ngamma;
+
+        // Store output values
+        pairs[base + 3].x = nx;
+        pairs[base + 3].y = ny;
+        pairs[base + 3].z = fi;
+    }
+}

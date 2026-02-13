@@ -21,18 +21,18 @@ This framework is highly scalable. It is suitable for both powerful computing cl
 
 ----------------------------------------------------------------
 ### PLATFORMS
-|                                | x86 | aarch64 | armle.v7 | PowerPC | e2k | MIPS |
-|:------------------------------:|:---:|:-------:|:--------:|:-------:|:---:|:----:|
-|          **Windows**           |  +  |         |          |         |     |      |
-|           **Linux**            |  +  |    +    |    +     |         |  +  |      |
-|            **QNX**             |  +  |         |    +     |         |     |      |
-| **Secured RTOS KPDA 10964-01** |  +  |    +    |    +     |    +    |  +  |  +   |
+|                                | x86 | aarch64 | armle.v7 |  e2k | MIPS |
+|:------------------------------:|:---:|:-------:|:--------:|:---:|:----:|
+|          **Windows**           |  +  |    +    |          |     |      |
+|           **Linux**            |  +  |    +    |    +     |  +  |      |
+|            **QNX**             |  +  |         |    +     |     |      |
 
 ----------------------------------------------------------------
 ### COMPUTING
 - Native CPU (single thread)
 - Native CPU (multithread)
 - OpenCL
+- Vulkan (experimental)
 
 ----------------------------------------------------------------
 ### REQUIREMENTS

@@ -49,7 +49,9 @@ namespace indk {
             /// Native CPU multithread compute backend. You can set the number of threads by `parameter` argument of setComputeBackend method.
             NativeCPUMultithread,
             /// OpenCL compute backend.
-            OpenCL
+            OpenCL,
+            /// Vulkan compute backend.
+            Vulkan
         } ComputeBackends;
     };
 

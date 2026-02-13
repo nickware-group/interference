@@ -10,6 +10,7 @@
 #ifndef INTERFERENCE_MATH_H
 #define INTERFERENCE_MATH_H
 
+#include <cstdint>
 #include <queue>
 #include <indk/position.h>
 

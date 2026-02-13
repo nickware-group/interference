@@ -15,10 +15,10 @@
 
 #define KERNEL(name, ...) std::string name = #__VA_ARGS__
 
-indk::ComputeBackends::OpenCL *handler = nullptr;
+indk::ComputeBackends::OpenCL *OpenCLHandler = nullptr;
 
 indk::ComputeBackends::OpenCL::OpenCL() {
-    handler = this;
+    OpenCLHandler = this;
     BackendName = "OpenCL";
     TranslatorName = indk::Translators::CL::getTranslatorName();
     Ready = false;
@@ -271,7 +271,7 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<indk::Neuron*> &
 
     std::vector<std::pair<uint64_t, bool>> incache;
     uint64_t i = 0;
-    for (const auto &n: model->objects) {
+    for (const auto &n: neurons) {
         auto elist = n -> getEntries();
 
         for (const auto &e: elist) {
@@ -280,9 +280,9 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<indk::Neuron*> &
                 auto index = std::distance(inputs.begin(), ifound);
                 incache.emplace_back(index, false);
             } else {
-                auto nfound = std::find_if(model->objects.begin(), model->objects.end(), [e](indk::Neuron *n) { return n->getName()==e; });
-                if (nfound != model->objects.end()) {
-                    auto index = std::distance(model->objects.begin(), nfound);
+                auto nfound = std::find_if(neurons.begin(), neurons.end(), [e](indk::Neuron *n) { return n->getName()==e; });
+                if (nfound != neurons.end()) {
+                    auto index = std::distance(neurons.begin(), nfound);
                     incache.emplace_back(index, true);
                 }
             }
@@ -290,7 +290,7 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<indk::Neuron*> &
         model -> output_sequence.emplace_back();
 
         while (model->Times[i] < n->getLatency()) {
-            model->Times[i]++;
+            model -> Times[i]++;
             model -> output_sequence.back().emplace_back(0);
         }
 
@@ -304,7 +304,7 @@ void indk::ComputeBackends::OpenCL::doCompute(const std::vector<indk::Neuron*> &
 
         uint64_t xi = 0, xistart;
         i = 0;
-        for (const auto &n: model->objects) {
+        for (const auto &n: neurons) {
             auto elist = n -> getEntries();
             bool ready = true;
 
@@ -403,11 +403,27 @@ std::vector<indk::OutputValue> indk::ComputeBackends::OpenCL::getOutputValues(co
 
     std::vector<indk::OutputValue> outputs;
     outputs.reserve(model->outputs.size());
+
 #ifdef INDK_OPENCL_SUPPORT
+    std::vector<indk::Neuron*> objects;
+
+    if (!neurons.empty()) {
+        for (const auto &n: neurons) {
+            auto nfound = std::find_if(model->objects.begin(), model->objects.end(), [n](indk::Neuron *ni) {
+                return ni->getName() == n;
+            });
+            if (nfound == model->objects.end()) continue;
+
+            objects.push_back(*nfound);
+        }
+    } else {
+        objects = model -> objects;
+    }
+
     for (const auto &o: model->outputs) {
-        auto found = std::find_if(model->objects.begin(), model->objects.end(), [o](indk::Neuron *n){ return n->getName() == o; });
-        if (found != model->objects.end()) {
-            auto index = std::distance(model->objects.begin(), found);
+        auto found = std::find_if(objects.begin(), objects.end(), [o](indk::Neuron *n){ return n->getName() == o; });
+        if (found != objects.end()) {
+            auto index = std::distance(objects.begin(), found);
             auto value = model->output_sequence[index][model->batch_size-1];
             indk::OutputValue output = {.value=value, .source=o, .time=model->batch_size};
             outputs.emplace_back(output);
@@ -422,9 +438,24 @@ std::map<std::string, std::vector<indk::Position>> indk::ComputeBackends::OpenCL
 
     std::map<std::string, std::vector<indk::Position>> list;
 #ifdef INDK_OPENCL_SUPPORT
+    std::vector<indk::Neuron*> objects;
+
+    if (!neurons.empty()) {
+        for (const auto &n: neurons) {
+            auto nfound = std::find_if(model->objects.begin(), model->objects.end(), [n](indk::Neuron *ni) {
+                return ni->getName() == n;
+            });
+            if (nfound == model->objects.end()) continue;
+
+            objects.push_back(*nfound);
+        }
+    } else {
+        objects = model -> objects;
+    }
+
     uint64_t ri = 0;
-    for (uint64_t i = 0; i < model->objects.size(); i++) {
-        auto n = model->objects[i];
+    for (uint64_t i = 0; i < objects.size(); i++) {
+        auto n = objects[i];
         std::vector<indk::Position> positions;
 
         for (uint64_t r = 0; r < n->getReceptorsCount(); r++) {
@@ -458,7 +489,7 @@ std::vector<indk::ComputeBackends::OpenCL::DeviceInfo> indk::ComputeBackends::Op
 }
 
 std::vector<indk::ComputeBackends::OpenCL::DeviceInfo> indk::ComputeBackends::OpenCL::getDevicesInfo() {
-    if (handler) return handler->getDeviceInfoList();
+    if (OpenCLHandler) return OpenCLHandler->getDeviceInfoList();
     return {};
 }
 

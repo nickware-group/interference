@@ -1,0 +1,73 @@
+#version 450
+
+layout(local_size_x = 64) in;
+
+layout(std430, binding = 0) buffer PairsBuffer {
+    vec4 pairs[];
+};
+
+layout(std430, binding = 1) buffer ReceptorsBuffer {
+    vec2 receptors[];  // 4 vec2s per receptor (8 floats)
+};
+
+layout(std430, binding = 2) buffer InputsBuffer {
+    vec2 inputs[];
+};
+
+void main() {
+    uint id = gl_GlobalInvocationID.x;
+    uint base = id * 4;  // 4 vec2s per receptor
+
+    // receptors[base+0]: (left_pairs_range, right_pairs_range)
+    // receptors[base+1]: (input_index, sensitivity_rs)
+    // receptors[base+2]: (fi, k3)
+    // receptors[base+3]: (p_output, reserved)
+
+    int inputIdx = int(receptors[base + 1].x);
+    int run = int(inputs[inputIdx].x);
+
+    if (run != 0) {
+        float drx = 0.0, dry = 0.0, fisum = 0.0;
+
+        int leftPairs = int(receptors[base].x);
+        int rightPairs = int(receptors[base].y);
+
+        // Sum up pair contributions
+        for (int i = leftPairs; i < rightPairs; i++) {
+            uint pbase = uint(i) * 4;
+            drx += pairs[pbase + 3].x;
+            dry += pairs[pbase + 3].y;
+            fisum += pairs[pbase + 3].z;
+        }
+
+        // Update receptor positions in pairs
+        for (int i = leftPairs; i < rightPairs; i++) {
+            uint pbase = uint(i) * 4;
+            pairs[pbase].x += drx;
+            pairs[pbase].y += dry;
+        }
+
+        float rs = receptors[base + 1].y;
+        float oldFi = receptors[base + 2].x;
+        float k3 = receptors[base + 2].y;
+
+        float dfisum = fisum - oldFi;
+        receptors[base + 2].x = fisum;
+
+        float d = sqrt(drx * drx + dry * dry);
+
+        float p = 0.0;
+        if (d > 0.0 && fisum > rs) {
+            p = d;
+        }
+
+        // Update sensitivity
+        if (dfisum > 0.0 && fisum >= rs) {
+            receptors[base + 1].y = rs + dfisum;
+        } else {
+            receptors[base + 1].y = rs / (k3 * rs + 1.0);
+        }
+
+        receptors[base + 3].x = p;
+    }
+}
