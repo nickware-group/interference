@@ -4,6 +4,8 @@ Cross-platform C++ library - universal neurobiology-based machine learning frame
 Version 3.1.0
 </p>
 
+[![Interference NDK (linux)](https://github.com/nickware-group/interference/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/nickware-group/interference/actions/workflows/cmake-multi-platform.yml)
+
 ----------------------------------------------------------------
 ### WHAT IS INTERFERENCE NDK
 Interference NDK includes a cross-platform C++ library and tools for neural networks debugging. The library implements a neurobiology-based `Interference` architecture. Unlike traditional artificial neural networks, `Interference` models neural processing using spatial mathematics, where neurons works in multidimensional space and process signals through biologically-inspired components: synapses, receptors, and neurotransmitters.
