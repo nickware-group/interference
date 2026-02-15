@@ -5,8 +5,8 @@ Version 3.1.0
 </p>
 
 ----------------------------------------------------------------
-### WHAT IS INTERFERENCE
-Interference library is a cross-platform C++ library implementing a neurobiology-based `Interference` architecture. Unlike traditional artificial neural networks, Interference models neural processing using spatial mathematics, where neurons works in multidimensional space and process signals through biologically-inspired components: synapses, receptors, and neurotransmitters.
+### WHAT IS INTERFERENCE NDK
+Interference NDK includes a cross-platform C++ library and tools for neural networks debugging. The library implements a neurobiology-based `Interference` architecture. Unlike traditional artificial neural networks, `Interference` models neural processing using spatial mathematics, where neurons works in multidimensional space and process signals through biologically-inspired components: synapses, receptors, and neurotransmitters.
 
 This framework is highly scalable. It is suitable for both powerful computing clusters and embedded systems, including real-time systems.
 
@@ -15,17 +15,18 @@ This framework is highly scalable. It is suitable for both powerful computing cl
 - Spatial neuron modeling with multidimensional positioning
 - Synaptic signal transmission with activation/deactivation neurotransmitters
 - Pattern recognition through receptor position adaptation
-- Multiple computation backends - native CPU (single-thread/multi-thread), OpenCL
+- Multiple computation backends - native CPU (single-thread/multi-thread), OpenCL, Vulkan
 - JSON-based network structure definition
 - Support for learning and inference modes (including on embedded devices)
+- Can be used to perform a variety of tasks: data classification, anomaly detection, image and sound recognition, NLP, etc
 
 ----------------------------------------------------------------
 ### PLATFORMS
-|                                | x86 | aarch64 | armle.v7 |  e2k | MIPS |
-|:------------------------------:|:---:|:-------:|:--------:|:---:|:----:|
-|          **Windows**           |  +  |    +    |          |     |      |
-|           **Linux**            |  +  |    +    |    +     |  +  |      |
-|            **QNX**             |  +  |         |    +     |     |      |
+|                                | x86 | aarch64 | armle.v7 |  e2k |
+|:------------------------------:|:---:|:-------:|:--------:|:---:|
+|          **Windows**           |  +  |    +    |          |     |
+|           **Linux**            |  +  |    +    |    +     |  +  |
+|            **QNX**             |  +  |         |    +     |     |
 
 ----------------------------------------------------------------
 ### COMPUTING
