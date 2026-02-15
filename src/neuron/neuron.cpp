@@ -7,6 +7,7 @@
 // Licence:     MIT licence
 /////////////////////////////////////////////////////////////////////////////
 
+#include <cmath>
 #include <indk/neuron.h>
 #include <indk/error.h>
 #include <indk/system.h>
