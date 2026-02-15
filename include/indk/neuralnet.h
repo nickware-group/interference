@@ -20,6 +20,8 @@
 #include <indk/interlink.h>
 #include <indk/instance.h>
 
+#define INDK_STRUCTURE(name, ...) std::string name = #__VA_ARGS__
+
 namespace indk {
     typedef enum {
         CompareDefault,

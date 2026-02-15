@@ -11,8 +11,7 @@
 
 int main() {
     // create the neural net structure with two entries and one neuron (one class)
-    std::string structure = R"(
-    {
+    INDK_STRUCTURE(structure, {
       "entries": ["E1", "E2"],
       "neurons": [
         {
@@ -46,7 +45,7 @@ int main() {
       "name": "classification net",
       "desc": "neural net structure for data classification example",
       "version": "1.0"
-    })";
+    });
 
     // create the neural net object
     indk::NeuralNet net;
