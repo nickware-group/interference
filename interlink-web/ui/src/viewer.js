@@ -1,5 +1,5 @@
 
-let NodeWeightByType = {0: 24, 1: 15, 2: 15}
+let NodeWeightByType = {0: 28, 1: 14, 2: 14}
 let NodeTypeNameByType = {0: "neuron", 1: "entry", 2: "output"}
 
 let doHighlightNode = function(id) {

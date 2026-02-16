@@ -84,10 +84,17 @@ function DefaultFrame(id) {
 
     this.doAddModelHistoryToList = function(str) {
         let id = this.model_life_history.length - 1;
-        this.model_lifetime_list.push({structure_id: id, data_id: this.model_life_history[id].timeline_data.length-1, name: str});
 
-        facefull.Lists["NMDL"].doAdd(["["+this.model_lifetime_list.length+"] "+str]);
-        facefull.Scrollboxes["NMSB"].doUpdateScrollbar();
+        let last_list_id = 0;
+        if (this.model_lifetime_list.length-1 >= 0) {
+            last_list_id = parseInt(this.model_lifetime_list[this.model_lifetime_list.length-1].list_id);
+        }
+
+        console.log(last_list_id)
+
+        this.model_lifetime_list.push({list_id: last_list_id+1, structure_id: id, data_id: this.model_life_history[id].timeline_data.length-1, name: str});
+
+        facefull.Lists["NMDL"].doAdd(["["+(last_list_id+1)+"] "+str]);
 
         if (this.auto_update_scope) {
             facefull.Lists["NMDL"].doSelect(facefull.Lists["NMDL"].getLength()-1);
@@ -96,6 +103,21 @@ function DefaultFrame(id) {
         }
 
         if (facefull.Lists["NMDL"].getState() === -1) this.last_structure_id = id;
+
+        if (this.model_lifetime_list.length > getModelHistoryLimit()) {
+            let count = this.model_lifetime_list.length-getModelHistoryLimit(); // num elements to remove
+            this.model_lifetime_list.splice(0, count);
+
+            for (let i = 0; i < count; i++) {
+                if (facefull.Lists["NMDL"].elist.firstChild) {
+                    facefull.Lists["NMDL"].elist.removeChild(facefull.Lists["NMDL"].elist.firstChild);
+                }
+            }
+        }
+
+        console.log(this.model_lifetime_list.length, getModelHistoryLimit());
+
+        facefull.Scrollboxes["NMSB"].doUpdateScrollbar();
     }
 
     this.doUpdateString = function(str) {

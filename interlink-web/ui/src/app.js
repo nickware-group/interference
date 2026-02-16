@@ -138,9 +138,16 @@ function App() {
         doSwitchLeftTopPanel(FManager.getCurrentFrameID(), 2)
     });
 
-    document.getElementById("LT-B4").addEventListener("click", function() {
-        doSwitchLeftBottomPanel(FManager.getCurrentFrameID(), 0)
-    });
+    facefull.Counters["CV1"].onBeforeCount = function(direction) {
+        if (facefull.Counters["CV1"].getValue()+direction > 5000) {
+            facefull.Counters["CV1"].setValue(5000);
+            return false;
+        } else if (facefull.Counters["CV1"].getValue()+direction < 1) {
+            facefull.Counters["CV1"].setValue(1);
+            return false;
+        }
+        return true;
+    }
 
     console.log("done init", performance.now());
     facefull.doEventSend("doWindowReady");

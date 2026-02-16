@@ -2,6 +2,7 @@
 let Settings = {
     lang: 0,
     theme: 0,
+    model_life_history_limit: 500,
 };
 
 function doSaveSettings() {
@@ -11,6 +12,8 @@ function doSaveSettings() {
 function doLoadSettings() {
     let settings = localStorage.getItem("interlink_web_settings");
     if (settings !== null) Settings = JSON.parse(settings);
+
+    if (!Settings.model_life_history_limit) Settings.model_life_history_limit = 1000;
 
     doApplyTheme();
 }
@@ -37,4 +40,27 @@ function doSwitchTheme() {
     doApplyTheme();
 
     doSaveSettings();
+}
+
+function doOpenSettingsWindow() {
+    facefull.Counters["CV1"].setValue(getModelHistoryLimit());
+    AlertShowCustom("ASW");
+}
+
+function doCloseSettingsWindow() {
+    AlertHideCustom("ASW");
+}
+
+function doSaveCloseSettingsWindow() {
+    setModelHistoryLimit(facefull.Counters["CV1"].getValue());
+    AlertHideCustom("ASW");
+    doSaveSettings();
+}
+
+function setModelHistoryLimit(value) {
+    Settings.model_life_history_limit = value;
+}
+
+function getModelHistoryLimit() {
+    return Settings.model_life_history_limit;
 }

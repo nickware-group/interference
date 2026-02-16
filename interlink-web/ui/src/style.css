@@ -292,6 +292,14 @@
     background-color: var(--interlinkpanel-disconnected-bg-hover-color);
 }
 
+.HeaderButtonsBlock.Right > .HeaderButton {
+    margin-left: 10px;
+}
+
+.HeaderButtonsBlock > .SettingsOpen:before {
+    content: '\F0493';
+}
+
 .HeaderButtonsBlock > .ThemeSwitch.DarkMode:before {
     content: '\F0594';
 }
@@ -607,6 +615,18 @@
 
 .AccountCaption.Subscription #AUA .AvatarRing, #UAA.Subscription .AvatarRing {
     background: linear-gradient(219deg, #0080ff, #ff5a00) !important;
+}
+
+.Alert.Settings {
+    height: 280px;
+}
+
+.Alert.Settings .Label {
+    margin-bottom: 10px;
+}
+
+.Alert.Settings .Counter {
+    width: 150px;
 }
 
 .MainSettings {
