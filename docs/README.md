@@ -134,8 +134,8 @@ Output:
 Interference library contains built-in tools for model profiling and debugging. `Interlink Web` provides a web interface that allows you to view the current model structure and parameters in runtime.
 
 ```c++
-    // Call doInterlinkWebInit method from an object of the indk::NeuralNet class.
-    // Simply specify the path to the interlink-web ui directory and the port.
+    // Call doInterlinkWebInit method from an object of the indk::NeuralNet class
+    // Simply specify the path to the interlink-web ui directory and the port
     net -> doInterlinkWebInit("<library root dir>/dist/etc/interlink-web/ui/", 8044);
 
     // Open the web page in your browser (e.g. http://localhost:8044) to view model structure and data

@@ -44,8 +44,8 @@ This framework is highly scalable. It is suitable for both powerful computing cl
 
 ----------------------------------------------------------------
 ### QUICK START
-A simple example of classifying signals. The two signals belong to the same class.
-This example demonstrates how to determine how closely the recognized signals match the one learned by the model.
+A simple example of classifying signals. The two signals belong to the same class
+This example demonstrates how to determine how closely the recognized signals match the one learned by the model
 
 ```c++
 #include <indk/neuralnet.h>
