@@ -43,15 +43,6 @@ This framework is highly scalable. It is suitable for both powerful computing cl
 - g++ 8.3.0 or newer (MinGW under Windows)
 
 ----------------------------------------------------------------
-### LICENCE
-Interference library is distributed under the MIT Licence.
-
-interference_vision example uses the part of COIL-100 dataset.
-
-"Columbia Object Image Library (COIL-100)," S. A. Nene, S. K. Nayar and H. Murase, Technical Report CUCS-006-96, February 1996.
-http://www1.cs.columbia.edu/CAVE/software/softlib/coil-100.php
-
-----------------------------------------------------------------
 ### QUICK START
 A simple example of classifying signals. The two signals belong to the same class.
 This example demonstrates how to determine how closely the recognized signals match the one learned by the model.
@@ -60,7 +51,7 @@ This example demonstrates how to determine how closely the recognized signals ma
 #include <indk/neuralnet.h>
 
 int main() {
-   // create the neural net structure with two entries and one neuron (one class)
+    // create the neural net structure with two entries and one neuron (one class)
     INDK_STRUCTURE(structure, {
       "entries": ["E1", "E2"],
       "neurons": [
@@ -139,6 +130,37 @@ Output:
 - [Test](samples/test) - benchmark
 - [Vision](samples/vision) - example of image recognition system
 - [Multimodal](samples/multimodal) - example of multimodal (image+text) data processing
+
+----------------------------------------------------------------
+### INTERLINK - NEURAL NETWORK MODEL DEBUG
+Interference library contains built-in tools for model profiling and debugging. `Interlink Web` provides a web interface that allows you to view the current model structure and parameters in runtime.
+
+```c++
+    // Call doInterlinkWebInit method from an object of the indk::NeuralNet class.
+    // Simply specify the path to the interlink-web ui directory and the port.
+    net -> doInterlinkWebInit("<library root dir>/dist/etc/interlink-web/ui/", 8044);
+
+    // Open the web page in your browser (e.g. http://localhost:8044) to view model structure and data
+
+    // Do your work with Interference
+    
+    // The doLearn and doRecognize methods automatically synchronize model data with Interlink
+    // Call doInterlinkSyncData method to trigger the synchronization manually
+```
+
+<p align="center">
+    <img width="1232" height="872" src="https://nickware.group/repository/products/indk/interlink.png"><br><br>
+    Interlink Web UI
+</p>
+
+----------------------------------------------------------------
+### LICENCE
+Interference library is distributed under the MIT Licence.
+
+interference_vision example uses the part of COIL-100 dataset.
+
+"Columbia Object Image Library (COIL-100)," S. A. Nene, S. K. Nayar and H. Murase, Technical Report CUCS-006-96, February 1996.
+http://www1.cs.columbia.edu/CAVE/software/softlib/coil-100.php
 
 ----------------------------------------------------------------
 ### HOW TO BUILD
