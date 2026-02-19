@@ -126,7 +126,7 @@ Output:
 
 ----------------------------------------------------------------
 ### SAMPLES
-- [Classification](samples/classification) - data classification example
+- [Classification](samples/classification) - the simplest example of binary classification
 - [Test](samples/test) - benchmark
 - [Vision](samples/vision) - example of image recognition system
 - [Multimodal](samples/multimodal) - example of multimodal (image+text) data processing
