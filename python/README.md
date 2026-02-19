@@ -1,6 +1,6 @@
 # indk - Python bindings for Interference
 
-Python bindings for the Interference neural network library via pybind11.
+Python bindings for the [Interference](https://github.com/nickware-group/interference) neural network library via pybind11.
 
 ## Requirements
 
@@ -9,7 +9,9 @@ Python bindings for the Interference neural network library via pybind11.
 - g++ 8.3.0 or newer (MinGW-w64 / MSYS2 on Windows)
 - pybind11 (fetched automatically if not found)
 
-### Windows prerequisites
+## Installation
+
+### Windows
 
 Install [MSYS2](https://www.msys2.org/) and the UCRT64 toolchain:
 
@@ -17,57 +19,62 @@ Install [MSYS2](https://www.msys2.org/) and the UCRT64 toolchain:
 pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake
 ```
 
-Make sure `C:\msys64\ucrt64\bin` is in your system PATH (needed for `g++`, `mingw32-make`).
+Make sure `C:\msys64\ucrt64\bin` is in your system PATH.
 
-## Build & Install
+**From project root:**
 
 ```bash
+python -m venv .venv
+.venv\Scripts\activate
 cd python
-pip install .
 ```
 
-Or for development:
+**Set MinGW as the CMake generator:**
 
 ```bash
-pip install -e .
+$env:CMAKE_GENERATOR = "MinGW Makefiles"
 ```
 
-### Manual CMake build (Windows / MinGW)
+You can also enable additional backends:
 
 ```bash
+$env:SKBUILD_CMAKE_ARGS = "-DINDK_OPENCL_SUPPORT=ON;-DINDK_VULKAN_SUPPORT=ON"
+```
+
+**Install package to venv:**
+
+```bash
+pip install . -v
+```
+
+**Verify installation:**
+
+```bash
+cd ..
+python -c "import indk; print('Ok')"
+```
+
+### Linux
+
+**From project root:**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
 cd python
-mkdir build && cd build
-cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DPython3_EXECUTABLE=<path-to-python.exe> -DPYTHON_EXECUTABLE=<path-to-python.exe> -DPython3_FIND_REGISTRY=NEVER -DPython3_FIND_STRATEGY=LOCATION ..
-mingw32-make -j4
 ```
 
-Replace `<path-to-python.exe>` with the full path to your Python interpreter, e.g.
-`C:/Users/You/AppData/Local/Programs/Python/Python313/python.exe`.
-
-Both `-DPython3_EXECUTABLE` and `-DPYTHON_EXECUTABLE` must be set because pybind11
-uses the legacy FindPython module internally.
-
-The built `_indk.cpXYZ-win_amd64.pyd` file will be in the build directory. Copy it to `indk/`:
+**Install:**
 
 ```bash
-copy build\_indk.cp313-win_amd64.pyd indk\
+pip install . -v
 ```
 
-### Manual CMake build (Linux)
+**Verify installation:**
 
 ```bash
-cd python
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j4
-```
-
-### Optional GPU backends
-
-To enable OpenCL/Vulkan support, add flags to the cmake command:
-
-```bash
-cmake ... -DINDK_OPENCL_SUPPORT=ON -DINDK_VULKAN_SUPPORT=ON
+cd ..
+python -c "import indk; print('Ok')"
 ```
 
 ## Quick Start
@@ -75,8 +82,8 @@ cmake ... -DINDK_OPENCL_SUPPORT=ON -DINDK_VULKAN_SUPPORT=ON
 ```python
 import indk
 
-# create the neural net structure with two entries and one neuron (one class)
-structure: str = indk.structure({
+# create the neural net structure with two entries and one neuron
+structure = indk.structure({
     "entries": ["E1", "E2"],
     "neurons": [
         {
@@ -85,7 +92,6 @@ structure: str = indk.structure({
             "dimensions": 2,
             "input_signals": ["E1", "E2"],
             "ensemble": "A1",
-
             "synapses": [
                 {
                     "type": "cluster",
@@ -95,7 +101,6 @@ structure: str = indk.structure({
                     "k1": 10
                 }
             ],
-
             "receptors": [
                 {
                     "type": "cluster",
@@ -113,22 +118,27 @@ structure: str = indk.structure({
 })
 
 net = indk.NeuralNet()
-
-# load the structure from string
 net.set_structure(structure)
 
-# learn the values
-# send two signals (with length 4) to two neural network entries (E1 and E2)
+# learn two signals
 net.do_learn([[4, 3, 2, 1], [1, 2, 3, 4]])
 
-# recognise the same signals
-# do_compare_patterns method will give a vector with one value (since we only have one neuron at the output)
-# this value is 0 (recognised signal completely coincides with the learned signal)
+# recognise with a slightly changed signal
 net.do_recognise([[4, 3, 2, 2], [1, 2, 3, 4]])
 print(net.do_compare_patterns()[0])
 
-# recognise the signals, the signals are swapped
-# do_compare_patterns method will give a non-zero value, the value is greater than last time
+# recognise with swapped signals — larger deviation
 net.do_recognise([[1, 2, 3, 4], [4, 3, 2, 1]])
 print(net.do_compare_patterns()[0])
+```
+
+## Running Samples
+
+**From project root:**
+
+```bash
+cd python/samples
+python quick_start.py
+python classification.py
+python test.py
 ```
