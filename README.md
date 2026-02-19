@@ -164,36 +164,9 @@ http://www1.cs.columbia.edu/CAVE/software/softlib/coil-100.php
 
 ----------------------------------------------------------------
 ### HOW TO BUILD
-Note that %INTERFERENCE_ROOT% is root directory of Interference library files, %BUILD_TYPE% is "debug" or "release". After the last step, library and binaries will be in %INTERFERENCE_ROOT%/lib and %INTERFERENCE_ROOT%/bin respectively.
-#### Building for Windows (MinGW)
-Run CMD and follow this steps:
-1. Prepare build directory
-```
-cd %INTERFERENCE_ROOT%
-mkdir cmake-build-%BUILD_TYPE%
-cd cmake-build-%BUILD_TYPE%
-```
-2. Configure build files
-```
-cmake -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DCMAKE_MAKE_PROGRAM=make.exe -G "MinGW Makefiles" ..
-```
-3. Build and install the library
-```
-make install
-```
-#### Building for Linux
-Run terminal and follow this steps:
-1. Prepare build directory
-```
-cd %INTERFERENCE_ROOT%
-mkdir cmake-build-%BUILD_TYPE%
-cd cmake-build-%BUILD_TYPE%
-```
-2. Configure build files
-```
-cmake -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ..
-```
-3. Build and install the library
-```
-make install
-```
+All files will be in `dist` directory.
+#### Windows
+Just run `build.cmd` script.
+
+#### Linux
+Just run `build.sh` script.
