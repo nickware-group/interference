@@ -1,81 +1,32 @@
-# indk - Python bindings for Interference
+# indk — Python bindings for Interference
 
-Python bindings for the [Interference](https://github.com/nickware-group/interference) neural network library via pybind11.
+## Prerequisites
 
-## Requirements
-
-- Python >= 3.11
-- CMake >= 3.15
-- g++ 8.3.0 or newer (MinGW-w64 / MSYS2 on Windows)
-- pybind11 (fetched automatically if not found)
-
-## Installation
-
-### Windows
-
-Install [MSYS2](https://www.msys2.org/) and the UCRT64 toolchain:
-
+**Linux:**
 ```bash
-pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake
+sudo apt-get install python3 python3-venv python3-dev g++ cmake git
 ```
 
-Make sure `C:\msys64\ucrt64\bin` is in your system PATH.
+**Windows:**
+- Python 3.11+
+- MSYS2 with `pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake`
+- Add `C:\msys64\ucrt64\bin` to PATH
 
-**From project root:**
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-cd python
-```
-
-**Set MinGW as the CMake generator:**
+## Build
+The script creates a venv at the project root, builds and installs the package.
+Check it with: `pip list` after activate venv
 
 ```bash
-$env:CMAKE_GENERATOR = "MinGW Makefiles"
+cd ./python
 ```
 
-You can also enable additional backends:
+#### Windows
+Just run `build.cmd` script.
 
-```bash
-$env:SKBUILD_CMAKE_ARGS = "-DINDK_OPENCL_SUPPORT=ON;-DINDK_VULKAN_SUPPORT=ON"
-```
+#### Linux
+Just run `build.sh` script.
 
-**Install package to venv:**
 
-```bash
-pip install . -v
-```
-
-**Verify installation:**
-
-```bash
-cd ..
-python -c "import indk; print('Ok')"
-```
-
-### Linux
-
-**From project root:**
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-cd python
-```
-
-**Install:**
-
-```bash
-pip install . -v
-```
-
-**Verify installation:**
-
-```bash
-cd ..
-python -c "import indk; print('Ok')"
-```
 
 ## Quick Start
 
@@ -132,10 +83,8 @@ net.do_recognise([[1, 2, 3, 4], [4, 3, 2, 1]])
 print(net.do_compare_patterns()[0])
 ```
 
-## Running Samples
-
+## Samples
 **From project root:**
-
 ```bash
 cd python/samples
 python quick_start.py
