@@ -65,7 +65,7 @@ function(build_indk LIBTYPE)
     find_package(Threads REQUIRED)
     target_link_libraries(${PROJECT_NAME}${LIBTYPE} Threads::Threads)
 
-    if(UNIX AND NOT APPLE)
+    if (NOT APPLE)
         target_link_libraries(${PROJECT_NAME}${LIBTYPE} -latomic)
     endif()
 
