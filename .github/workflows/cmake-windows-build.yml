@@ -1,4 +1,4 @@
-name: MinGW CMake Build on Windows
+name: Interference NDK (windows)
 
 on: [push, pull_request]
 
