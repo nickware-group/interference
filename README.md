@@ -30,6 +30,7 @@ This framework is highly scalable. It is suitable for both powerful computing cl
 |:------------------------------:|:---:|:-------:|:--------:|:---:|
 |          **Windows**           |  +  |    +    |          |     |
 |           **Linux**            |  +  |    +    |    +     |  +  |
+|           **MacOS**            |  +  |    +    |          |     |
 |            **QNX**             |  +  |         |    +     |     |
 
 ----------------------------------------------------------------
@@ -170,5 +171,5 @@ All files will be in `dist` directory.
 #### Windows
 Just run `build.cmd` script.
 
-#### Linux
+#### Linux / MacOS
 Just run `build.sh` script.
