@@ -9,6 +9,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+          submodules: 'recursive'
 
     - name: Add MinGW to PATH
       # Adds the UCRT64 MinGW environment to the system PATH
