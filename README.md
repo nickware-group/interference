@@ -5,6 +5,7 @@ Version 3.1.0
 </p>
 
 [![Interference NDK (linux)](https://github.com/nickware-group/interference/actions/workflows/cmake-linux-build.yml/badge.svg)](https://github.com/nickware-group/interference/actions/workflows/cmake-linux-build.yml)
+
 [![Interference NDK (windows)](https://github.com/nickware-group/interference/actions/workflows/cmake-windows-build.yml/badge.svg)](https://github.com/nickware-group/interference/actions/workflows/cmake-windows-build.yml)
 
 ----------------------------------------------------------------
