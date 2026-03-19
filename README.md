@@ -4,7 +4,9 @@ Cross-platform C++ library - universal neurobiology-based machine learning frame
 Version 3.1.0
 </p>
 
-[![Interference NDK (linux)](https://github.com/nickware-group/interference/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/nickware-group/interference/actions/workflows/cmake-multi-platform.yml)
+[![Interference NDK (linux)](https://github.com/nickware-group/interference/actions/workflows/cmake-linux-build.yml/badge.svg)](https://github.com/nickware-group/interference/actions/workflows/cmake-linux-build.yml)
+
+[![Interference NDK (windows)](https://github.com/nickware-group/interference/actions/workflows/cmake-windows-build.yml/badge.svg)](https://github.com/nickware-group/interference/actions/workflows/cmake-windows-build.yml)
 
 ----------------------------------------------------------------
 ### WHAT IS INTERFERENCE NDK
