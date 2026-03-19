@@ -63,7 +63,12 @@ function(build_indk LIBTYPE)
     include_directories(deps/facefull-bridge/include)
 
     find_package(Threads REQUIRED)
-    target_link_libraries(${PROJECT_NAME}${LIBTYPE} Threads::Threads -latomic)
+    target_link_libraries(${PROJECT_NAME}${LIBTYPE} Threads::Threads)
+
+    if(UNIX AND NOT APPLE)
+        target_link_libraries(${PROJECT_NAME}${LIBTYPE} -latomic)
+    endif()
+
     target_link_libraries(${PROJECT_NAME}${LIBTYPE} ${CMAKE_CURRENT_BINARY_DIR}/deps/facefull-bridge/libfacefull-bridge_static.a)
 
     if (WIN32)

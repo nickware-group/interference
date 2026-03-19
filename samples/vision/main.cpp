@@ -9,6 +9,7 @@
 
 #include <chrono>
 #include <iomanip>
+#include <sstream>
 #include <indk/system.h>
 #include <indk/neuralnet.h>
 #include "bmp.hpp"
