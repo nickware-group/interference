@@ -4,9 +4,11 @@ Cross-platform C++ library - universal neurobiology-based machine learning frame
 Version 3.1.0
 </p>
 
+[![Interference NDK (windows)](https://github.com/nickware-group/interference/actions/workflows/cmake-windows-build.yml/badge.svg)](https://github.com/nickware-group/interference/actions/workflows/cmake-windows-build.yml)
+
 [![Interference NDK (linux)](https://github.com/nickware-group/interference/actions/workflows/cmake-linux-build.yml/badge.svg)](https://github.com/nickware-group/interference/actions/workflows/cmake-linux-build.yml)
 
-[![Interference NDK (windows)](https://github.com/nickware-group/interference/actions/workflows/cmake-windows-build.yml/badge.svg)](https://github.com/nickware-group/interference/actions/workflows/cmake-windows-build.yml)
+[![Interference NDK (macOS)](https://github.com/nickware-group/interference/actions/workflows/cmake-macos-build.yml/badge.svg)](https://github.com/nickware-group/interference/actions/workflows/cmake-macos-build.yml)
 
 ----------------------------------------------------------------
 ### WHAT IS INTERFERENCE NDK
@@ -30,6 +32,7 @@ This framework is highly scalable. It is suitable for both powerful computing cl
 |:------------------------------:|:---:|:-------:|:--------:|:---:|
 |          **Windows**           |  +  |    +    |          |     |
 |           **Linux**            |  +  |    +    |    +     |  +  |
+|           **MacOS**            |  +  |    +    |          |     |
 |            **QNX**             |  +  |         |    +     |     |
 
 ----------------------------------------------------------------
@@ -170,5 +173,5 @@ All files will be in `dist` directory.
 #### Windows
 Just run `build.cmd` script.
 
-#### Linux
+#### Linux / MacOS
 Just run `build.sh` script.
