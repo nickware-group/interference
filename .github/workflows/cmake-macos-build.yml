@@ -1,0 +1,29 @@
+name: Interference NDK (macOS)
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    # Используем актуальный образ macOS (Intel или Apple Silicon)
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+          submodules: 'recursive'
+
+    - name: Configure CMake
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build project
+      run: cmake --build build --config Release
+
+    - name: Install project
+      run: cmake --install build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: indk-macos-arm64-clang
+        path: dist/
