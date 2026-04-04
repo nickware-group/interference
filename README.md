@@ -48,6 +48,10 @@ This framework is highly scalable. It is suitable for both powerful computing cl
 - g++ 8.3.0 or newer (MinGW under Windows)
 
 ----------------------------------------------------------------
+### PYTHON BINDINGS
+Python bindings are available through the build in the [python](python/) directory.
+
+----------------------------------------------------------------
 ### QUICK START
 A simple example of classifying signals. The two signals belong to the same class.
 This example demonstrates how to determine how closely the recognized signals match the one learned by the model.
