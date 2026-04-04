@@ -169,6 +169,10 @@ http://www1.cs.columbia.edu/CAVE/software/softlib/coil-100.php
 
 ----------------------------------------------------------------
 ### HOW TO BUILD
+Options:
+- `--opencl` - build with OpenCL Compute Backend support
+- `--vulkan` - build with Vulkan Compute Backend support
+
 All files will be in `dist` directory.
 #### Windows
 Just run `build.cmd` script.

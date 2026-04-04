@@ -19,6 +19,9 @@ Check it with: `pip list` after activate venv
 ```bash
 cd ./python
 ```
+Options:
+- `--opencl` - build with OpenCL Compute Backend support
+- `--vulkan` - build with Vulkan Compute Backend support
 
 #### Windows
 Just run `build.cmd` script.
