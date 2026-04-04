@@ -26,6 +26,7 @@ This framework is highly scalable. It is suitable for both powerful computing cl
 |:------------------------------:|:---:|:-------:|:--------:|:---:|
 |          **Windows**           |  +  |    +    |          |     |
 |           **Linux**            |  +  |    +    |    +     |  +  |
+|           **MacOS**            |  +  |    +    |          |     |
 |            **QNX**             |  +  |         |    +     |     |
 
 ----------------------------------------------------------------
@@ -39,6 +40,10 @@ This framework is highly scalable. It is suitable for both powerful computing cl
 ### REQUIREMENTS
 - CMake 3.12 or newer
 - g++ 8.3.0 or newer (MinGW under Windows)
+
+----------------------------------------------------------------
+### PYTHON BINDINGS
+Python bindings are available through the build in the [python](python/) directory.
 
 ----------------------------------------------------------------
 ### QUICK START
@@ -162,9 +167,13 @@ http://www1.cs.columbia.edu/CAVE/software/softlib/coil-100.php
 
 ----------------------------------------------------------------
 ### HOW TO BUILD
+Options:
+- `--opencl` - build with OpenCL Compute Backend support
+- `--vulkan` - build with Vulkan Compute Backend support
+
 All files will be in `dist` directory.
 #### Windows
 Just run `build.cmd` script.
 
-#### Linux
+#### Linux / MacOS
 Just run `build.sh` script.
