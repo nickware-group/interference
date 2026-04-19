@@ -10,6 +10,8 @@ Version 3.1.0
 
 [![Interference NDK (macOS)](https://github.com/nickware-group/interference/actions/workflows/cmake-macos-build.yml/badge.svg)](https://github.com/nickware-group/interference/actions/workflows/cmake-macos-build.yml)
 
+[Documentation](https://nickware.group/repository/products/indk/docs/)
+
 ----------------------------------------------------------------
 ### WHAT IS INTERFERENCE NDK
 Interference NDK includes a cross-platform C++ library and tools for neural networks debugging. The library implements a neurobiology-based `Interference` architecture. Unlike traditional artificial neural networks, `Interference` models neural processing using spatial mathematics, where neurons works in multidimensional space and process signals through biologically-inspired components: synapses, receptors, and neurotransmitters.
